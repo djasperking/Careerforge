@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ResendVerification } from "@/components/auth/resend-verification";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { formatDate } from "@/lib/utils";
 
@@ -48,7 +49,7 @@ export default async function DashboardHome() {
       {!user.emailIsVerified ? (
         <Alert variant="warning" className="mb-6">
           <AlertDescription>
-            Your email isn&apos;t verified yet. Check your inbox for the verification link.
+            <ResendVerification />
           </AlertDescription>
         </Alert>
       ) : null}

@@ -15,8 +15,8 @@ import {
   type RoleKey,
 } from "../src/lib/rbac";
 
-const db = new PrismaClient();
-const hash = (p: string) => bcrypt.hash(p, 12);
+export const db = new PrismaClient();
+export const hash = (p: string) => bcrypt.hash(p, 12);
 
 const ROLE_NAMES: Record<RoleKey, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -29,7 +29,7 @@ const ROLE_NAMES: Record<RoleKey, string> = {
   CUSTOMER: "Customer",
 };
 
-async function seedRbac() {
+export async function seedRbac() {
   const permissionRows = await Promise.all(
     (Object.keys(PERMISSIONS) as PermissionKey[]).map((key) =>
       db.permission.upsert({
@@ -124,7 +124,7 @@ async function seedUsers() {
   }
 }
 
-async function seedCvTemplates() {
+export async function seedCvTemplates() {
   const templates = [
     ["classic", "Classic", "Timeless single-column layout.", false],
     ["professional", "Professional", "Balanced two-column, recruiter-friendly.", false],
@@ -160,7 +160,7 @@ async function seedCvTemplates() {
   console.log(`  ✓ ${templates.length} CV templates`);
 }
 
-async function seedPlans() {
+export async function seedPlans() {
   const plans = [
     {
       key: "FREE",
@@ -355,7 +355,7 @@ async function seedCatalog() {
   console.log(`  ✓ demo course "${course.title}" + exam "${exam.title}" + 1 paid demo course`);
 }
 
-async function seedSettings() {
+export async function seedSettings() {
   const settings: [string, unknown][] = [
     ["general.siteName", "Career Forge"],
     ["general.contactEmail", process.env.ADMIN_EMAIL ?? "support@careerforge.local"],
@@ -385,9 +385,14 @@ async function main() {
   console.log("Done.");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => db.$disconnect());
+// Guarded so other scripts (e.g. seed-production.ts) can import the
+// individual seed*/db/hash exports above without also triggering this
+// file's own demo-data run.
+if (require.main === module) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(() => db.$disconnect());
+}

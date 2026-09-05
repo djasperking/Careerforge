@@ -56,14 +56,21 @@ export const POST = handler(async (req: NextRequest) => {
     ttlMinutes: 60 * 24,
   });
 
-  await sendEmail({
-    to: user.email,
-    template: "verify-email",
-    subject: "Verify your Career Forge email",
-    data: { name: user.name, link: appUrl(`/verify-email?token=${token}`) },
-  });
+  let emailSent = true;
+  try {
+    await sendEmail({
+      to: user.email,
+      template: "verify-email",
+      subject: "Verify your Career Forge email",
+      data: { name: user.name, link: appUrl(`/verify-email?token=${token}`) },
+    });
+  } catch (err) {
+    // Account is created; the user can request a fresh link from the dashboard.
+    emailSent = false;
+    console.error("register: verification email failed", err);
+  }
 
   await audit({ actorId: user.id, action: "USER_REGISTERED", entity: "User", entityId: user.id, ip });
 
-  return ok({ registered: true });
+  return ok({ registered: true, emailSent });
 });

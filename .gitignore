@@ -44,3 +44,6 @@ yarn-error.log*
 
 # Neon CLI project/branch linkage (environment-specific, not shared)
 .neon
+
+# Claude Code local runtime
+.claude/scheduled_tasks.lock

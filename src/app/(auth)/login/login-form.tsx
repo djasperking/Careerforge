@@ -6,8 +6,10 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { GoogleButton } from "@/components/auth/google-button";
 
 const ERROR_MESSAGES: Record<string, string> = {
   CredentialsSignin: "Incorrect email or password.",
@@ -60,11 +62,17 @@ export function LoginForm() {
             Forgot password?
           </Link>
         </div>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Signing in…" : "Log in"}
       </Button>
+      <div className="flex items-center gap-3 py-1">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">or</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <GoogleButton next={next} label="Continue with Google" />
     </form>
   );
 }

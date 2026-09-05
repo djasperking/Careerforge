@@ -3,13 +3,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PasswordStrength } from "@/components/auth/password-strength";
+import { GoogleButton } from "@/components/auth/google-button";
 
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<"verify" | "no-email" | null>(null);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,15 +35,17 @@ export function RegisterForm() {
       setError(json.error?.message ?? "Could not create your account.");
       return;
     }
-    setDone(true);
+    setDone(json.data?.emailSent === false ? "no-email" : "verify");
   }
 
   if (done) {
     return (
       <Alert variant="success">
-        <AlertTitle>Check your inbox</AlertTitle>
+        <AlertTitle>{done === "verify" ? "Check your inbox" : "Account created"}</AlertTitle>
         <AlertDescription>
-          We&apos;ve sent a verification link to your email. Click it to activate your account.
+          {done === "verify"
+            ? "We've sent a verification link to your email. Click it to activate your account."
+            : "Your account is ready. We couldn't send the verification email just now — log in and use the “Resend verification email” button on your dashboard."}
         </AlertDescription>
       </Alert>
     );
@@ -62,7 +68,16 @@ export function RegisterForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" autoComplete="new-password" required minLength={10} />
+        <PasswordInput
+          id="password"
+          name="password"
+          autoComplete="new-password"
+          required
+          minLength={10}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <PasswordStrength value={password} />
         <p className="text-xs text-muted-foreground">
           At least 10 characters, with upper &amp; lower case and a number.
         </p>
@@ -70,6 +85,12 @@ export function RegisterForm() {
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Creating account…" : "Create account"}
       </Button>
+      <div className="flex items-center gap-3 py-1">
+        <span className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">or</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <GoogleButton label="Sign up with Google" />
     </form>
   );
 }

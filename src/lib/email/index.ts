@@ -1,5 +1,7 @@
+import nodemailer, { type Transporter } from "nodemailer";
 import { env } from "@/lib/env";
 import { db } from "@/lib/db";
+import { renderEmail } from "./templates";
 
 /**
  * Email abstraction. `console` provider logs to stdout and records an EmailLog
@@ -27,6 +29,24 @@ export interface SendEmailInput {
   data: Record<string, unknown>;
 }
 
+let transporter: Transporter | null = null;
+
+function getTransport(): Transporter {
+  if (!env.SMTP_HOST) {
+    throw new Error("EMAIL_PROVIDER=smtp but SMTP_HOST is not set");
+  }
+  if (!transporter) {
+    const port = env.SMTP_PORT ?? 587;
+    transporter = nodemailer.createTransport({
+      host: env.SMTP_HOST,
+      port,
+      secure: port === 465,
+      auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } : undefined,
+    });
+  }
+  return transporter;
+}
+
 export async function sendEmail(input: SendEmailInput) {
   const log = await db.emailLog.create({
     data: {
@@ -44,8 +64,14 @@ export async function sendEmail(input: SendEmailInput) {
         `\n📧 [email:${input.template}] to=${input.to}\n   subject: ${input.subject}\n   data: ${JSON.stringify(input.data)}\n`,
       );
     } else {
-      // TODO: nodemailer transport using SMTP_* env vars.
-      throw new Error("SMTP email provider not configured");
+      const { html, text } = renderEmail(input.template, input.data);
+      await getTransport().sendMail({
+        from: env.EMAIL_FROM,
+        to: input.to,
+        subject: input.subject,
+        text,
+        html,
+      });
     }
     await db.emailLog.update({
       where: { id: log.id },

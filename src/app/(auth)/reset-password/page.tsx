@@ -4,15 +4,17 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PasswordStrength } from "@/components/auth/password-strength";
 
 function ResetForm() {
   const router = useRouter();
   const token = useSearchParams().get("token") ?? "";
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -54,11 +56,20 @@ function ResetForm() {
       ) : null}
       <div className="space-y-2">
         <Label htmlFor="password">New password</Label>
-        <Input id="password" name="password" type="password" autoComplete="new-password" required minLength={10} />
+        <PasswordInput
+          id="password"
+          name="password"
+          autoComplete="new-password"
+          required
+          minLength={10}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <PasswordStrength value={password} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="confirm">Confirm new password</Label>
-        <Input id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={10} />
+        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" required minLength={10} />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Updating…" : "Update password"}
