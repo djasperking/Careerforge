@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { env } from "@/lib/env";
 import { RegisterForm } from "./register-form";
 
 export const metadata: Metadata = { title: "Create account" };
+
+const googleEnabled = !!env.AUTH_GOOGLE_ID && !!env.AUTH_GOOGLE_SECRET;
 
 export default function RegisterPage() {
   return (
@@ -12,7 +15,7 @@ export default function RegisterPage() {
         Start building your career with Career Forge.
       </p>
       <div className="mt-6">
-        <RegisterForm />
+        <RegisterForm googleEnabled={googleEnabled} />
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}

@@ -18,7 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   ACCOUNT_DELETED: "This account no longer exists.",
 };
 
-export function LoginForm() {
+export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") || "/dashboard";
@@ -67,12 +67,16 @@ export function LoginForm() {
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Signing in…" : "Log in"}
       </Button>
-      <div className="flex items-center gap-3 py-1">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground">or</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <GoogleButton next={next} label="Continue with Google" />
+      {googleEnabled ? (
+        <>
+          <div className="flex items-center gap-3 py-1">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <GoogleButton next={next} label="Continue with Google" />
+        </>
+      ) : null}
     </form>
   );
 }

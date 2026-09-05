@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PasswordStrength } from "@/components/auth/password-strength";
 import { GoogleButton } from "@/components/auth/google-button";
 
-export function RegisterForm() {
+export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<"verify" | "no-email" | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,12 +85,16 @@ export function RegisterForm() {
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Creating account…" : "Create account"}
       </Button>
-      <div className="flex items-center gap-3 py-1">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground">or</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <GoogleButton label="Sign up with Google" />
+      {googleEnabled ? (
+        <>
+          <div className="flex items-center gap-3 py-1">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <GoogleButton label="Sign up with Google" />
+        </>
+      ) : null}
     </form>
   );
 }
