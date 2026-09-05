@@ -1,0 +1,53 @@
+import { z } from "zod";
+
+/**
+ * Central, validated environment access. Import from here instead of reading
+ * process.env directly so a missing/invalid value fails fast at boot.
+ * Only NEXT_PUBLIC_* values are safe to reference in client components.
+ */
+const schema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_NAME: z.string().default("Career Forge"),
+
+  DATABASE_URL: z.string().min(1),
+  AUTH_SECRET: z.string().min(16, "AUTH_SECRET must be at least 16 chars"),
+
+  ADMIN_EMAIL: z.string().email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
+  DEMO_CUSTOMER_EMAIL: z.string().email().optional(),
+  DEMO_CUSTOMER_PASSWORD: z.string().min(8).optional(),
+
+  AI_PROVIDER: z.enum(["anthropic", "mock"]).default("mock"),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  AI_MODEL: z.string().default("claude-sonnet-5"),
+  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(2000),
+
+  PAYMENT_PROVIDER: z.enum(["paystack", "mock"]).default("mock"),
+  PAYSTACK_SECRET_KEY: z.string().optional(),
+  NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().optional(),
+  PAYSTACK_WEBHOOK_SECRET: z.string().optional(),
+  DEFAULT_CURRENCY: z.string().default("NGN"),
+
+  EMAIL_PROVIDER: z.enum(["console", "smtp"]).default("console"),
+  EMAIL_FROM: z.string().default("Career Forge <no-reply@careerforge.local>"),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+
+  STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
+  STORAGE_PUBLIC_BASE_URL: z.string().default("http://localhost:3000/uploads"),
+
+  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(60),
+  RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(60),
+});
+
+const parsed = schema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error("Invalid environment variables:", parsed.error.flatten().fieldErrors);
+  throw new Error("Invalid environment variables — see .env.example");
+}
+
+export const env = parsed.data;

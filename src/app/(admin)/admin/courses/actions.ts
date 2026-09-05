@@ -1,0 +1,325 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { requirePermissionApi } from "@/lib/session";
+import { audit } from "@/lib/audit";
+import { ApiError } from "@/lib/api";
+import { courseFormSchema, moduleFormSchema, lessonFormSchema, linesToList } from "@/lib/course/schema";
+import { uniqueCourseSlug } from "@/lib/course/service";
+
+type Result<T> = { ok: true; data: T } | { ok: false; error: string };
+function fail(err: unknown): Result<never> {
+  if (err instanceof ApiError) return { ok: false, error: err.message };
+  console.error(err);
+  return { ok: false, error: "Something went wrong. Please try again." };
+}
+
+export async function createCourse(raw: unknown): Promise<Result<{ id: string }>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    const input = courseFormSchema.parse(raw);
+    const slug = await uniqueCourseSlug(input.title);
+
+    const course = await db.course.create({
+      data: {
+        slug,
+        title: input.title,
+        description: input.description,
+        thumbnailUrl: input.thumbnailUrl || null,
+        categoryId: input.categoryId || null,
+        level: input.level,
+        durationMinutes: input.durationMinutes,
+        priceCents: input.priceCents,
+        currency: input.currency,
+        requirements: linesToList(input.requirements),
+        objectives: linesToList(input.objectives),
+        instructorId: admin.id,
+      },
+    });
+    await audit({ actorId: admin.id, action: "COURSE_CREATED", entity: "Course", entityId: course.id });
+    revalidatePath("/admin/courses");
+    return { ok: true, data: { id: course.id } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function updateCourse(id: string, raw: unknown): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    const input = courseFormSchema.parse(raw);
+    const existing = await db.course.findUniqueOrThrow({ where: { id } });
+    const slug = existing.title === input.title ? existing.slug : await uniqueCourseSlug(input.title, id);
+
+    await db.course.update({
+      where: { id },
+      data: {
+        slug,
+        title: input.title,
+        description: input.description,
+        thumbnailUrl: input.thumbnailUrl || null,
+        categoryId: input.categoryId || null,
+        level: input.level,
+        durationMinutes: input.durationMinutes,
+        priceCents: input.priceCents,
+        currency: input.currency,
+        requirements: linesToList(input.requirements),
+        objectives: linesToList(input.objectives),
+      },
+    });
+    await audit({ actorId: admin.id, action: "COURSE_UPDATED", entity: "Course", entityId: id });
+    revalidatePath(`/admin/courses/${id}`);
+    revalidatePath("/admin/courses");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function setCourseStatus(id: string, status: "PUBLISHED" | "UNPUBLISHED" | "DRAFT" | "ARCHIVED"): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:publish");
+    const course = await db.course.findUniqueOrThrow({ where: { id } });
+    await db.course.update({
+      where: { id },
+      data: { status, publishedAt: status === "PUBLISHED" && !course.publishedAt ? new Date() : course.publishedAt },
+    });
+    await audit({ actorId: admin.id, action: `COURSE_${status}`, entity: "Course", entityId: id });
+    revalidatePath(`/admin/courses/${id}`);
+    revalidatePath("/admin/courses");
+    revalidatePath("/courses");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function deleteCourse(id: string): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:delete");
+    const enrollmentCount = await db.enrollment.count({ where: { courseId: id } });
+    if (enrollmentCount > 0) {
+      throw new ApiError(409, "HAS_ENROLLMENTS", "This course has enrollments — archive it instead of deleting.");
+    }
+    await db.course.delete({ where: { id } });
+    await audit({ actorId: admin.id, action: "COURSE_DELETED", entity: "Course", entityId: id });
+    revalidatePath("/admin/courses");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function duplicateCourse(id: string): Promise<Result<{ id: string }>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    const source = await db.course.findUniqueOrThrow({
+      where: { id },
+      include: { modules: { include: { lessons: true }, orderBy: { position: "asc" } } },
+    });
+    const slug = await uniqueCourseSlug(`${source.title} copy`);
+
+    const copy = await db.course.create({
+      data: {
+        slug,
+        title: `${source.title} (copy)`,
+        description: source.description,
+        thumbnailUrl: source.thumbnailUrl,
+        categoryId: source.categoryId,
+        level: source.level,
+        durationMinutes: source.durationMinutes,
+        priceCents: source.priceCents,
+        currency: source.currency,
+        requirements: source.requirements,
+        objectives: source.objectives,
+        instructorId: admin.id,
+        status: "DRAFT",
+        modules: {
+          create: source.modules.map((m) => ({
+            title: m.title,
+            position: m.position,
+            lessons: {
+              create: m.lessons.map((l) => ({
+                title: l.title,
+                type: l.type,
+                position: l.position,
+                videoUrl: l.videoUrl,
+                content: l.content,
+                durationSeconds: l.durationSeconds,
+                isPreview: l.isPreview,
+              })),
+            },
+          })),
+        },
+      },
+    });
+    await audit({ actorId: admin.id, action: "COURSE_DUPLICATED", entity: "Course", entityId: copy.id, metadata: { from: id } });
+    revalidatePath("/admin/courses");
+    return { ok: true, data: { id: copy.id } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---- Modules ------------------------------------------------------------
+
+export async function createModule(courseId: string, raw: unknown): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    const input = moduleFormSchema.parse(raw);
+    const last = await db.courseModule.findFirst({ where: { courseId }, orderBy: { position: "desc" } });
+    await db.courseModule.create({ data: { courseId, title: input.title, position: (last?.position ?? 0) + 1 } });
+    await audit({ actorId: admin.id, action: "MODULE_CREATED", entity: "Course", entityId: courseId });
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function updateModule(moduleId: string, courseId: string, raw: unknown): Promise<Result<null>> {
+  try {
+    await requirePermissionApi("courses:write");
+    const input = moduleFormSchema.parse(raw);
+    await db.courseModule.update({ where: { id: moduleId }, data: { title: input.title } });
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function deleteModule(moduleId: string, courseId: string): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    await db.courseModule.delete({ where: { id: moduleId } });
+    await audit({ actorId: admin.id, action: "MODULE_DELETED", entity: "Course", entityId: courseId });
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function moveModule(moduleId: string, courseId: string, direction: "up" | "down"): Promise<Result<null>> {
+  try {
+    await requirePermissionApi("courses:write");
+    const modules = await db.courseModule.findMany({ where: { courseId }, orderBy: { position: "asc" } });
+    const idx = modules.findIndex((m) => m.id === moduleId);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= modules.length) return { ok: true, data: null };
+
+    const a = modules[idx];
+    const b = modules[swapIdx];
+    await db.$transaction([
+      db.courseModule.update({ where: { id: a.id }, data: { position: -1 } }),
+      db.courseModule.update({ where: { id: b.id }, data: { position: a.position } }),
+      db.courseModule.update({ where: { id: a.id }, data: { position: b.position } }),
+    ]);
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---- Lessons --------------------------------------------------------------
+
+export async function createLesson(moduleId: string, courseId: string, raw: unknown): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    const input = lessonFormSchema.parse(raw);
+    const last = await db.lesson.findFirst({ where: { moduleId }, orderBy: { position: "desc" } });
+    await db.lesson.create({
+      data: {
+        moduleId,
+        title: input.title,
+        type: input.type,
+        videoUrl: input.videoUrl || null,
+        content: input.content || null,
+        durationSeconds: input.durationSeconds,
+        isPreview: input.isPreview,
+        position: (last?.position ?? 0) + 1,
+      },
+    });
+    await audit({ actorId: admin.id, action: "LESSON_CREATED", entity: "Course", entityId: courseId });
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function updateLesson(lessonId: string, courseId: string, raw: unknown): Promise<Result<null>> {
+  try {
+    await requirePermissionApi("courses:write");
+    const input = lessonFormSchema.parse(raw);
+    await db.lesson.update({
+      where: { id: lessonId },
+      data: {
+        title: input.title,
+        type: input.type,
+        videoUrl: input.videoUrl || null,
+        content: input.content || null,
+        durationSeconds: input.durationSeconds,
+        isPreview: input.isPreview,
+      },
+    });
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function deleteLesson(lessonId: string, courseId: string): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    await db.lesson.delete({ where: { id: lessonId } });
+    await audit({ actorId: admin.id, action: "LESSON_DELETED", entity: "Course", entityId: courseId });
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function moveLesson(lessonId: string, moduleId: string, courseId: string, direction: "up" | "down"): Promise<Result<null>> {
+  try {
+    await requirePermissionApi("courses:write");
+    const lessons = await db.lesson.findMany({ where: { moduleId }, orderBy: { position: "asc" } });
+    const idx = lessons.findIndex((l) => l.id === lessonId);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= lessons.length) return { ok: true, data: null };
+
+    const a = lessons[idx];
+    const b = lessons[swapIdx];
+    await db.$transaction([
+      db.lesson.update({ where: { id: a.id }, data: { position: -1 } }),
+      db.lesson.update({ where: { id: b.id }, data: { position: a.position } }),
+      db.lesson.update({ where: { id: a.id }, data: { position: b.position } }),
+    ]);
+    revalidatePath(`/admin/courses/${courseId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function createCategory(name: string): Promise<Result<{ id: string; name: string }>> {
+  try {
+    await requirePermissionApi("courses:write");
+    const key = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    if (!key) throw new ApiError(422, "INVALID_NAME", "Enter a category name.");
+    const category = await db.category.upsert({
+      where: { key },
+      update: {},
+      create: { key, name: name.trim(), kind: "course" },
+    });
+    revalidatePath("/admin/courses");
+    return { ok: true, data: { id: category.id, name: category.name } };
+  } catch (err) {
+    return fail(err);
+  }
+}

@@ -1,0 +1,62 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { adminNav, customerNav } from "./nav-config";
+import { hasPermission, type PermissionKey } from "@/lib/rbac";
+import { cn } from "@/lib/utils";
+
+/**
+ * Client component: owns the nav config (icons are React components and can't
+ * cross the server→client boundary as props), filters by the current user's
+ * permissions and highlights the active route.
+ */
+export function SidebarNav({
+  area,
+  permissions,
+  badges,
+}: {
+  area: "Dashboard" | "Admin";
+  permissions: PermissionKey[] | "*";
+  badges?: Record<string, number>;
+}) {
+  const pathname = usePathname();
+  const items = (area === "Admin" ? adminNav : customerNav).filter(
+    (i) => !i.permission || hasPermission(permissions, i.permission),
+  );
+  const root = area === "Admin" ? "/admin" : "/dashboard";
+
+  return (
+    <nav className="flex flex-col gap-1">
+      {items.map((item) => {
+        const active = item.href === root ? pathname === root : pathname.startsWith(item.href);
+        const badge = badges?.[item.href];
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              active
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <item.icon className="size-4 shrink-0" />
+            <span className="flex-1">{item.label}</span>
+            {badge ? (
+              <span
+                className={cn(
+                  "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold",
+                  active ? "bg-primary-foreground/20" : "bg-destructive text-destructive-foreground",
+                )}
+              >
+                {badge > 99 ? "99+" : badge}
+              </span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
