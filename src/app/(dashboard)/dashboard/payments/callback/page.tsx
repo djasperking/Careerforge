@@ -37,6 +37,10 @@ export default async function PaymentCallbackPage({
   const transaction = reference ? await db.transaction.findUnique({ where: { reference } }) : null;
   const success = transaction?.status === "SUCCESS";
   const pending = transaction?.status === "PENDING";
+  const isCvUnlock = transaction?.productType === "CV_PREMIUM" && !!transaction.productId;
+  const nextHref =
+    success && isCvUnlock ? `/dashboard/cvs/${transaction!.productId}` : "/dashboard/payments";
+  const nextLabel = success && isCvUnlock ? "Back to your CV" : "Go to payments";
 
   return (
     <div className="grid min-h-screen place-items-center p-6">
@@ -68,7 +72,7 @@ export default async function PaymentCallbackPage({
               </>
             )}
             <Button asChild className="mt-6">
-              <Link href="/dashboard/payments">Go to payments</Link>
+              <Link href={nextHref}>{nextLabel}</Link>
             </Button>
           </CardContent>
         </Card>

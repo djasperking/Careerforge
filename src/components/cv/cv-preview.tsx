@@ -71,7 +71,7 @@ function Header({ content }: { content: CVContent }) {
   const p = content.personalInfo;
   const contact = [p.email, p.phone, p.location, p.website, p.linkedin].filter(Boolean).join("  ·  ");
   return (
-    <header className="border-b pb-4">
+    <header className="border-b pb-4 text-center">
       <h1 className="text-2xl font-bold tracking-tight">{p.fullName || "Your Name"}</h1>
       {p.headline ? <p className="mt-0.5 text-sm text-neutral-600">{p.headline}</p> : null}
       {contact ? <p className="mt-2 text-xs text-neutral-500">{contact}</p> : null}

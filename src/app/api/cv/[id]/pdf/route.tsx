@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { handler, ApiError } from "@/lib/api";
 import { requireUserApi } from "@/lib/session";
 import { parseCvContent, parseTemplateConfig } from "@/lib/cv/schema";
-import { hasCleanCvExport } from "@/lib/cv/service";
+import { cvHasCleanExport } from "@/lib/cv/service";
 import { CvPdfDocument } from "@/lib/cv/pdf";
 import { slugify } from "@/lib/utils";
 
@@ -19,7 +19,7 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
 
   const content = parseCvContent(cv.content);
   const template = parseTemplateConfig(cv.template?.config);
-  const clean = await hasCleanCvExport(user.id);
+  const clean = await cvHasCleanExport(user.id, cv);
   const buffer = await renderToBuffer(
     <CvPdfDocument content={content} template={template} watermark={!clean} />,
   );

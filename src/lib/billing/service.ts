@@ -3,6 +3,7 @@ import { ApiError } from "@/lib/api";
 import { getPaymentProvider, newPaymentReference } from "@/lib/payments";
 import { sendEmail, appUrl } from "@/lib/email";
 import { formatCurrency } from "@/lib/utils";
+import { cvUnlockPrice } from "@/lib/cv/service";
 import type { ProductType } from "@prisma/client";
 
 export const CALLBACK_PATH = "/dashboard/payments/callback";
@@ -35,6 +36,14 @@ async function resolveProduct(productType: ProductType, productId: string, userI
     if (!plan || !plan.isActive) throw new ApiError(404, "NOT_FOUND", "Plan not available.");
     if (plan.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This plan is free — no checkout needed.");
     return { amountCents: plan.priceCents, currency: plan.currency, description: `Subscription: ${plan.name}` };
+  }
+
+  if (productType === "CV_PREMIUM") {
+    const cv = await db.cV.findFirst({ where: { id: productId, userId, deletedAt: null } });
+    if (!cv) throw new ApiError(404, "NOT_FOUND", "CV not found.");
+    if (cv.isPremium) throw new ApiError(409, "ALREADY_OWNED", "This CV is already unlocked.");
+    const { amountCents, currency } = await cvUnlockPrice();
+    return { amountCents, currency, description: `CV unlock: ${cv.title}` };
   }
 
   throw new ApiError(422, "UNSUPPORTED_PRODUCT", `Checkout for ${productType} is not implemented yet.`);
@@ -102,6 +111,11 @@ async function activateProduct(transaction: { id: string; userId: string; produc
         currentPeriodEnd: new Date(Date.now() + days * 86_400_000),
         transactionId: transaction.id,
       },
+    });
+  } else if (transaction.productType === "CV_PREMIUM" && transaction.productId) {
+    await db.cV.updateMany({
+      where: { id: transaction.productId, userId: transaction.userId },
+      data: { isPremium: true },
     });
   }
 }
@@ -195,6 +209,11 @@ export async function refundTransaction(transactionId: string) {
     await db.subscription.updateMany({
       where: { transactionId },
       data: { status: "CANCELLED", cancelAtPeriodEnd: true },
+    });
+  } else if (transaction.productType === "CV_PREMIUM" && transaction.productId) {
+    await db.cV.updateMany({
+      where: { id: transaction.productId, userId: transaction.userId },
+      data: { isPremium: false },
     });
   }
 

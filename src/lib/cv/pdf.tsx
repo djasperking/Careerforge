@@ -15,9 +15,9 @@ function styles(spacing: keyof typeof SPACING) {
   const gap = SPACING[spacing];
   return StyleSheet.create({
     page: { padding: 36, fontSize: 9.5, fontFamily: "Helvetica", color: "#171717", lineHeight: 1.4 },
-    name: { fontSize: 19, fontFamily: "Helvetica-Bold" },
-    headline: { fontSize: 10, color: "#525252", marginTop: 2 },
-    contact: { fontSize: 8.5, color: "#737373", marginTop: 6 },
+    name: { fontSize: 19, fontFamily: "Helvetica-Bold", textAlign: "center" },
+    headline: { fontSize: 10, color: "#525252", marginTop: 2, textAlign: "center" },
+    contact: { fontSize: 8.5, color: "#737373", marginTop: 6, textAlign: "center" },
     hr: { borderBottomWidth: 1, borderBottomColor: "#e5e5e5", marginTop: 10, marginBottom: gap },
     row: { flexDirection: "row" },
     col: { flexGrow: 1 },

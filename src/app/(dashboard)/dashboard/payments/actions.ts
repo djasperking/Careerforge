@@ -46,3 +46,20 @@ export async function startSubscriptionCheckout(planId: string): Promise<Result<
     return fail(err);
   }
 }
+
+export async function startCvUnlockCheckout(cvId: string): Promise<Result<{ authorizationUrl: string }>> {
+  try {
+    const user = await requireUserApi();
+    rateLimit(`checkout:${user.id}`, { windowSeconds: 60, max: 10 });
+    const { authorizationUrl, reference } = await createCheckout({
+      userId: user.id,
+      email: user.email,
+      productType: "CV_PREMIUM",
+      productId: cvId,
+    });
+    await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "CV", entityId: cvId, metadata: { reference } });
+    return { ok: true, data: { authorizationUrl } };
+  } catch (err) {
+    return fail(err);
+  }
+}

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getCurrentUser } from "@/lib/session";
+import { cvUnlockPrice } from "@/lib/cv/service";
+import { formatCurrency } from "@/lib/utils";
 
 const features = [
   { icon: Sparkles, title: "AI CV Builder", body: "Draft, analyse and tailor your CV to any job with an ATS match score." },
@@ -18,7 +20,8 @@ const features = [
 ];
 
 export default async function HomePage() {
-  const user = await getCurrentUser();
+  const [user, price] = await Promise.all([getCurrentUser(), cvUnlockPrice()]);
+  const cvPriceLabel = formatCurrency(price.amountCents, price.currency);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -62,6 +65,27 @@ export default async function HomePage() {
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="/courses">Explore Courses</Link>
+            </Button>
+          </div>
+        </section>
+
+        <section className="container pb-16">
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-xl border bg-card p-8 text-center sm:flex-row sm:text-left">
+            <div className="flex-1">
+              <p className="text-sm font-medium uppercase tracking-wide text-primary">One CV, one payment</p>
+              <h2 className="mt-1 font-display text-2xl font-semibold">
+                Just need one professional CV?
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Build it with AI help, pick a template, and download a clean, watermark-free
+                PDF for a single payment of <span className="font-semibold text-foreground">{cvPriceLabel}</span>.
+                No subscription required.
+              </p>
+            </div>
+            <Button asChild size="lg">
+              <Link href={user ? "/dashboard/cvs" : "/register"}>
+                Build my CV <ArrowRight className="size-4" />
+              </Link>
             </Button>
           </div>
         </section>

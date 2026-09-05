@@ -363,6 +363,8 @@ export async function seedSettings() {
     ["auth.registrationOpen", true],
     ["auth.requireEmailVerification", true],
     ["ads.enabled", true],
+    ["cv.oneTimePriceCents", 100_000],
+    ["cv.oneTimeCurrency", process.env.DEFAULT_CURRENCY ?? "NGN"],
   ];
   for (const [key, value] of settings) {
     await db.systemSetting.upsert({

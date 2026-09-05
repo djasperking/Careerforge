@@ -23,6 +23,7 @@ import {
 import {
   analyzeCvAgainstJob, deleteCv, duplicateCv, generateCvSummaryWithAI, saveCv,
 } from "../actions";
+import { startCvUnlockCheckout } from "../../payments/actions";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_SCALE = 0.52;
@@ -46,7 +47,8 @@ interface AnalysisResult {
 }
 
 export function CvEditor({
-  cvId, initialTitle, initialTemplateId, initialContent, templates, cleanExport = false,
+  cvId, initialTitle, initialTemplateId, initialContent, templates,
+  cleanExport = false, unlockPriceLabel,
 }: {
   cvId: string;
   initialTitle: string;
@@ -54,6 +56,7 @@ export function CvEditor({
   initialContent: CVContent;
   templates: TemplateOption[];
   cleanExport?: boolean;
+  unlockPriceLabel: string;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
@@ -71,6 +74,7 @@ export function CvEditor({
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
 
   const activeTemplate = templates.find((t) => t.id === templateId) ?? null;
   const templateConfig = useMemo(() => parseTemplateConfig(activeTemplate?.config), [activeTemplate]);
@@ -124,6 +128,17 @@ export function CvEditor({
     setAnalyzing(false);
     if (!res.ok) setAiError(res.error);
     else setAnalysis(res.data);
+  }
+
+  async function handleUnlock() {
+    setUnlocking(true);
+    const res = await startCvUnlockCheckout(cvId);
+    if (res.ok) {
+      window.location.href = res.data.authorizationUrl;
+    } else {
+      setUnlocking(false);
+      setSaveMsg({ type: "error", text: res.error });
+    }
   }
 
   return (
@@ -300,12 +315,24 @@ export function CvEditor({
           <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto rounded-lg border bg-muted/40 p-4">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Live preview · A4</p>
-              {!cleanExport ? (
-                <Link href="/dashboard/payments" className="text-xs font-medium text-primary hover:underline">
-                  Remove watermark
-                </Link>
-              ) : null}
             </div>
+            {!cleanExport ? (
+              <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
+                <p className="font-medium">Unlock this CV — {unlockPriceLabel}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  One-time payment. Removes the watermark from this CV&apos;s preview and PDF. No subscription.
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Button size="sm" onClick={handleUnlock} disabled={unlocking}>
+                    {unlocking ? <Loader2 className="size-4 animate-spin" /> : null}
+                    Pay {unlockPriceLabel}
+                  </Button>
+                  <Link href="/dashboard/payments" className="text-xs font-medium text-primary hover:underline">
+                    or subscribe for all CVs
+                  </Link>
+                </div>
+              </div>
+            ) : null}
             <div style={{ zoom: PREVIEW_SCALE }}>
               <CvPreview content={content} template={templateConfig} watermark={!cleanExport} />
             </div>

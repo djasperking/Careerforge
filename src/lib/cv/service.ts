@@ -12,12 +12,26 @@ export async function resolveActivePlan(userId: string) {
   return db.subscriptionPlan.findUnique({ where: { key: "FREE" } });
 }
 
-/**
- * Whether the user gets un-watermarked CV output (preview + PDF). Any paid plan
- * qualifies; the FREE plan (or no subscription) does not. Driven by the plan's
- * `cv:watermarkExport` limit so it stays configurable from the admin plan editor.
- */
-export async function hasCleanCvExport(userId: string): Promise<boolean> {
+/** Price (minor units) + currency for a one-time single-CV unlock. Configurable
+ * from system settings; defaults to ₦1,000. */
+export async function cvUnlockPrice(): Promise<{ amountCents: number; currency: string }> {
+  const [priceRow, currencyRow] = await Promise.all([
+    db.systemSetting.findUnique({ where: { key: "cv.oneTimePriceCents" } }),
+    db.systemSetting.findUnique({ where: { key: "cv.oneTimeCurrency" } }),
+  ]);
+  const amountCents = typeof priceRow?.value === "number" ? priceRow.value : 100_000;
+  const currency = typeof currencyRow?.value === "string" ? currencyRow.value : "NGN";
+  return { amountCents, currency };
+}
+
+/** Whether the user gets un-watermarked output for *this* CV. True if they hold
+ * any paid subscription, or they bought a one-time unlock for this CV
+ * (`CV.isPremium`). */
+export async function cvHasCleanExport(
+  userId: string,
+  cv: { isPremium?: boolean } | null,
+): Promise<boolean> {
+  if (cv?.isPremium) return true;
   const plan = await resolveActivePlan(userId);
   if (!plan) return false;
   const limits = (plan.limits ?? {}) as Record<string, unknown>;
