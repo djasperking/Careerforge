@@ -41,3 +41,6 @@ yarn-error.log*
 
 # local preview database (scripts/preview.mjs)
 /.preview-db
+
+# Neon CLI project/branch linkage (environment-specific, not shared)
+.neon
