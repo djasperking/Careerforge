@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api";
 import type { AIContext, AIProvider, AIResult } from "./types";
 import { mockAIProvider } from "./mock";
 import { anthropicAIProvider } from "./anthropic";
+import { googleAIProvider } from "./google";
 
 export * from "./types";
 
@@ -11,6 +12,8 @@ export function getAIProvider(): AIProvider {
   switch (env.AI_PROVIDER) {
     case "anthropic":
       return anthropicAIProvider;
+    case "google":
+      return googleAIProvider;
     default:
       return mockAIProvider;
   }

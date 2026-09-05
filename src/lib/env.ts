@@ -20,8 +20,10 @@ const schema = z.object({
   DEMO_CUSTOMER_EMAIL: z.string().email().optional(),
   DEMO_CUSTOMER_PASSWORD: z.string().min(8).optional(),
 
-  AI_PROVIDER: z.enum(["anthropic", "mock"]).default("mock"),
+  AI_PROVIDER: z.enum(["anthropic", "google", "mock"]).default("mock"),
   ANTHROPIC_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default("gemini-3.6-flash"),
   AI_MODEL: z.string().default("claude-sonnet-5"),
   AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(2000),
 
