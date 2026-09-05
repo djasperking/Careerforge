@@ -56,6 +56,25 @@ export const anthropicAIProvider: AIProvider = {
   ...mockAIProvider,
   name: client ? "anthropic" : "mock",
 
+  async generateCV(input, ctx) {
+    if (!client) return mockAIProvider.generateCV(input, ctx);
+    const result = await jsonCall<{ professionalSummary: string }>(
+      ctx,
+      "Write a professional summary for this CV: 2-4 sentences, first-person implied (no 'I'), " +
+        "specific to the person's actual roles, industries and skills. Use ONLY facts present in " +
+        "the CV data — never invent employers, titles, dates, metrics or achievements. If the CV " +
+        "is sparse, keep the summary short rather than padding it with invented detail. If a target " +
+        "job description is given, orient the emphasis toward it without claiming unproven experience.",
+      `CV data:\n${JSON.stringify(input.rawProfile)}` +
+        (input.targetJobDescription ? `\n\nTarget job description:\n${input.targetJobDescription}` : ""),
+      `{ professionalSummary: string }`,
+    );
+    return {
+      data: { ...(input.rawProfile as Record<string, unknown>), professionalSummary: result.data.professionalSummary },
+      meta: result.meta,
+    };
+  },
+
   async analyzeCV(input, ctx) {
     if (!client) return mockAIProvider.analyzeCV(input, ctx);
     return jsonCall(

@@ -40,12 +40,24 @@ function styles(spacing: keyof typeof SPACING) {
       borderWidth: 0.5, borderColor: "#d4d4d4", borderRadius: 3, paddingVertical: 2,
       paddingHorizontal: 5, marginRight: 4, marginBottom: 4, fontSize: 8,
     },
+    watermark: {
+      position: "absolute", bottom: 16, left: 36, right: 36, textAlign: "center",
+      fontSize: 7.5, color: "#a3a3a3",
+    },
   });
 }
 
 const SIDEBAR_KEYS = new Set(["personalInfo", "skills", "languages", "certifications"]);
 
-export function CvPdfDocument({ content, template }: { content: CVContent; template: CvTemplateConfig }) {
+export function CvPdfDocument({
+  content,
+  template,
+  watermark = false,
+}: {
+  content: CVContent;
+  template: CvTemplateConfig;
+  watermark?: boolean;
+}) {
   const s = styles(template.spacing);
   const order = template.sectionOrder.filter((k) => k !== "personalInfo");
   const sidebar = template.columns === 2 ? order.filter((k) => SIDEBAR_KEYS.has(k)) : [];
@@ -67,6 +79,12 @@ export function CvPdfDocument({ content, template }: { content: CVContent; templ
             <View style={s.sidebar}>{sidebar.map((k) => renderSection(k, content, s))}</View>
           ) : null}
         </View>
+
+        {watermark ? (
+          <Text style={s.watermark} fixed>
+            Made with Career Forge — careerforge.com.ng
+          </Text>
+        ) : null}
       </Page>
     </Document>
   );

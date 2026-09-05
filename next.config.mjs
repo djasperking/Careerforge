@@ -19,6 +19,17 @@ const CSP = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // @react-pdf/renderer -> pdfkit loads its standard font files by path at
+  // runtime; if Next bundles it into the serverless function those files are
+  // not traced and CV PDF export 500s with MODULE_NOT_FOUND. Keep it external
+  // and force the font data into the CV PDF function's trace.
+  serverExternalPackages: ["@react-pdf/renderer"],
+  outputFileTracingIncludes: {
+    "/api/cv/[id]/pdf": [
+      "./node_modules/pdfkit/js/standard-fonts/**/*",
+      "./node_modules/pdfkit/js/data/**/*",
+    ],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },

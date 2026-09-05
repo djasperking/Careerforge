@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { parseCvContent } from "@/lib/cv/schema";
+import { hasCleanCvExport } from "@/lib/cv/service";
 import { CvEditor } from "./cv-editor";
 import { VersionHistory } from "./version-history";
 
@@ -9,12 +10,13 @@ export default async function CVDetailPage({ params }: { params: Promise<{ id: s
   const user = await requireUser();
   const { id } = await params;
 
-  const [cv, templates] = await Promise.all([
+  const [cv, templates, cleanExport] = await Promise.all([
     db.cV.findFirst({
       where: { id, userId: user.id, deletedAt: null },
       include: { versions: { orderBy: { version: "desc" }, take: 10 } },
     }),
     db.cVTemplate.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+    hasCleanCvExport(user.id),
   ]);
   if (!cv) notFound();
 
@@ -26,6 +28,7 @@ export default async function CVDetailPage({ params }: { params: Promise<{ id: s
         initialTemplateId={cv.templateId}
         initialContent={parseCvContent(cv.content)}
         templates={templates.map((t) => ({ id: t.id, key: t.key, name: t.name, isPremium: t.isPremium, config: t.config }))}
+        cleanExport={cleanExport}
       />
       <VersionHistory
         cvId={cv.id}

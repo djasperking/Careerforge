@@ -12,6 +12,19 @@ export async function resolveActivePlan(userId: string) {
   return db.subscriptionPlan.findUnique({ where: { key: "FREE" } });
 }
 
+/**
+ * Whether the user gets un-watermarked CV output (preview + PDF). Any paid plan
+ * qualifies; the FREE plan (or no subscription) does not. Driven by the plan's
+ * `cv:watermarkExport` limit so it stays configurable from the admin plan editor.
+ */
+export async function hasCleanCvExport(userId: string): Promise<boolean> {
+  const plan = await resolveActivePlan(userId);
+  if (!plan) return false;
+  const limits = (plan.limits ?? {}) as Record<string, unknown>;
+  if (typeof limits["cv:watermarkExport"] === "boolean") return !limits["cv:watermarkExport"];
+  return plan.key !== "FREE";
+}
+
 export async function assertCanCreateCv(userId: string) {
   const plan = await resolveActivePlan(userId);
   const limits = (plan?.limits ?? {}) as Record<string, unknown>;

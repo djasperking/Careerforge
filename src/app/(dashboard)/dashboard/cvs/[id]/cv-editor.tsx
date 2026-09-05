@@ -25,6 +25,8 @@ import {
 } from "../actions";
 import { cn } from "@/lib/utils";
 
+const PREVIEW_SCALE = 0.52;
+
 interface TemplateOption {
   id: string;
   key: string;
@@ -44,13 +46,14 @@ interface AnalysisResult {
 }
 
 export function CvEditor({
-  cvId, initialTitle, initialTemplateId, initialContent, templates,
+  cvId, initialTitle, initialTemplateId, initialContent, templates, cleanExport = false,
 }: {
   cvId: string;
   initialTitle: string;
   initialTemplateId: string | null;
   initialContent: CVContent;
   templates: TemplateOption[];
+  cleanExport?: boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
@@ -172,7 +175,7 @@ export function CvEditor({
         </Alert>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr_420px]">
+      <div className="grid gap-6 lg:grid-cols-[200px_1fr_460px]">
         <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
           {CV_SECTIONS.map((key) => (
             <button
@@ -295,9 +298,16 @@ export function CvEditor({
 
         <div className="hidden lg:block">
           <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto rounded-lg border bg-muted/40 p-4">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">Live preview</p>
-            <div className="origin-top scale-[0.82]">
-              <CvPreview content={content} template={templateConfig} />
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Live preview · A4</p>
+              {!cleanExport ? (
+                <Link href="/dashboard/payments" className="text-xs font-medium text-primary hover:underline">
+                  Remove watermark
+                </Link>
+              ) : null}
+            </div>
+            <div style={{ zoom: PREVIEW_SCALE }}>
+              <CvPreview content={content} template={templateConfig} watermark={!cleanExport} />
             </div>
           </div>
         </div>
