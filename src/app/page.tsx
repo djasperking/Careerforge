@@ -3,6 +3,7 @@ import {
   ArrowRight, FileText, GraduationCap, ShieldCheck, Sparkles, BadgeCheck, BarChart3,
 } from "lucide-react";
 import { Brand } from "@/components/layout/brand";
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdSlot } from "@/components/ads/ad-slot";
@@ -25,27 +26,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-card">
-        <div className="container flex h-16 items-center justify-between">
-          <Brand />
-          <nav className="flex items-center gap-2">
-            {user ? (
-              <Button asChild size="sm">
-                <Link href="/dashboard">Go to dashboard</Link>
-              </Button>
-            ) : (
-              <>
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/login">Log in</Link>
-                </Button>
-                <Button asChild size="sm">
-                  <Link href="/register">Get started</Link>
-                </Button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      <MarketingHeader loggedIn={Boolean(user)} />
 
       <main className="flex-1">
         <section className="container py-20 text-center">

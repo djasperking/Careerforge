@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { Brand } from "@/components/layout/brand";
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,14 +22,7 @@ export default async function PublicCoachingPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b bg-card">
-        <div className="container flex h-16 items-center justify-between">
-          <Brand />
-          <Button asChild size="sm" variant={user ? "default" : "outline"}>
-            <Link href={user ? "/dashboard" : "/login"}>{user ? "Dashboard" : "Log in"}</Link>
-          </Button>
-        </div>
-      </header>
+      <MarketingHeader loggedIn={Boolean(user)} />
 
       <main className="container py-10">
         <h1 className="font-display text-3xl font-semibold">1-on-1 coaching</h1>

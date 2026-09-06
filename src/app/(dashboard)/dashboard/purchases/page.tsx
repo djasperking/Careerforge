@@ -38,6 +38,12 @@ export default async function PurchasesPage() {
     <div>
       <PageHeader title="My purchases" description="Your digital products and coaching sessions." />
 
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Button asChild variant="outline" size="sm"><Link href="/products">Browse digital products</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link href="/coaching">Browse coaching</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link href="/courses">Browse courses</Link></Button>
+      </div>
+
       <Card className="mb-6">
         <CardHeader><CardTitle>Digital products</CardTitle></CardHeader>
         <CardContent>

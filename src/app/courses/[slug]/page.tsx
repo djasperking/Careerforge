@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, Clock, BarChart3 } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { Brand } from "@/components/layout/brand";
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
@@ -33,14 +33,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
   return (
     <div className="min-h-screen">
-      <header className="border-b bg-card">
-        <div className="container flex h-16 items-center justify-between">
-          <Brand />
-          <Button asChild size="sm" variant={user ? "default" : "outline"}>
-            <Link href={user ? "/dashboard" : "/login"}>{user ? "Dashboard" : "Log in"}</Link>
-          </Button>
-        </div>
-      </header>
+      <MarketingHeader loggedIn={Boolean(user)} />
 
       <main className="container grid gap-10 py-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
