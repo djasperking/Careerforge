@@ -7,6 +7,7 @@ import { getInstructorProfile } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SharePanel } from "@/components/ui/share-panel";
 import { ProductForm } from "../product-form";
 import { ProductReviewPanel } from "./review-panel";
 
@@ -39,6 +40,19 @@ export default async function InstructorProductEditor({ params }: { params: Prom
         revenueSharePercent={product.revenueSharePercent}
         shareUrl={appUrl(`/products/${product.slug}`)}
       />
+
+      {product.status === "PUBLISHED" && product.reviewStatus === "APPROVED" ? (
+        <Card className="mb-6">
+          <CardHeader><CardTitle>Share your product</CardTitle></CardHeader>
+          <CardContent>
+            <SharePanel
+              url={appUrl(`/products/${product.slug}`)}
+              intro="Your product is live. Share this link — buyers can pay without creating an account and get the file by email."
+              shareText={`"${product.title}" on Career Forge`}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {locked ? (
         <Alert variant="warning" className="mb-6">

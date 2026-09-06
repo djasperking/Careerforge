@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 import { ApiError } from "@/lib/api";
 import { getPaymentProvider, newPaymentReference } from "@/lib/payments";
@@ -94,6 +95,9 @@ export async function createCheckout(input: {
   email: string;
   productType: ProductType;
   productId: string;
+  /** Where Paystack returns the buyer. Defaults to the dashboard callback;
+   * guest checkouts pass a public page. */
+  callbackPath?: string;
 }): Promise<{ authorizationUrl: string; reference: string }> {
   const product = await resolveProduct(input.productType, input.productId, input.userId);
   const reference = newPaymentReference(input.productType, input.userId);
@@ -117,7 +121,7 @@ export async function createCheckout(input: {
     amountCents: product.amountCents,
     currency: product.currency,
     metadata: { productType: input.productType, productId: input.productId, userId: input.userId },
-    callbackUrl: appUrl(CALLBACK_PATH),
+    callbackUrl: appUrl(input.callbackPath ?? CALLBACK_PATH),
   });
 
   await db.transaction.update({ where: { reference }, data: { providerRef: checkout.providerRef } });
@@ -158,9 +162,14 @@ async function activateProduct(transaction: { id: string; userId: string; produc
       data: { isPremium: true },
     });
   } else if (transaction.productType === "DIGITAL_PRODUCT" && transaction.productId) {
-    await db.digitalProductPurchase.upsert({
+    const purchase = await db.digitalProductPurchase.upsert({
       where: { productId_userId: { productId: transaction.productId, userId: transaction.userId } },
-      create: { productId: transaction.productId, userId: transaction.userId, transactionId: transaction.id },
+      create: {
+        productId: transaction.productId,
+        userId: transaction.userId,
+        transactionId: transaction.id,
+        downloadToken: randomBytes(24).toString("hex"),
+      },
       update: { transactionId: transaction.id },
     });
     await db.notification.create({
@@ -172,6 +181,7 @@ async function activateProduct(transaction: { id: string; userId: string; produc
         linkUrl: "/dashboard/purchases",
       },
     }).catch(() => {});
+    await deliverDigitalProduct(purchase.id).catch((err) => console.error("digital delivery email failed", err));
   } else if (transaction.productType === "COACHING" && transaction.productId) {
     const updated = await db.coachingBooking.updateMany({
       where: { id: transaction.productId, userId: transaction.userId, status: "PENDING_PAYMENT" },
@@ -195,6 +205,32 @@ async function activateProduct(transaction: { id: string; userId: string; produc
       }
     }
   }
+}
+
+/** Email the buyer a secure, tokenised download link for a digital product. */
+export async function deliverDigitalProduct(purchaseId: string) {
+  const purchase = await db.digitalProductPurchase.findUnique({
+    where: { id: purchaseId },
+    include: { product: true, user: { select: { email: true, name: true, passwordHash: true } } },
+  });
+  if (!purchase || !purchase.downloadToken) return;
+
+  const downloadUrl = appUrl(`/api/products/${purchase.productId}/download?token=${purchase.downloadToken}`);
+  const isGuest = !purchase.user.passwordHash;
+
+  await sendEmail({
+    to: purchase.user.email,
+    template: "digital-product-ready",
+    subject: `Your download: ${purchase.product.title}`,
+    data: {
+      name: purchase.user.name,
+      productTitle: purchase.product.title,
+      fileName: purchase.product.fileName,
+      downloadUrl,
+      isGuest,
+      claimUrl: appUrl("/forgot-password"),
+    },
+  });
 }
 
 /**

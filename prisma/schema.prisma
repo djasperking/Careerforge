@@ -157,6 +157,7 @@ model DigitalProductPurchase {
   productId     String
   userId        String
   transactionId String?
+  downloadToken String?  @unique
   createdAt     DateTime @default(now())
 
   product DigitalProduct @relation(fields: [productId], references: [id], onDelete: Cascade)

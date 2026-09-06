@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function SharePanel({ url }: { url: string }) {
+export function SharePanel({
+  url,
+  intro = "Share this link anywhere.",
+  shareText,
+}: {
+  url: string;
+  intro?: string;
+  shareText?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -18,12 +26,11 @@ export function SharePanel({ url }: { url: string }) {
   }
 
   const encoded = encodeURIComponent(url);
+  const encodedText = encodeURIComponent(shareText ? `${shareText} ${url}` : url);
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">
-        Your course is live. Share this link anywhere — anyone who opens it can sign up and enrol.
-      </p>
+      <p className="text-sm text-muted-foreground">{intro}</p>
       <div className="flex gap-2">
         <Input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="font-mono text-xs" />
         <Button type="button" size="sm" onClick={copy}>
@@ -40,7 +47,7 @@ export function SharePanel({ url }: { url: string }) {
           Share on LinkedIn ↗
         </a>
         <a
-          href={`https://twitter.com/intent/tweet?url=${encoded}`}
+          href={`https://twitter.com/intent/tweet?text=${encodedText}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline"
@@ -48,7 +55,7 @@ export function SharePanel({ url }: { url: string }) {
           Share on X ↗
         </a>
         <a
-          href={`https://wa.me/?text=${encoded}`}
+          href={`https://wa.me/?text=${encodedText}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline"

@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ModuleManager } from "@/app/(admin)/admin/courses/[id]/module-manager";
 import { InstructorCourseSettings } from "./course-settings";
 import { CourseReviewPanel } from "./review-panel";
-import { SharePanel } from "./share-panel";
+import { SharePanel } from "@/components/ui/share-panel";
 
 export default async function InstructorCourseEditor({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -58,7 +58,11 @@ export default async function InstructorCourseEditor({ params }: { params: Promi
         <Card className="mb-6">
           <CardHeader><CardTitle>Share your course</CardTitle></CardHeader>
           <CardContent>
-            <SharePanel url={appUrl(`/courses/${course.slug}`)} />
+            <SharePanel
+              url={appUrl(`/courses/${course.slug}`)}
+              intro="Your course is live. Share this link anywhere — anyone who opens it can sign up and enrol."
+              shareText={`Check out my course "${course.title}" on Career Forge`}
+            />
           </CardContent>
         </Card>
       ) : null}

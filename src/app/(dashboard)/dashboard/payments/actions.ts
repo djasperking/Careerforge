@@ -1,9 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { requireUserApi } from "@/lib/session";
 import { ApiError } from "@/lib/api";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { createCheckout } from "@/lib/billing/service";
+import { findOrCreateGuestUser, isValidEmail, normalizeEmail } from "@/lib/marketplace/guest";
 import { audit } from "@/lib/audit";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -75,6 +77,45 @@ export async function startDigitalProductCheckout(productId: string): Promise<Re
       productId,
     });
     await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "DigitalProduct", entityId: productId, metadata: { reference } });
+    return { ok: true, data: { authorizationUrl } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/** Buy a digital product without an account: we provision a passwordless
+ * user keyed to the email, then run the normal checkout. Paystack returns the
+ * buyer to the public /checkout/complete page. */
+export async function startGuestDigitalProductCheckout(input: {
+  productId: string;
+  name: string;
+  email: string;
+}): Promise<Result<{ authorizationUrl: string }>> {
+  try {
+    const name = input.name.trim();
+    if (name.length < 2) throw new ApiError(422, "BAD_NAME", "Enter your name.");
+    if (!isValidEmail(input.email)) throw new ApiError(422, "BAD_EMAIL", "Enter a valid email address.");
+    const email = normalizeEmail(input.email);
+
+    const ip = clientIp(await headers());
+    rateLimit(`guest-checkout:${ip}`, { windowSeconds: 300, max: 6 });
+    rateLimit(`guest-checkout:${email}`, { windowSeconds: 300, max: 6 });
+
+    const { userId } = await findOrCreateGuestUser(email, name);
+    const { authorizationUrl, reference } = await createCheckout({
+      userId,
+      email,
+      productType: "DIGITAL_PRODUCT",
+      productId: input.productId,
+      callbackPath: "/checkout/complete",
+    });
+    await audit({
+      actorId: userId,
+      action: "CHECKOUT_STARTED",
+      entity: "DigitalProduct",
+      entityId: input.productId,
+      metadata: { reference, guest: true },
+    });
     return { ok: true, data: { authorizationUrl } };
   } catch (err) {
     return fail(err);

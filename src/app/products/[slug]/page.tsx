@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
 import { userOwnsDigitalProduct } from "@/lib/marketplace/digital";
+import { appUrl } from "@/lib/email";
+import { SharePanel } from "@/components/ui/share-panel";
 import { BuyProductButton } from "./buy-button";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -67,6 +69,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 slug={product.slug}
               />
             </div>
+          </div>
+
+          <div className="mt-6 rounded-lg border bg-card p-5">
+            <p className="mb-3 text-sm font-medium">Share this product</p>
+            <SharePanel
+              url={appUrl(`/products/${product.slug}`)}
+              intro="Send this to anyone — they can buy it without creating an account."
+              shareText={`"${product.title}" on Career Forge`}
+            />
           </div>
         </aside>
       </main>

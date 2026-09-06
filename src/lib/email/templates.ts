@@ -62,6 +62,18 @@ function block(template: EmailTemplate, data: Record<string, unknown>): Block {
           "Thank you for your purchase.",
         ],
       };
+    case "digital-product-ready":
+      return {
+        heading: "Your download is ready",
+        lines: [
+          `Hi ${name},`,
+          `Thanks for your purchase of <strong>${esc(data.productTitle)}</strong>. Use the button below to download ${esc(data.fileName) || "your file"} — the link stays active, so you can come back to it any time.`,
+          data.isGuest
+            ? `We created a Career Forge account for this email so your purchases are always available. Set a password here to sign in: ${esc(data.claimUrl)}`
+            : "You can also find this under My Purchases in your dashboard.",
+        ],
+        cta: { label: "Download now", url: String(data.downloadUrl) },
+      };
     case "course-enrollment":
       return {
         heading: "You're enrolled",
