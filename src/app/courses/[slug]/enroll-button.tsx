@@ -10,9 +10,10 @@ import { enrollInCourse } from "@/app/(dashboard)/dashboard/courses/actions";
 import { startCourseCheckout } from "@/app/(dashboard)/dashboard/payments/actions";
 
 export function EnrollButton({
-  courseId, isLoggedIn, alreadyEnrolled, isFree,
+  courseId, slug, isLoggedIn, alreadyEnrolled, isFree,
 }: {
   courseId: string;
+  slug: string;
   isLoggedIn: boolean;
   alreadyEnrolled: boolean;
   isFree: boolean;
@@ -30,10 +31,17 @@ export function EnrollButton({
   }
 
   if (!isLoggedIn) {
+    const next = encodeURIComponent(`/courses/${slug}`);
     return (
-      <Button asChild size="lg">
-        <Link href={`/login?next=/dashboard/courses`}>Log in to enrol</Link>
-      </Button>
+      <div className="space-y-2">
+        <Button asChild size="lg">
+          <Link href={`/register?next=${next}`}>Sign up to enrol</Link>
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href={`/login?next=${next}`} className="text-primary hover:underline">Log in</Link>
+        </p>
+      </div>
     );
   }
 

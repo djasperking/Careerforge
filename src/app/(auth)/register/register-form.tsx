@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -10,6 +11,7 @@ import { PasswordStrength } from "@/components/auth/password-strength";
 import { GoogleButton } from "@/components/auth/google-button";
 
 export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
+  const next = useSearchParams().get("next") || "/dashboard";
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<"verify" | "no-email" | null>(null);
   const [loading, setLoading] = useState(false);
@@ -92,7 +94,7 @@ export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolea
             <span className="text-xs text-muted-foreground">or</span>
             <span className="h-px flex-1 bg-border" />
           </div>
-          <GoogleButton label="Sign up with Google" />
+          <GoogleButton next={next} label="Sign up with Google" />
         </>
       ) : null}
     </form>

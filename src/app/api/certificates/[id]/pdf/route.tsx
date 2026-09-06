@@ -13,6 +13,8 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
   const cert = await db.certificate.findUnique({ where: { id } });
   if (!cert || cert.userId !== user.id) throw new ApiError(404, "NOT_FOUND", "Certificate not found.");
 
+  const course = cert.courseId ? await db.course.findUnique({ where: { id: cert.courseId } }) : null;
+
   const buffer = await renderToBuffer(
     <CertificatePdfDocument
       studentName={cert.studentName}
@@ -22,6 +24,7 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
       publicId={cert.publicId}
       verifyUrl={`${env.NEXT_PUBLIC_APP_URL}/verify/${cert.publicId}`}
       signatureName={cert.signatureName}
+      highlights={(course?.objectives ?? []).slice(0, 3)}
     />,
   );
 

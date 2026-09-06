@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { env } from "@/lib/env";
 import { RegisterForm } from "./register-form";
@@ -15,7 +16,9 @@ export default function RegisterPage() {
         Start building your career with Career Forge.
       </p>
       <div className="mt-6">
-        <RegisterForm googleEnabled={googleEnabled} />
+        <Suspense fallback={null}>
+          <RegisterForm googleEnabled={googleEnabled} />
+        </Suspense>
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}

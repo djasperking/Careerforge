@@ -12,15 +12,21 @@ const styles = StyleSheet.create({
     position: "absolute", top: 60, left: 80, right: 80, bottom: 60,
     alignItems: "center", justifyContent: "flex-start",
   },
+  logoRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   brand: { fontFamily: "Times-Bold", fontSize: 13, letterSpacing: 5, color: NAVY, textTransform: "uppercase" },
-  brandRule: { width: 90, height: 1, backgroundColor: GOLD, marginTop: 6, marginBottom: 22 },
+  brandRule: { width: 90, height: 1, backgroundColor: GOLD, marginTop: 8, marginBottom: 22 },
   certWord: { fontFamily: "Times-Bold", fontSize: 44, letterSpacing: 8, color: NAVY, textTransform: "uppercase" },
   certSub: { fontFamily: "Times-Roman", fontSize: 13, letterSpacing: 6, color: GOLD, textTransform: "uppercase", marginTop: 4 },
-  presented: { fontFamily: "Times-Roman", fontSize: 11, letterSpacing: 2, color: "#6b6b6b", textTransform: "uppercase", marginTop: 34 },
-  name: { fontFamily: "Times-Italic", fontSize: 40, color: NAVY, marginTop: 10 },
-  nameRule: { width: 340, height: 1, backgroundColor: GOLD, marginTop: 8, marginBottom: 20 },
+  presented: { fontFamily: "Times-Roman", fontSize: 11, letterSpacing: 2, color: "#6b6b6b", textTransform: "uppercase", marginTop: 26 },
+  name: { fontFamily: "Times-Italic", fontSize: 38, color: NAVY, marginTop: 8 },
+  nameRule: { width: 340, height: 1, backgroundColor: GOLD, marginTop: 7, marginBottom: 16 },
   body: { fontFamily: "Times-Roman", fontSize: 12, color: INK, textAlign: "center", maxWidth: 460, lineHeight: 1.6 },
-  course: { fontFamily: "Times-Bold", fontSize: 16, color: NAVY, textAlign: "center", marginTop: 8 },
+  course: { fontFamily: "Times-Bold", fontSize: 16, color: NAVY, textAlign: "center", marginTop: 6, marginBottom: 4 },
+  covHead: { fontFamily: "Times-Bold", fontSize: 8.5, letterSpacing: 3, color: GOLD, textTransform: "uppercase", marginTop: 16, marginBottom: 6 },
+  covRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", maxWidth: 520 },
+  covItem: { flexDirection: "row", alignItems: "center", marginHorizontal: 8, marginVertical: 2 },
+  covDiamond: { width: 4, height: 4, backgroundColor: GOLD, transform: "rotate(45deg)", marginRight: 5 },
+  covText: { fontFamily: "Times-Roman", fontSize: 9.5, color: NAVY },
   sigRow: {
     position: "absolute", left: 90, right: 90, bottom: 66,
     flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end",
@@ -47,7 +53,7 @@ function Corner({ x, y, flipX, flipY }: { x: number; y: number; flipX?: boolean;
 }
 
 export function CertificatePdfDocument({
-  studentName, title, issuerName, completionDate, publicId, verifyUrl, signatureName,
+  studentName, title, issuerName, completionDate, publicId, verifyUrl, signatureName, highlights = [],
 }: {
   studentName: string;
   title: string;
@@ -56,6 +62,7 @@ export function CertificatePdfDocument({
   publicId: string;
   verifyUrl: string;
   signatureName?: string | null;
+  highlights?: string[];
 }) {
   const dateStr = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "long", year: "numeric" }).format(completionDate);
   const instructor = signatureName || issuerName;
@@ -74,7 +81,20 @@ export function CertificatePdfDocument({
         </Svg>
 
         <View style={styles.content}>
-          <Text style={styles.brand}>Career Forge</Text>
+          <View style={styles.logoRow}>
+            <Svg width={26} height={26} viewBox="0 0 32 32">
+              <Rect x={0} y={0} width={32} height={32} rx={7} fill={NAVY} />
+              <Path
+                d="M16.3 8.3c.8 3.8 4.8 5.8 4.8 9.9a5.1 5.1 0 0 1-10.2 0c0-1.6.5-2.9 1.4-3.8.3 1.6 1.3 2.6 2.2 2.6-1.3-2.9 0-5.8 1.8-8.7Z"
+                fill="#ffffff"
+              />
+              <Path
+                d="M16.1 15c1.3 1.6 2.1 2.9 2.1 4.3a2.2 2.2 0 0 1-4.4 0c0-1 .5-1.8 1.3-2.5-.3 1 .3 1.6.8 1.6-.8-1.6-.3-3.2.2-4.8Z"
+                fill={NAVY}
+              />
+            </Svg>
+            <Text style={styles.brand}>Career Forge</Text>
+          </View>
           <View style={styles.brandRule} />
 
           <Text style={styles.certWord}>Certificate</Text>
@@ -87,6 +107,20 @@ export function CertificatePdfDocument({
           <Text style={styles.body}>has successfully completed the course</Text>
           <Text style={styles.course}>{title}</Text>
           <Text style={styles.body}>on {dateStr}</Text>
+
+          {highlights.length ? (
+            <>
+              <Text style={styles.covHead}>This course covered</Text>
+              <View style={styles.covRow}>
+                {highlights.map((h, i) => (
+                  <View key={i} style={styles.covItem}>
+                    <View style={styles.covDiamond} />
+                    <Text style={styles.covText}>{h}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          ) : null}
         </View>
 
         {/* Seal */}

@@ -107,6 +107,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <div className="mt-4">
               <EnrollButton
                 courseId={course.id}
+                slug={course.slug}
                 isLoggedIn={!!user}
                 alreadyEnrolled={!!enrollment}
                 isFree={course.priceCents === 0}
