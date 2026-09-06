@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CourseThumb } from "@/components/ui/course-thumb";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { formatDate } from "@/lib/utils";
@@ -86,9 +87,10 @@ export default async function DashboardHome() {
             ) : (
               <ul className="divide-y">
                 {enrollments.map((e) => (
-                  <li key={e.id} className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="font-medium">{e.course.title}</p>
+                  <li key={e.id} className="flex items-center gap-3 py-3">
+                    <CourseThumb src={e.course.thumbnailUrl} alt={e.course.title} className="w-20 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{e.course.title}</p>
                       <p className="text-sm text-muted-foreground">{e.progressPercent}% complete</p>
                     </div>
                     <Button asChild size="sm" variant="outline">

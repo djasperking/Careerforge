@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CourseThumb } from "@/components/ui/course-thumb";
 
 export const metadata = { title: "My Learning" };
 
@@ -41,8 +42,9 @@ export default async function MyCoursesPage() {
           {enrollments.map((e) => (
             <Link key={e.id} href={`/dashboard/courses/${e.courseId}`}>
               <Card className="transition-colors hover:border-primary/40">
-                <CardContent className="flex items-center justify-between p-5">
-                  <div>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <CourseThumb src={e.course.thumbnailUrl} alt={e.course.title} className="w-32 shrink-0" />
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium">{e.course.title}</p>
                     <p className="text-sm text-muted-foreground">{e.progressPercent}% complete</p>
                   </div>

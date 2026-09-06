@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { CourseThumb } from "@/components/ui/course-thumb";
 import { EnrollButton } from "./enroll-button";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -43,6 +44,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
       <main className="container grid gap-10 py-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
+          <CourseThumb src={course.thumbnailUrl} alt={course.title} className="mb-6" />
           {course.category ? <Badge variant="secondary">{course.category.name}</Badge> : null}
           <h1 className="mt-3 font-display text-3xl font-semibold">{course.title}</h1>
           <p className="mt-3 text-muted-foreground">{course.description}</p>

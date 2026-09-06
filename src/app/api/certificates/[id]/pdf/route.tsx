@@ -21,6 +21,7 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
       completionDate={cert.completionDate}
       publicId={cert.publicId}
       verifyUrl={`${env.NEXT_PUBLIC_APP_URL}/verify/${cert.publicId}`}
+      signatureName={cert.signatureName}
     />,
   );
 

@@ -43,6 +43,7 @@ export function ModuleManager({ courseId, modules }: { courseId: string; modules
   const [editingModule, setEditingModule] = useState<string | null>(null);
   const [addingLessonTo, setAddingLessonTo] = useState<string | null>(null);
   const [editingLesson, setEditingLesson] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function refresh() {
     router.refresh();
@@ -50,8 +51,13 @@ export function ModuleManager({ courseId, modules }: { courseId: string; modules
 
   async function handleAddModule() {
     if (!newModuleTitle.trim()) return;
+    setError(null);
     start(async () => {
-      await createModule(courseId, { title: newModuleTitle });
+      const res = await createModule(courseId, { title: newModuleTitle });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
       setNewModuleTitle("");
       refresh();
     });
@@ -59,6 +65,9 @@ export function ModuleManager({ courseId, modules }: { courseId: string; modules
 
   return (
     <div className="space-y-4">
+      {error ? (
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-sm text-destructive">{error}</p>
+      ) : null}
       {modules.map((m, i) => (
         <ModuleCard
           key={m.id}

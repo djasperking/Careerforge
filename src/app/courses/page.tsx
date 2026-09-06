@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CourseThumb } from "@/components/ui/course-thumb";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/session";
 
@@ -42,7 +43,8 @@ export default async function PublicCoursesPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((c) => (
               <Link key={c.id} href={`/courses/${c.slug}`}>
-                <Card className="h-full transition-colors hover:border-primary/40">
+                <Card className="h-full overflow-hidden transition-colors hover:border-primary/40">
+                  <CourseThumb src={c.thumbnailUrl} alt={c.title} className="rounded-none border-0 border-b" />
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between">
                       {c.category ? <Badge variant="secondary">{c.category.name}</Badge> : <span />}

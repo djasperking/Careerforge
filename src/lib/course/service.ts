@@ -5,10 +5,11 @@ import { sendEmail } from "@/lib/email";
 import { hasPermission, type PermissionKey } from "@/lib/rbac";
 
 /**
- * A user may edit a course's content if they hold `courses:write` (admins /
- * course managers) OR they are the course's own instructor. Owner edits are
- * blocked once the course is locked for review or approved — the instructor
- * must first pull it back to draft.
+ * A user may edit a course's content if they hold `courses:publish` (admins /
+ * course managers — they are also the reviewers, so the review lock never
+ * applies to them) OR they are the course's own instructor. Instructor edits
+ * are blocked once the course is submitted for review or approved — they must
+ * first pull it back to draft.
  */
 export async function assertCanEditCourse(
   user: { id: string; permissions: PermissionKey[] | "*" },
@@ -18,8 +19,10 @@ export async function assertCanEditCourse(
   const course = await db.course.findUnique({ where: { id: courseId } });
   if (!course) throw new ApiError(404, "NOT_FOUND", "Course not found.");
 
-  if (hasPermission(user.permissions, "courses:write")) return course;
+  // Full course managers bypass the review lock entirely.
+  if (hasPermission(user.permissions, "courses:publish")) return course;
 
+  // Instructors may only touch their own course, and only while it is in draft.
   if (course.instructorId === user.id) {
     if (!allowLocked && (course.reviewStatus === "SUBMITTED" || course.reviewStatus === "APPROVED")) {
       throw new ApiError(

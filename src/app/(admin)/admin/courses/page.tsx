@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CourseThumb } from "@/components/ui/course-thumb";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { NewCourseControl } from "./new-course-control";
 
@@ -33,7 +34,8 @@ export default async function AdminCoursesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((c) => (
             <Link key={c.id} href={`/admin/courses/${c.id}`}>
-              <Card className="h-full transition-colors hover:border-primary/40">
+              <Card className="h-full overflow-hidden transition-colors hover:border-primary/40">
+                <CourseThumb src={c.thumbnailUrl} alt={c.title} className="rounded-none border-0 border-b" />
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-medium">{c.title}</p>

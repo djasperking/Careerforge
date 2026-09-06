@@ -17,7 +17,7 @@ export async function issueCourseCertificate(userId: string, courseId: string) {
 
   const [user, course] = await Promise.all([
     db.user.findUniqueOrThrow({ where: { id: userId } }),
-    db.course.findUniqueOrThrow({ where: { id: courseId } }),
+    db.course.findUniqueOrThrow({ where: { id: courseId }, include: { instructor: true } }),
   ]);
 
   const certificate = await db.certificate.create({
@@ -29,6 +29,7 @@ export async function issueCourseCertificate(userId: string, courseId: string) {
       title: `${course.title}`,
       completionDate: new Date(),
       issuerName: "Career Forge",
+      signatureName: course.instructor?.name ?? "Career Forge",
     },
   });
 
@@ -62,6 +63,10 @@ export async function issueExamCertificate(attemptId: string) {
   });
   if (!attempt.passed) return null;
 
+  const examCourse = attempt.exam.courseId
+    ? await db.course.findUnique({ where: { id: attempt.exam.courseId }, include: { instructor: true } })
+    : null;
+
   const certificate = await db.certificate.create({
     data: {
       publicId: await uniquePublicId(),
@@ -72,6 +77,7 @@ export async function issueExamCertificate(attemptId: string) {
       title: `${attempt.exam.title}`,
       completionDate: attempt.submittedAt ?? new Date(),
       issuerName: "Career Forge",
+      signatureName: examCourse?.instructor?.name ?? "Career Forge",
     },
   });
 
