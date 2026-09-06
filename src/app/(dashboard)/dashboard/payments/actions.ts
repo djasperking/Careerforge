@@ -15,7 +15,10 @@ function fail(err: unknown): Result<never> {
   return { ok: false, error: "Something went wrong. Please try again." };
 }
 
-export async function startCourseCheckout(courseId: string): Promise<Result<{ authorizationUrl: string }>> {
+export async function startCourseCheckout(
+  courseId: string,
+  cohortId?: string,
+): Promise<Result<{ authorizationUrl: string }>> {
   try {
     const user = await requireUserApi();
     rateLimit(`checkout:${user.id}`, { windowSeconds: 60, max: 10 });
@@ -24,8 +27,15 @@ export async function startCourseCheckout(courseId: string): Promise<Result<{ au
       email: user.email,
       productType: "COURSE",
       productId: courseId,
+      cohortId,
     });
-    await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "Course", entityId: courseId, metadata: { reference } });
+    await audit({
+      actorId: user.id,
+      action: "CHECKOUT_STARTED",
+      entity: "Course",
+      entityId: courseId,
+      metadata: { reference, cohortId: cohortId ?? null },
+    });
     return { ok: true, data: { authorizationUrl } };
   } catch (err) {
     return fail(err);

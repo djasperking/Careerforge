@@ -18,6 +18,8 @@ export function SettingsForm({
     registrationOpen: boolean;
     requireEmailVerification: boolean;
     adsEnabled: boolean;
+    payoutHoldDays: number;
+    payoutMinimumNaira: number;
     facebookUrl: string;
     instagramUrl: string;
     twitterUrl: string;
@@ -47,6 +49,14 @@ export function SettingsForm({
         <div className="space-y-2">
           <Label htmlFor="cvOneTimePrice">One-time CV unlock price (₦)</Label>
           <Input id="cvOneTimePrice" name="cvOneTimePrice" type="number" min={0} step="0.01" defaultValue={initial.cvOneTimePrice} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="payoutHoldDays">Payout hold (days)</Label>
+          <Input id="payoutHoldDays" name="payoutHoldDays" type="number" min={0} max={90} defaultValue={initial.payoutHoldDays} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="payoutMinimumNaira">Minimum payout (₦)</Label>
+          <Input id="payoutMinimumNaira" name="payoutMinimumNaira" type="number" min={0} step="0.01" defaultValue={initial.payoutMinimumNaira} required />
         </div>
       </div>
 

@@ -44,6 +44,7 @@ export const PERMISSIONS = {
   // payments
   "payments:read": "View transactions & payouts",
   "payments:refund": "Issue refunds",
+  "payouts:manage": "Approve & mark instructor payouts paid",
   "subscriptions:write": "Manage subscription plans",
   // ai
   "ai:config": "Configure AI providers, models, limits",
@@ -69,7 +70,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
     "users:read", "users:write", "users:suspend", "users:roles",
     "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
     "exams:read", "exams:write", "exams:grade", "exams:security",
-    "cv:templates", "payments:read", "subscriptions:write",
+    "cv:templates", "payments:read", "payouts:manage", "subscriptions:write",
     "ai:config", "ai:prompts", "ads:write", "content:write",
     "support:handle", "analytics:read", "audit:read", "settings:write",
     "tools:unlimited",
@@ -79,7 +80,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
     "exams:read", "exams:write", "exams:grade", "analytics:read",
     "tools:unlimited",
   ],
-  FINANCE_MANAGER: ["payments:read", "payments:refund", "subscriptions:write", "analytics:read", "tools:unlimited"],
+  FINANCE_MANAGER: ["payments:read", "payments:refund", "payouts:manage", "subscriptions:write", "analytics:read", "tools:unlimited"],
   SUPPORT_MANAGER: ["support:handle", "users:read", "analytics:read", "tools:unlimited"],
   CONTENT_MANAGER: ["content:write", "ads:write", "cv:templates", "tools:unlimited"],
   INSTRUCTOR: ["courses:read", "courses:write", "exams:write"],

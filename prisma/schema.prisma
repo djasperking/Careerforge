@@ -66,6 +66,10 @@ model User {
   coachingOffers        CoachingOffer[]          @relation("CoachingOfferCoach")
   coachingOfferReviews  CoachingOffer[]          @relation("CoachingOfferReviewer")
   coachingBookings      CoachingBooking[]
+  instructorEarnings    InstructorEarning[]     @relation("InstructorEarnings")
+  instructorPayouts     Payout[]                @relation("InstructorPayouts")
+  decidedPayouts        Payout[]                @relation("PayoutDecider")
+  cohortEnrollments     CohortEnrollment[]
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
 
@@ -101,6 +105,11 @@ model InstructorProfile {
   appliedAt    DateTime         @default(now())
   reviewedAt   DateTime?
   reviewedById String?
+
+  // Payout destination (Phase C). Snapshotted onto each Payout at request time.
+  payoutBankName      String?
+  payoutAccountNumber String?
+  payoutAccountName   String?
 
   user       User  @relation("InstructorProfileUser", fields: [userId], references: [id], onDelete: Cascade)
   reviewedBy User? @relation("InstructorProfileReviewer", fields: [reviewedById], references: [id])
@@ -504,6 +513,7 @@ model Course {
   exams       Exam[]
   certificates Certificate[]
   reviews     Review[]
+  cohorts     Cohort[]
 
   @@index([status])
   @@index([categoryId])
@@ -609,6 +619,7 @@ model Enrollment {
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   transaction Transaction? @relation(fields: [transactionId], references: [id])
+  cohortEnrollments CohortEnrollment[]
 
   @@unique([userId, courseId])
   @@index([courseId])
@@ -861,6 +872,7 @@ model Transaction {
   provider     String        @default("paystack")
   providerRef  String?
   metadata     Json?
+  cohortId     String?       // set when a COURSE purchase is for a specific cohort
   paidAt       DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -869,6 +881,7 @@ model Transaction {
   webhookEvents PaymentWebhookEvent[]
   enrollments  Enrollment[]
   subscription Subscription?
+  earning      InstructorEarning?
 
   @@index([userId])
   @@index([status])
@@ -1211,4 +1224,138 @@ model SystemSetting {
   value     Json
   updatedAt DateTime @updatedAt
   updatedBy String?
+}
+
+// ---------------------------------------------------------------------------
+// Phase B — Scheduled cohorts ("classes")
+// ---------------------------------------------------------------------------
+
+enum CohortStatus {
+  DRAFT      // not shown publicly
+  OPEN       // accepting enrolments
+  RUNNING    // in progress
+  COMPLETED
+  CANCELLED
+}
+
+model Cohort {
+  id           String       @id @default(cuid())
+  courseId     String
+  title        String
+  startDate    DateTime
+  endDate      DateTime
+  enrollByDate DateTime?
+  capacity     Int          @default(0) // 0 = unlimited
+  priceCents   Int?         // null = use the course price
+  currency     String       @default("NGN")
+  meetingUrl   String?
+  scheduleNote String?
+  status       CohortStatus @default(DRAFT)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollments CohortEnrollment[]
+  sessions    CohortSession[]
+
+  @@index([courseId])
+  @@index([status])
+}
+
+model CohortEnrollment {
+  id           String   @id @default(cuid())
+  cohortId     String
+  userId       String
+  enrollmentId String?
+  createdAt    DateTime @default(now())
+
+  cohort     Cohort      @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id])
+
+  @@unique([cohortId, userId])
+  @@index([userId])
+}
+
+model CohortSession {
+  id              String   @id @default(cuid())
+  cohortId        String
+  title           String
+  startsAt        DateTime
+  durationMinutes Int      @default(60)
+  meetingUrl      String?
+  note            String?
+
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  @@index([cohortId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase C — Instructor earnings & payouts
+// ---------------------------------------------------------------------------
+
+enum EarningStatus {
+  PENDING   // in the clearance/hold window
+  AVAILABLE // withdrawable
+  REVERSED  // the underlying sale was refunded
+  PAID_OUT  // included in a completed payout
+}
+
+model InstructorEarning {
+  id            String        @id @default(cuid())
+  instructorId  String
+  transactionId String        @unique
+  productType   ProductType
+  productId     String?
+  description   String?
+  grossCents    Int
+  feeCents      Int
+  netCents      Int
+  currency      String        @default("NGN")
+  sharePercent  Int
+  status        EarningStatus @default(PENDING)
+  availableAt   DateTime
+  payoutId      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  instructor  User        @relation("InstructorEarnings", fields: [instructorId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  payout      Payout?     @relation(fields: [payoutId], references: [id])
+
+  @@index([instructorId, status])
+  @@index([payoutId])
+}
+
+enum PayoutStatus {
+  REQUESTED
+  APPROVED
+  PAID
+  REJECTED
+}
+
+model Payout {
+  id            String       @id @default(cuid())
+  instructorId  String
+  amountCents   Int
+  currency      String       @default("NGN")
+  status        PayoutStatus @default(REQUESTED)
+  bankName      String
+  accountNumber String
+  accountName   String
+  note          String?
+  adminNote     String?
+  reference     String?
+  requestedAt   DateTime     @default(now())
+  decidedAt     DateTime?
+  decidedById   String?
+  paidAt        DateTime?
+
+  instructor User                @relation("InstructorPayouts", fields: [instructorId], references: [id], onDelete: Cascade)
+  decidedBy  User?               @relation("PayoutDecider", fields: [decidedById], references: [id])
+  earnings   InstructorEarning[]
+
+  @@index([instructorId])
+  @@index([status])
 }

@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { CourseThumb } from "@/components/ui/course-thumb";
+import { listOpenCohorts } from "@/lib/cohort/service";
 import { EnrollButton } from "./enroll-button";
+import { CohortList } from "./cohort-list";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -26,9 +28,20 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   ]);
   if (!course) notFound();
 
-  const enrollment = user
-    ? await db.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } } })
-    : null;
+  const [enrollment, openCohorts] = await Promise.all([
+    user
+      ? db.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } } })
+      : Promise.resolve(null),
+    listOpenCohorts(course.id),
+  ]);
+  const joinedCohortIds = user
+    ? new Set(
+        (await db.cohortEnrollment.findMany({
+          where: { userId: user.id, cohortId: { in: openCohorts.map((c) => c.id) } },
+          select: { cohortId: true },
+        })).map((r) => r.cohortId),
+      )
+    : new Set<string>();
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
 
   return (
@@ -71,6 +84,25 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               </ul>
             </div>
           ) : null}
+
+          <CohortList
+            courseId={course.id}
+            slug={course.slug}
+            isLoggedIn={!!user}
+            ownsCourse={!!enrollment}
+            cohorts={openCohorts.map((c) => ({
+              id: c.id,
+              title: c.title,
+              startDate: c.startDate.toISOString(),
+              endDate: c.endDate.toISOString(),
+              enrollByDate: c.enrollByDate ? c.enrollByDate.toISOString() : null,
+              priceCents: c.priceCents ?? course.priceCents,
+              currency: c.currency,
+              seatsLeft: c.seatsLeft,
+              scheduleNote: c.scheduleNote,
+              joined: joinedCohortIds.has(c.id),
+            }))}
+          />
 
           <div className="mt-8">
             <h2 className="font-display text-lg font-semibold">Curriculum</h2>

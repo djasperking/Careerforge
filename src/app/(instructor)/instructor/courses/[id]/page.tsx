@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { appUrl } from "@/lib/email";
 import { getInstructorProfile } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ModuleManager } from "@/app/(admin)/admin/courses/[id]/module-manager";
@@ -46,6 +47,18 @@ export default async function InstructorCourseEditor({ params }: { params: Promi
         reviewNote={course.reviewNote}
         revenueSharePercent={course.revenueSharePercent}
       />
+
+      <Card className="mb-6">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+          <div>
+            <p className="font-medium">Scheduled classes</p>
+            <p className="text-sm text-muted-foreground">Run this course as a cohort with a start date, capacity and live sessions.</p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/instructor/courses/${course.id}/cohorts`}>Manage classes</Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {locked ? (
         <Alert variant="warning" className="mb-6">

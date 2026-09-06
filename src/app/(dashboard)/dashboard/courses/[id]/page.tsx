@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Circle, PlayCircle, ClipboardCheck } from "lucide-react";
+import { CheckCircle2, Circle, PlayCircle, ClipboardCheck, CalendarDays, Video } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 export default async function EnrolledCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -36,6 +36,12 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
     .flatMap((m) => m.lessons)
     .find((l) => !progressByLesson.get(l.id)?.completed);
 
+  const cohortEnrolment = await db.cohortEnrollment.findFirst({
+    where: { userId: user.id, cohort: { courseId: id } },
+    include: { cohort: { include: { sessions: { orderBy: { startsAt: "asc" } } } } },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <div>
       <PageHeader
@@ -58,6 +64,45 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
       />
 
       <div className="space-y-4">
+        {cohortEnrolment ? (
+          <Card className="border-primary/40 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="size-5" /> {cohortEnrolment.cohort.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p className="text-muted-foreground">
+                {formatDate(cohortEnrolment.cohort.startDate)} – {formatDate(cohortEnrolment.cohort.endDate)}
+              </p>
+              {cohortEnrolment.cohort.scheduleNote ? <p>{cohortEnrolment.cohort.scheduleNote}</p> : null}
+              {cohortEnrolment.cohort.meetingUrl ? (
+                <Button asChild size="sm">
+                  <a href={cohortEnrolment.cohort.meetingUrl} target="_blank" rel="noreferrer">
+                    <Video className="size-4" /> Join the class meeting
+                  </a>
+                </Button>
+              ) : null}
+              {cohortEnrolment.cohort.sessions.length > 0 ? (
+                <div>
+                  <p className="mb-1 font-medium">Sessions</p>
+                  <ul className="space-y-1">
+                    {cohortEnrolment.cohort.sessions.map((s) => (
+                      <li key={s.id} className="flex flex-wrap items-center gap-x-2">
+                        <span>{new Date(s.startsAt).toLocaleString()}</span>
+                        <span className="text-muted-foreground">· {s.title} ({s.durationMinutes}m)</span>
+                        {s.meetingUrl ? (
+                          <a href={s.meetingUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">link</a>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
+
         {enrollment.course.modules.map((m) => (
           <Card key={m.id}>
             <CardContent className="p-5">

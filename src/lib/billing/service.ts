@@ -6,6 +6,8 @@ import { sendEmail, appUrl } from "@/lib/email";
 import { formatCurrency } from "@/lib/utils";
 import { cvUnlockPrice } from "@/lib/cv/service";
 import { hasUnlimitedTools } from "@/lib/entitlements";
+import { recordEarningForTransaction, reverseEarningForTransaction } from "@/lib/earnings/service";
+import { enrollInCohort } from "@/lib/cohort/service";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
 import type { ProductType } from "@prisma/client";
 
@@ -24,15 +26,40 @@ interface CheckoutProduct {
   description: string;
 }
 
-async function resolveProduct(productType: ProductType, productId: string, userId: string): Promise<CheckoutProduct> {
+async function resolveProduct(
+  productType: ProductType,
+  productId: string,
+  userId: string,
+  cohortId?: string,
+): Promise<CheckoutProduct> {
   if (productType === "COURSE") {
     const course = await db.course.findUnique({ where: { id: productId } });
     if (!course || course.status !== "PUBLISHED" || course.reviewStatus !== "APPROVED") {
       throw new ApiError(404, "NOT_FOUND", "Course not available.");
     }
-    if (course.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This course is free — enrol directly.");
     const existing = await db.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: productId } } });
     if (existing) throw new ApiError(409, "ALREADY_OWNED", "You're already enrolled in this course.");
+
+    if (cohortId) {
+      const cohort = await db.cohort.findUnique({
+        where: { id: cohortId },
+        include: { _count: { select: { enrollments: true } } },
+      });
+      if (!cohort || cohort.courseId !== productId || cohort.status !== "OPEN") {
+        throw new ApiError(404, "NOT_FOUND", "That class is not open for enrolment.");
+      }
+      if (cohort.enrollByDate && cohort.enrollByDate.getTime() < Date.now()) {
+        throw new ApiError(409, "ENROLMENT_CLOSED", "Enrolment for this class has closed.");
+      }
+      if (cohort.capacity > 0 && cohort._count.enrollments >= cohort.capacity) {
+        throw new ApiError(409, "COHORT_FULL", "This class is full.");
+      }
+      const amountCents = cohort.priceCents ?? effectivePriceCents(course);
+      if (amountCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This class is free — join directly.");
+      return { amountCents, currency: cohort.currency, description: `Class: ${course.title} — ${cohort.title}` };
+    }
+
+    if (course.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This course is free — enrol directly.");
     // Price is always resolved server-side, including any active discount.
     const amountCents = effectivePriceCents(course);
     const label = discountIsActive(course) ? `Course: ${course.title} (${course.discountPercent}% off)` : `Course: ${course.title}`;
@@ -98,8 +125,10 @@ export async function createCheckout(input: {
   /** Where Paystack returns the buyer. Defaults to the dashboard callback;
    * guest checkouts pass a public page. */
   callbackPath?: string;
+  /** For a COURSE purchase tied to a scheduled cohort. */
+  cohortId?: string;
 }): Promise<{ authorizationUrl: string; reference: string }> {
-  const product = await resolveProduct(input.productType, input.productId, input.userId);
+  const product = await resolveProduct(input.productType, input.productId, input.userId, input.cohortId);
   const reference = newPaymentReference(input.productType, input.userId);
 
   await db.transaction.create({
@@ -108,6 +137,7 @@ export async function createCheckout(input: {
       userId: input.userId,
       productType: input.productType,
       productId: input.productId,
+      cohortId: input.cohortId ?? null,
       description: product.description,
       amountCents: product.amountCents,
       currency: product.currency,
@@ -133,13 +163,35 @@ export async function createCheckout(input: {
  * callback and the webhook — whichever arrives first wins; the other is a
  * safe no-op because we only ever activate a transaction still PENDING.
  */
-async function activateProduct(transaction: { id: string; userId: string; productType: ProductType; productId: string | null }) {
+async function activateProduct(transaction: {
+  id: string;
+  userId: string;
+  productType: ProductType;
+  productId: string | null;
+  cohortId?: string | null;
+}) {
   if (transaction.productType === "COURSE" && transaction.productId) {
-    await db.enrollment.upsert({
+    const enrollment = await db.enrollment.upsert({
       where: { userId_courseId: { userId: transaction.userId, courseId: transaction.productId } },
       create: { userId: transaction.userId, courseId: transaction.productId, transactionId: transaction.id },
       update: { transactionId: transaction.id },
     });
+    if (transaction.cohortId) {
+      try {
+        await enrollInCohort(transaction.cohortId, transaction.userId, enrollment.id);
+      } catch (err) {
+        console.error("cohort enrolment failed after payment", err);
+        await db.notification.create({
+          data: {
+            userId: transaction.userId,
+            type: "PAYMENT",
+            title: "We couldn't add you to that class",
+            body: "Your payment went through and you have course access, but the class filled up. Contact support and we'll sort it out.",
+            linkUrl: "/dashboard/support",
+          },
+        }).catch(() => {});
+      }
+    }
   } else if (transaction.productType === "SUBSCRIPTION" && transaction.productId) {
     const plan = await db.subscriptionPlan.findUniqueOrThrow({ where: { id: transaction.productId } });
     const days = subscriptionPeriodDays(plan.billingPeriod);
@@ -281,6 +333,7 @@ export async function finalizeTransaction(reference: string) {
   });
 
   await activateProduct(updated);
+  await recordEarningForTransaction(updated.id).catch((err) => console.error("earning record failed", err));
 
   await db.notification.create({
     data: {
@@ -312,6 +365,7 @@ export async function refundTransaction(transactionId: string) {
   }
 
   await db.transaction.update({ where: { id: transactionId }, data: { status: "REFUNDED" } });
+  await reverseEarningForTransaction(transactionId).catch((err) => console.error("earning reversal failed", err));
 
   if (transaction.productType === "COURSE" && transaction.productId) {
     await db.enrollment.updateMany({

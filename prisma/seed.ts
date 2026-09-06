@@ -366,6 +366,8 @@ export async function seedSettings() {
     ["ads.enabled", true],
     ["cv.oneTimePriceCents", 100_000],
     ["cv.oneTimeCurrency", process.env.DEFAULT_CURRENCY ?? "NGN"],
+    ["payouts.holdDays", 7],
+    ["payouts.minimumCents", 500_000],
     ["social.facebook", "https://www.facebook.com/share/1D1M8nqboJ/"],
     ["social.instagram", "https://www.instagram.com/careerforgeng"],
     ["social.twitter", "https://x.com/careerforgeng"],

@@ -2,6 +2,7 @@ import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
   ScrollText, Bell, Sparkles, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
+  Wallet, Banknote,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@/lib/rbac";
@@ -33,6 +34,7 @@ export const instructorNav: NavItem[] = [
   { label: "My Courses", href: "/instructor/courses", icon: BookOpen },
   { label: "Digital Products", href: "/instructor/products", icon: Package },
   { label: "Coaching", href: "/instructor/coaching", icon: CalendarClock },
+  { label: "Earnings", href: "/instructor/earnings", icon: Wallet },
   { label: "Back to dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 
@@ -46,6 +48,7 @@ export const adminNav: NavItem[] = [
   { label: "CV Templates", href: "/admin/cv-templates", icon: FileText, permission: "cv:templates" },
   { label: "AI", href: "/admin/ai", icon: Bot, permission: "ai:config" },
   { label: "Payments", href: "/admin/payments", icon: CreditCard, permission: "payments:read" },
+  { label: "Payouts", href: "/admin/payouts", icon: Banknote, permission: "payouts:manage" },
   { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard, permission: "subscriptions:write" },
   { label: "Advertisements", href: "/admin/ads", icon: Megaphone, permission: "ads:write" },
   { label: "Content", href: "/admin/content", icon: ScrollText, permission: "content:write" },
