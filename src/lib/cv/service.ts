@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { ApiError } from "@/lib/api";
+import { hasUnlimitedTools } from "@/lib/entitlements";
 
 /** Resolve the caller's active plan, falling back to FREE if they have none. */
 export async function resolveActivePlan(userId: string) {
@@ -32,6 +33,7 @@ export async function cvHasCleanExport(
   cv: { isPremium?: boolean } | null,
 ): Promise<boolean> {
   if (cv?.isPremium) return true;
+  if (await hasUnlimitedTools(userId)) return true;
   const plan = await resolveActivePlan(userId);
   if (!plan) return false;
   const limits = (plan.limits ?? {}) as Record<string, unknown>;
@@ -40,6 +42,7 @@ export async function cvHasCleanExport(
 }
 
 export async function assertCanCreateCv(userId: string) {
+  if (await hasUnlimitedTools(userId)) return;
   const plan = await resolveActivePlan(userId);
   const limits = (plan?.limits ?? {}) as Record<string, unknown>;
   const limit = typeof limits["cv:count"] === "number" ? (limits["cv:count"] as number) : null;

@@ -39,6 +39,8 @@ export const PERMISSIONS = {
   "exams:security": "Review exam security events",
   // cv
   "cv:templates": "Manage CV templates",
+  // tools
+  "tools:unlimited": "Unlimited AI usage & premium CV exports, no paywall",
   // payments
   "payments:read": "View transactions & payouts",
   "payments:refund": "Issue refunds",
@@ -70,14 +72,16 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
     "cv:templates", "payments:read", "subscriptions:write",
     "ai:config", "ai:prompts", "ads:write", "content:write",
     "support:handle", "analytics:read", "audit:read", "settings:write",
+    "tools:unlimited",
   ],
   COURSE_MANAGER: [
     "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
     "exams:read", "exams:write", "exams:grade", "analytics:read",
+    "tools:unlimited",
   ],
-  FINANCE_MANAGER: ["payments:read", "payments:refund", "subscriptions:write", "analytics:read"],
-  SUPPORT_MANAGER: ["support:handle", "users:read", "analytics:read"],
-  CONTENT_MANAGER: ["content:write", "ads:write", "cv:templates"],
+  FINANCE_MANAGER: ["payments:read", "payments:refund", "subscriptions:write", "analytics:read", "tools:unlimited"],
+  SUPPORT_MANAGER: ["support:handle", "users:read", "analytics:read", "tools:unlimited"],
+  CONTENT_MANAGER: ["content:write", "ads:write", "cv:templates", "tools:unlimited"],
   INSTRUCTOR: ["courses:read", "courses:write", "exams:write"],
   CUSTOMER: [],
 };

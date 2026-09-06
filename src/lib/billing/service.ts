@@ -4,6 +4,7 @@ import { getPaymentProvider, newPaymentReference } from "@/lib/payments";
 import { sendEmail, appUrl } from "@/lib/email";
 import { formatCurrency } from "@/lib/utils";
 import { cvUnlockPrice } from "@/lib/cv/service";
+import { hasUnlimitedTools } from "@/lib/entitlements";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
 import type { ProductType } from "@prisma/client";
 
@@ -48,6 +49,7 @@ async function resolveProduct(productType: ProductType, productId: string, userI
     const cv = await db.cV.findFirst({ where: { id: productId, userId, deletedAt: null } });
     if (!cv) throw new ApiError(404, "NOT_FOUND", "CV not found.");
     if (cv.isPremium) throw new ApiError(409, "ALREADY_OWNED", "This CV is already unlocked.");
+    if (await hasUnlimitedTools(userId)) throw new ApiError(409, "ALREADY_OWNED", "Your account already has premium CV exports.");
     const { amountCents, currency } = await cvUnlockPrice();
     return { amountCents, currency, description: `CV unlock: ${cv.title}` };
   }

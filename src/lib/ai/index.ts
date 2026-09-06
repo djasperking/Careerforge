@@ -1,6 +1,7 @@
 import { env } from "@/lib/env";
 import { db } from "@/lib/db";
 import { ApiError } from "@/lib/api";
+import { hasUnlimitedTools } from "@/lib/entitlements";
 import type { AIContext, AIProvider, AIResult } from "./types";
 import { mockAIProvider } from "./mock";
 import { anthropicAIProvider } from "./anthropic";
@@ -34,7 +35,7 @@ export async function withAIUsage<T>(
 ): Promise<AIResult<T>> {
   const provider = getAIProvider();
 
-  if (ctx.userId) {
+  if (ctx.userId && !(await hasUnlimitedTools(ctx.userId))) {
     const limit = await resolveFeatureLimit(ctx.userId, ctx.feature);
     if (limit != null) {
       const used = await db.aIUsage.findUnique({
