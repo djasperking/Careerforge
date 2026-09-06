@@ -15,7 +15,7 @@
   --cf-card: 0 0% 100%;
   --cf-card-foreground: 222 47% 11%;
 
-  --cf-primary: 231 68% 46%;           /* deep indigo — "forge" */
+  --cf-primary: 233 59% 50%;           /* indigo blue — "forge" (#3446cb) */
   --cf-primary-foreground: 0 0% 100%;
   --cf-secondary: 199 89% 48%;         /* sky accent */
   --cf-secondary-foreground: 0 0% 100%;
@@ -41,7 +41,7 @@
   --cf-foreground: 210 40% 96%;
   --cf-card: 222 47% 11%;
   --cf-card-foreground: 210 40% 96%;
-  --cf-primary: 231 74% 66%;
+  --cf-primary: 233 68% 68%;
   --cf-secondary: 199 89% 58%;
   --cf-accent: 262 83% 68%;
   --cf-muted: 217 33% 17%;
