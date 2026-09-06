@@ -1,7 +1,7 @@
 import { Brand } from "./brand";
 import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
-import type { PermissionKey } from "@/lib/rbac";
+import { isAdminRole, type PermissionKey } from "@/lib/rbac";
 
 /**
  * Shared authenticated layout for both the customer dashboard and the admin
@@ -13,11 +13,12 @@ export function AppShell({
   badges,
   children,
 }: {
-  user: { name?: string | null; email: string; permissions: PermissionKey[] | "*" };
+  user: { name?: string | null; email: string; roles: string[]; permissions: PermissionKey[] | "*" };
   area: "Dashboard" | "Admin" | "Instructor";
   badges?: Record<string, number>;
   children: React.ReactNode;
 }) {
+  const showAdminLink = area !== "Admin" && isAdminRole(user.roles);
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 shrink-0 flex-col border-r bg-card p-4 md:flex">
@@ -28,7 +29,7 @@ export function AppShell({
           </p>
         </div>
         <div className="mt-4 flex-1 overflow-y-auto">
-          <SidebarNav area={area} permissions={user.permissions} badges={badges} />
+          <SidebarNav area={area} permissions={user.permissions} badges={badges} showAdminLink={showAdminLink} />
         </div>
         <div className="mt-4 border-t pt-3">
           <p className="truncate px-3 text-sm font-medium">{user.name ?? "Account"}</p>

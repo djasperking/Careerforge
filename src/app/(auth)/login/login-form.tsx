@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
+import { isAdminRole } from "@/lib/rbac";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -35,12 +36,18 @@ export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }
       password: String(form.get("password")),
       redirect: false,
     });
-    setLoading(false);
     if (res?.error) {
+      setLoading(false);
       setError(ERROR_MESSAGES[res.error] ?? "Could not sign you in. Please try again.");
       return;
     }
-    router.push(next);
+    // With no explicit target, send admins to the console and everyone else to the dashboard.
+    let target = next;
+    if (next === "/dashboard") {
+      const session = await getSession();
+      if (session?.user?.roles && isAdminRole(session.user.roles)) target = "/admin";
+    }
+    router.push(target);
     router.refresh();
   }
 
