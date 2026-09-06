@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ImageField } from "@/components/ui/image-field";
 import { formatCurrency, minorToMajor, majorToMinor } from "@/lib/utils";
 import { updateMyCourse } from "../../actions";
 
@@ -102,9 +103,9 @@ export function InstructorCourseSettings({
             <Label>Duration (minutes)</Label>
             <Input type="number" min={0} value={form.durationMinutes} onChange={(e) => set("durationMinutes", Number(e.target.value))} />
           </div>
-          <div className="space-y-1.5">
-            <Label>Thumbnail URL</Label>
-            <Input value={form.thumbnailUrl} onChange={(e) => set("thumbnailUrl", e.target.value)} placeholder="https://…" />
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>Thumbnail</Label>
+            <ImageField value={form.thumbnailUrl} onChange={(v) => set("thumbnailUrl", v)} disabled={locked} />
           </div>
           <div className="space-y-1.5">
             <Label>Price (₦)</Label>

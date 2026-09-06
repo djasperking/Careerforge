@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ImageField } from "@/components/ui/image-field";
 import { minorToMajor, majorToMinor } from "@/lib/utils";
 import { updateCourse, createCategory } from "../actions";
 
@@ -82,9 +83,9 @@ export function CourseSettingsForm({ courseId, categories: initialCategories, in
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label>Thumbnail URL</Label>
-          <Input value={form.thumbnailUrl} onChange={(e) => set("thumbnailUrl", e.target.value)} placeholder="https://…" />
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>Thumbnail</Label>
+          <ImageField value={form.thumbnailUrl} onChange={(v) => set("thumbnailUrl", v)} />
         </div>
         <div className="space-y-1.5">
           <Label>Level</Label>

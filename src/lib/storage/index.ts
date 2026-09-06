@@ -57,7 +57,26 @@ const localProvider: StorageProvider = {
   },
 };
 
+/**
+ * Vercel Blob — the production store. Activates automatically when a
+ * BLOB_READ_WRITE_TOKEN is present (Vercel injects it once Blob storage is
+ * enabled for the project), so no code change is needed to switch over.
+ */
+const vercelBlobProvider: StorageProvider = {
+  async put(kind, filename, data, mime) {
+    const { put } = await import("@vercel/blob");
+    const safe = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${kind}/${Date.now()}-${safe}`;
+    const res = await put(path, data, { access: "public", contentType: mime, token: env.BLOB_READ_WRITE_TOKEN });
+    return { key: res.pathname, url: res.url, size: data.length, mime };
+  },
+  async delete(key) {
+    const { del } = await import("@vercel/blob");
+    await del(key, { token: env.BLOB_READ_WRITE_TOKEN }).catch(() => {});
+  },
+};
+
 export function getStorage(): StorageProvider {
-  // TODO: return an S3 implementation when STORAGE_PROVIDER === "s3".
+  if (env.BLOB_READ_WRITE_TOKEN || env.STORAGE_PROVIDER === "vercel-blob") return vercelBlobProvider;
   return localProvider;
 }

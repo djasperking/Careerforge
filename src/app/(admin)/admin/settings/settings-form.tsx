@@ -14,6 +14,7 @@ export function SettingsForm({
     siteName: string;
     contactEmail: string;
     currency: string;
+    cvOneTimePrice: number;
     registrationOpen: boolean;
     requireEmailVerification: boolean;
     adsEnabled: boolean;
@@ -38,6 +39,10 @@ export function SettingsForm({
         <div className="space-y-2">
           <Label htmlFor="currency">Default currency (ISO 4217)</Label>
           <Input id="currency" name="currency" defaultValue={initial.currency} maxLength={3} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cvOneTimePrice">One-time CV unlock price (₦)</Label>
+          <Input id="cvOneTimePrice" name="cvOneTimePrice" type="number" min={0} step="0.01" defaultValue={initial.cvOneTimePrice} required />
         </div>
       </div>
 

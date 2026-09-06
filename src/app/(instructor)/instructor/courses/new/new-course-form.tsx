@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ImageField } from "@/components/ui/image-field";
 import { minorToMajor, majorToMinor } from "@/lib/utils";
 import { createMyCourse } from "../../actions";
 
@@ -92,6 +93,10 @@ export function NewCourseForm({ categories }: { categories: { id: string; name: 
           <Label>Currency</Label>
           <Input value={form.currency} maxLength={3} onChange={(e) => set("currency", e.target.value.toUpperCase())} />
         </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Thumbnail</Label>
+        <ImageField value={form.thumbnailUrl} onChange={(v) => set("thumbnailUrl", v)} />
       </div>
       <Button type="submit" disabled={saving}>{saving ? "Creating…" : "Create course"}</Button>
     </form>

@@ -40,8 +40,9 @@ const schema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
 
-  STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
+  STORAGE_PROVIDER: z.enum(["local", "s3", "vercel-blob"]).default("local"),
   STORAGE_PUBLIC_BASE_URL: z.string().default("http://localhost:3000/uploads"),
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
 
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(60),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(60),

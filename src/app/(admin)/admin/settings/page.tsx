@@ -13,6 +13,7 @@ const KEYS = [
   "auth.registrationOpen",
   "auth.requireEmailVerification",
   "ads.enabled",
+  "cv.oneTimePriceCents",
 ] as const;
 
 export default async function AdminSettingsPage() {
@@ -30,6 +31,7 @@ export default async function AdminSettingsPage() {
               siteName: String(values["general.siteName"] ?? "Career Forge"),
               contactEmail: String(values["general.contactEmail"] ?? ""),
               currency: String(values["general.currency"] ?? "NGN"),
+              cvOneTimePrice: (typeof values["cv.oneTimePriceCents"] === "number" ? values["cv.oneTimePriceCents"] : 100_000) / 100,
               registrationOpen: values["auth.registrationOpen"] !== false,
               requireEmailVerification: values["auth.requireEmailVerification"] !== false,
               adsEnabled: values["ads.enabled"] !== false,
