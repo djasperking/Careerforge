@@ -17,10 +17,20 @@ function fail(err: unknown): Result<never> {
   return { ok: false, error: "Something went wrong. Please try again." };
 }
 
+const optionalUrl = z
+  .string()
+  .trim()
+  .max(300)
+  .url("Enter a full URL, e.g. https://…")
+  .optional()
+  .or(z.literal(""));
+
 const applicationSchema = z.object({
   headline: z.string().min(6).max(160),
   bio: z.string().min(40).max(3000),
   expertise: z.string().max(600),
+  linkedinUrl: optionalUrl,
+  portfolioUrl: optionalUrl,
 });
 
 export async function applyAsInstructor(raw: unknown): Promise<Result<null>> {
@@ -34,14 +44,16 @@ export async function applyAsInstructor(raw: unknown): Promise<Result<null>> {
     }
 
     const expertise = linesToList(input.expertise.replace(/,/g, "\n"));
+    const linkedinUrl = input.linkedinUrl?.trim() || null;
+    const portfolioUrl = input.portfolioUrl?.trim() || null;
     if (existing) {
       await db.instructorProfile.update({
         where: { userId: user.id },
-        data: { status: "PENDING", headline: input.headline, bio: input.bio, expertise, reviewNote: null, appliedAt: new Date(), reviewedAt: null, reviewedById: null },
+        data: { status: "PENDING", headline: input.headline, bio: input.bio, expertise, linkedinUrl, portfolioUrl, reviewNote: null, appliedAt: new Date(), reviewedAt: null, reviewedById: null },
       });
     } else {
       await db.instructorProfile.create({
-        data: { userId: user.id, headline: input.headline, bio: input.bio, expertise },
+        data: { userId: user.id, headline: input.headline, bio: input.bio, expertise, linkedinUrl, portfolioUrl },
       });
     }
     await audit({ actorId: user.id, action: "INSTRUCTOR_APPLIED", entity: "InstructorProfile", entityId: user.id });

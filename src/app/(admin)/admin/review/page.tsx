@@ -70,6 +70,8 @@ export default async function AdminReviewQueue() {
                     headline={a.headline}
                     bio={a.bio}
                     expertise={a.expertise}
+                    linkedinUrl={a.linkedinUrl}
+                    portfolioUrl={a.portfolioUrl}
                     appliedAt={formatDate(a.appliedAt)}
                   />
                 </li>

@@ -89,6 +89,8 @@ model InstructorProfile {
   headline     String
   bio          String
   expertise    String[]         @default([])
+  linkedinUrl  String?
+  portfolioUrl String?
   reviewNote   String?
   appliedAt    DateTime         @default(now())
   reviewedAt   DateTime?

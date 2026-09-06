@@ -13,6 +13,8 @@ export function InstructorApplicationRow({
   headline,
   bio,
   expertise,
+  linkedinUrl,
+  portfolioUrl,
   appliedAt,
 }: {
   id: string;
@@ -21,6 +23,8 @@ export function InstructorApplicationRow({
   headline: string;
   bio: string;
   expertise: string[];
+  linkedinUrl: string | null;
+  portfolioUrl: string | null;
   appliedAt: string;
 }) {
   const router = useRouter();
@@ -50,6 +54,21 @@ export function InstructorApplicationRow({
       {expertise.length ? (
         <div className="mt-2 flex flex-wrap gap-1">
           {expertise.map((e) => <Badge key={e} variant="outline">{e}</Badge>)}
+        </div>
+      ) : null}
+
+      {linkedinUrl || portfolioUrl ? (
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          {linkedinUrl ? (
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              LinkedIn ↗
+            </a>
+          ) : null}
+          {portfolioUrl ? (
+            <a href={portfolioUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              Portfolio / work sample ↗
+            </a>
+          ) : null}
         </div>
       ) : null}
 

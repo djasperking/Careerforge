@@ -40,7 +40,7 @@ export default async function InstructorHome() {
           <CardHeader><CardTitle>Instructor application</CardTitle></CardHeader>
           <CardContent>
             <ApplyForm
-              initial={profile ? { headline: profile.headline, bio: profile.bio, expertise: profile.expertise } : undefined}
+              initial={profile ? { headline: profile.headline, bio: profile.bio, expertise: profile.expertise, linkedinUrl: profile.linkedinUrl, portfolioUrl: profile.portfolioUrl } : undefined}
             />
           </CardContent>
         </Card>

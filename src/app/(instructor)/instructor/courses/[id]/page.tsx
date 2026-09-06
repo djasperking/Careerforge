@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
+import { appUrl } from "@/lib/email";
 import { getInstructorProfile } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ModuleManager } from "@/app/(admin)/admin/courses/[id]/module-manager";
 import { InstructorCourseSettings } from "./course-settings";
 import { CourseReviewPanel } from "./review-panel";
+import { SharePanel } from "./share-panel";
 
 export default async function InstructorCourseEditor({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -50,6 +52,15 @@ export default async function InstructorCourseEditor({ params }: { params: Promi
           <AlertTitle>This course is awaiting review</AlertTitle>
           <AlertDescription>You can&apos;t edit it until a decision is made.</AlertDescription>
         </Alert>
+      ) : null}
+
+      {course.status === "PUBLISHED" ? (
+        <Card className="mb-6">
+          <CardHeader><CardTitle>Share your course</CardTitle></CardHeader>
+          <CardContent>
+            <SharePanel url={appUrl(`/courses/${course.slug}`)} />
+          </CardContent>
+        </Card>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">

@@ -11,12 +11,14 @@ import { applyAsInstructor } from "./actions";
 export function ApplyForm({
   initial,
 }: {
-  initial?: { headline: string; bio: string; expertise: string[] };
+  initial?: { headline: string; bio: string; expertise: string[]; linkedinUrl?: string | null; portfolioUrl?: string | null };
 }) {
   const router = useRouter();
   const [headline, setHeadline] = useState(initial?.headline ?? "");
   const [bio, setBio] = useState(initial?.bio ?? "");
   const [expertise, setExpertise] = useState((initial?.expertise ?? []).join(", "));
+  const [linkedinUrl, setLinkedinUrl] = useState(initial?.linkedinUrl ?? "");
+  const [portfolioUrl, setPortfolioUrl] = useState(initial?.portfolioUrl ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +26,7 @@ export function ApplyForm({
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const res = await applyAsInstructor({ headline, bio, expertise });
+    const res = await applyAsInstructor({ headline, bio, expertise, linkedinUrl, portfolioUrl });
     setLoading(false);
     if (!res.ok) setError(res.error);
     else router.refresh();
@@ -68,6 +70,27 @@ export function ApplyForm({
           value={expertise}
           onChange={(e) => setExpertise(e.target.value)}
           placeholder="Comma-separated, e.g. Excel, Power BI, Data storytelling"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="linkedinUrl">LinkedIn profile</Label>
+        <Input
+          id="linkedinUrl"
+          type="url"
+          value={linkedinUrl}
+          onChange={(e) => setLinkedinUrl(e.target.value)}
+          placeholder="https://www.linkedin.com/in/your-name"
+        />
+        <p className="text-xs text-muted-foreground">Helps us verify your background. Optional but recommended.</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="portfolioUrl">Portfolio or work sample</Label>
+        <Input
+          id="portfolioUrl"
+          type="url"
+          value={portfolioUrl}
+          onChange={(e) => setPortfolioUrl(e.target.value)}
+          placeholder="https://… (website, GitHub, a talk, a course you've made)"
         />
       </div>
       <Button type="submit" disabled={loading}>
