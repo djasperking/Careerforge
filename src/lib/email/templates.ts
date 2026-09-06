@@ -121,6 +121,7 @@ export function renderEmail(
 ): { html: string; text: string } {
   const b = block(template, data);
   const brand = env.NEXT_PUBLIC_APP_NAME || "Career Forge";
+  const logoUrl = new URL("/email-logo.png", env.NEXT_PUBLIC_APP_URL).toString();
 
   const text = [
     b.heading,
@@ -138,7 +139,7 @@ export function renderEmail(
 
   const button = b.cta
     ? `<p style="margin:24px 0;">
-         <a href="${esc(b.cta.url)}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 24px;border-radius:8px;">${esc(b.cta.label)}</a>
+         <a href="${esc(b.cta.url)}" style="display:inline-block;background:#3446cb;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:12px 24px;border-radius:8px;">${esc(b.cta.label)}</a>
        </p>
        <p style="margin:0 0 16px;font-size:13px;line-height:1.6;color:#71717a;word-break:break-all;">Or paste this link into your browser:<br>${esc(b.cta.url)}</p>`
     : "";
@@ -150,7 +151,14 @@ export function renderEmail(
     <tr><td align="center">
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:480px;max-width:100%;background:#ffffff;border-radius:12px;padding:32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <tr><td>
-          <p style="margin:0 0 24px;font-size:18px;font-weight:700;color:#18181b;">${esc(brand)}</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+            <tr>
+              <td style="padding-right:10px;vertical-align:middle;">
+                <img src="${esc(logoUrl)}" width="28" height="28" alt="${esc(brand)}" style="display:block;border:0;border-radius:6px;" />
+              </td>
+              <td style="vertical-align:middle;font-size:18px;font-weight:700;color:#18181b;">${esc(brand)}</td>
+            </tr>
+          </table>
           <h1 style="margin:0 0 16px;font-size:20px;line-height:1.4;color:#18181b;">${esc(b.heading)}</h1>
           ${paragraphs}
           ${button}

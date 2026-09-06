@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Loader2, Paperclip, FileCheck2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /** Uploads a single file to POST /api/upload and reports its URL + name + size. */
 export function FileField({
@@ -71,6 +72,15 @@ export function FileField({
           e.target.value = "";
         }}
       />
+      <div className="space-y-1">
+        <p className="text-xs text-muted-foreground">or paste a direct file URL</p>
+        <Input
+          value={value}
+          disabled={disabled}
+          placeholder="https://…"
+          onChange={(e) => onChange({ url: e.target.value, name: fileName || "download", size: 0 })}
+        />
+      </div>
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
