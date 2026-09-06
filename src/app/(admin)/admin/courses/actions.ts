@@ -41,6 +41,10 @@ export async function createCourse(raw: unknown): Promise<Result<{ id: string }>
         requirements: linesToList(input.requirements),
         objectives: linesToList(input.objectives),
         instructorId: admin.id,
+        // Admin-authored courses don't go through the instructor review queue.
+        reviewStatus: "APPROVED",
+        reviewedAt: new Date(),
+        reviewedById: admin.id,
       },
     });
     await audit({ actorId: admin.id, action: "COURSE_CREATED", entity: "Course", entityId: course.id });
@@ -87,8 +91,10 @@ export async function setCourseStatus(id: string, status: "PUBLISHED" | "UNPUBLI
   try {
     const admin = await requirePermissionApi("courses:publish");
     const course = await db.course.findUniqueOrThrow({ where: { id } });
-    if (status === "PUBLISHED" && course.reviewStatus !== "APPROVED") {
-      throw new ApiError(409, "NOT_APPROVED", "This course must be approved in the review queue before it can be published.");
+    // Only block publish while a course is inside the instructor review flow —
+    // admin-authored courses (DRAFT/APPROVED) publish directly from here.
+    if (status === "PUBLISHED" && (course.reviewStatus === "SUBMITTED" || course.reviewStatus === "CHANGES_REQUESTED")) {
+      throw new ApiError(409, "IN_REVIEW", "This course is in the instructor review flow — resolve it in the review queue first.");
     }
     await db.course.update({
       where: { id },
