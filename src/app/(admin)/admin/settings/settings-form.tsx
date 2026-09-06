@@ -18,6 +18,10 @@ export function SettingsForm({
     registrationOpen: boolean;
     requireEmailVerification: boolean;
     adsEnabled: boolean;
+    facebookUrl: string;
+    instagramUrl: string;
+    twitterUrl: string;
+    linkedinUrl: string;
   };
 }) {
   const [state, action, pending] = useActionState<SettingsState, FormData>(saveSettings, {});
@@ -45,6 +49,29 @@ export function SettingsForm({
           <Input id="cvOneTimePrice" name="cvOneTimePrice" type="number" min={0} step="0.01" defaultValue={initial.cvOneTimePrice} required />
         </div>
       </div>
+
+      <fieldset className="space-y-4">
+        <legend className="text-sm font-medium">Social links</legend>
+        <p className="text-xs text-muted-foreground">Full URLs. Shown in the site footer; blank hides the icon.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="facebookUrl">Facebook</Label>
+            <Input id="facebookUrl" name="facebookUrl" type="url" placeholder="https://facebook.com/…" defaultValue={initial.facebookUrl} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="instagramUrl">Instagram</Label>
+            <Input id="instagramUrl" name="instagramUrl" type="url" placeholder="https://instagram.com/…" defaultValue={initial.instagramUrl} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="twitterUrl">X (Twitter)</Label>
+            <Input id="twitterUrl" name="twitterUrl" type="url" placeholder="https://x.com/…" defaultValue={initial.twitterUrl} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="linkedinUrl">LinkedIn</Label>
+            <Input id="linkedinUrl" name="linkedinUrl" type="url" placeholder="https://linkedin.com/company/…" defaultValue={initial.linkedinUrl} />
+          </div>
+        </div>
+      </fieldset>
 
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium">Toggles</legend>

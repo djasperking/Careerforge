@@ -4,11 +4,13 @@ import {
 } from "lucide-react";
 import { Brand } from "@/components/layout/brand";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SocialLinks } from "@/components/layout/social-links";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getCurrentUser } from "@/lib/session";
 import { cvUnlockPrice } from "@/lib/cv/service";
+import { getSocialLinks } from "@/lib/site";
 import { formatCurrency } from "@/lib/utils";
 
 const features = [
@@ -21,7 +23,7 @@ const features = [
 ];
 
 export default async function HomePage() {
-  const [user, price] = await Promise.all([getCurrentUser(), cvUnlockPrice()]);
+  const [user, price, social] = await Promise.all([getCurrentUser(), cvUnlockPrice(), getSocialLinks()]);
   const cvPriceLabel = formatCurrency(price.amountCents, price.currency);
 
   return (
@@ -113,12 +115,13 @@ export default async function HomePage() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Career Forge. All rights reserved.
           </p>
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <Link href="/courses" className="hover:text-foreground">Courses</Link>
             <Link href="/products" className="hover:text-foreground">Digital products</Link>
             <Link href="/coaching" className="hover:text-foreground">Coaching</Link>
             <Link href="/verify" className="hover:text-foreground">Verify a certificate</Link>
             <Link href="/login" className="hover:text-foreground">Log in</Link>
+            <SocialLinks links={social} className="ml-1" />
           </div>
         </div>
       </footer>

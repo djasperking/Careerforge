@@ -47,3 +47,6 @@ yarn-error.log*
 
 # Claude Code local runtime
 .claude/scheduled_tasks.lock
+
+# generated social/marketing image assets
+brand/social/

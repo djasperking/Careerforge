@@ -366,6 +366,10 @@ export async function seedSettings() {
     ["ads.enabled", true],
     ["cv.oneTimePriceCents", 100_000],
     ["cv.oneTimeCurrency", process.env.DEFAULT_CURRENCY ?? "NGN"],
+    ["social.facebook", "https://www.facebook.com/share/1D1M8nqboJ/"],
+    ["social.instagram", ""],
+    ["social.twitter", ""],
+    ["social.linkedin", ""],
   ];
   for (const [key, value] of settings) {
     await db.systemSetting.upsert({

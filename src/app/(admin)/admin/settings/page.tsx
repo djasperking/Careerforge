@@ -14,6 +14,10 @@ const KEYS = [
   "auth.requireEmailVerification",
   "ads.enabled",
   "cv.oneTimePriceCents",
+  "social.facebook",
+  "social.instagram",
+  "social.twitter",
+  "social.linkedin",
 ] as const;
 
 export default async function AdminSettingsPage() {
@@ -35,6 +39,10 @@ export default async function AdminSettingsPage() {
               registrationOpen: values["auth.registrationOpen"] !== false,
               requireEmailVerification: values["auth.requireEmailVerification"] !== false,
               adsEnabled: values["ads.enabled"] !== false,
+              facebookUrl: String(values["social.facebook"] ?? ""),
+              instagramUrl: String(values["social.instagram"] ?? ""),
+              twitterUrl: String(values["social.twitter"] ?? ""),
+              linkedinUrl: String(values["social.linkedin"] ?? ""),
             }}
           />
         </CardContent>

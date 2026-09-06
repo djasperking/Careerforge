@@ -14,6 +14,10 @@ const schema = z.object({
   registrationOpen: z.union([z.literal("on"), z.literal("")]).optional(),
   requireEmailVerification: z.union([z.literal("on"), z.literal("")]).optional(),
   adsEnabled: z.union([z.literal("on"), z.literal("")]).optional(),
+  facebookUrl: z.string().url().or(z.literal("")),
+  instagramUrl: z.string().url().or(z.literal("")),
+  twitterUrl: z.string().url().or(z.literal("")),
+  linkedinUrl: z.string().url().or(z.literal("")),
 });
 
 export type SettingsState = { ok?: boolean; error?: string };
@@ -32,6 +36,10 @@ export async function saveSettings(_prev: SettingsState, formData: FormData): Pr
     ["auth.registrationOpen", d.registrationOpen === "on"],
     ["auth.requireEmailVerification", d.requireEmailVerification === "on"],
     ["ads.enabled", d.adsEnabled === "on"],
+    ["social.facebook", d.facebookUrl],
+    ["social.instagram", d.instagramUrl],
+    ["social.twitter", d.twitterUrl],
+    ["social.linkedin", d.linkedinUrl],
   ];
 
   await db.$transaction(
