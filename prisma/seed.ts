@@ -368,7 +368,7 @@ export async function seedSettings() {
     ["cv.oneTimeCurrency", process.env.DEFAULT_CURRENCY ?? "NGN"],
     ["social.facebook", "https://www.facebook.com/share/1D1M8nqboJ/"],
     ["social.instagram", ""],
-    ["social.twitter", ""],
+    ["social.twitter", "https://x.com/careerforgeng"],
     ["social.linkedin", ""],
   ];
   for (const [key, value] of settings) {
