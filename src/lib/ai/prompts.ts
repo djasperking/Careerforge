@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
  */
 export const AI_FEATURE_KEYS = [
   "cv.generate",
+  "cv.import",
   "cv.analyze",
   "cv.cover_letter",
   "career.assistant",
@@ -19,6 +20,7 @@ export type AIFeatureKey = (typeof AI_FEATURE_KEYS)[number];
 
 export const AI_FEATURE_LABELS: Record<AIFeatureKey, string> = {
   "cv.generate": "CV generator",
+  "cv.import": "CV import & tailoring",
   "cv.analyze": "CV analyzer",
   "cv.cover_letter": "Cover letter generator",
   "career.assistant": "Career assistant",

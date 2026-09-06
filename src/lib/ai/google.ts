@@ -92,6 +92,30 @@ export const googleAIProvider: AIProvider = {
     };
   },
 
+  async importCV(input, ctx) {
+    if (!API_KEY) return mockAIProvider.importCV(input, ctx);
+    return jsonCall(
+      ctx,
+      "Parse the raw CV text into the structured schema. Extract ONLY information that is " +
+        "actually present — never invent employers, titles, dates, degrees, metrics or skills. " +
+        "Preserve the candidate's real history exactly. If a target job description is given, you " +
+        "MAY reorder experience bullets and skills to put the most relevant first, rewrite the " +
+        "professional summary and existing bullet wording to mirror the job's language, and drop " +
+        "clearly irrelevant filler — but you may NOT add experience, responsibilities or " +
+        "achievements the person did not state. Put anything the candidate should double-check " +
+        "into tailoringNotes.",
+      `Raw CV text:\n${input.rawText}` +
+        (input.targetJobDescription ? `\n\nTarget job description:\n${input.targetJobDescription}` : ""),
+      `{ content: { personalInfo:{fullName,headline,email,phone,location,website,linkedin}, professionalSummary, careerObjective, ` +
+        `experience:[{company,title,location,startDate,endDate,current,bullets:[string]}], ` +
+        `education:[{institution,degree,field,startDate,endDate,description}], skills:[string], ` +
+        `certifications:[{name,issuer,issueDate,credentialId}], projects:[{name,description,url}], ` +
+        `achievements:[string], languages:[{name,proficiency}], ` +
+        `volunteerExperience:[{organization,role,startDate,endDate,description}], ` +
+        `references:[{name,relationship,contact}], additionalInformation }, tailoringNotes:[string] }`,
+    );
+  },
+
   async analyzeCV(input, ctx) {
     if (!API_KEY) return mockAIProvider.analyzeCV(input, ctx);
     return jsonCall(

@@ -37,6 +37,26 @@ export const mockAIProvider: AIProvider = {
     });
   },
 
+  async importCV(input) {
+    const lines = input.rawText.split("\n").map((l) => l.trim()).filter(Boolean);
+    const email = input.rawText.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)?.[0] ?? "";
+    const phone = input.rawText.match(/\+?\d[\d\s().-]{7,}\d/)?.[0] ?? "";
+    return wrap({
+      content: {
+        personalInfo: { fullName: lines[0] ?? "", email, phone },
+        professionalSummary:
+          "Experienced professional. [AI could not fully parse this CV — review every section.]",
+        experience: [],
+        education: [],
+        skills: [],
+      },
+      tailoringNotes: [
+        "Mock import: the real AI provider is not configured, so only basic fields were filled.",
+        input.targetJobDescription ? "A target job description was supplied but not applied." : "No job description supplied.",
+      ],
+    });
+  },
+
   async analyzeCV(input) {
     const jd = input.jobDescription.toLowerCase();
     const missing = ["stakeholder management", "kpi ownership"].filter(

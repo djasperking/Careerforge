@@ -7,9 +7,10 @@ import { audit } from "@/lib/audit";
 import { ApiError } from "@/lib/api";
 import { withAIUsage } from "@/lib/ai";
 import {
-  cvContentSchema, emptyCvContent, parseCvContent, type CVContent,
+  cvContentSchema, coerceCvContent, emptyCvContent, parseCvContent, scoreCvCompleteness, type CVContent,
 } from "@/lib/cv/schema";
 import { assertCanCreateCv, assertTemplateAllowed, nextCvVersionNumber } from "@/lib/cv/service";
+import { extractCvText } from "@/lib/cv/extract";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -151,6 +152,65 @@ export async function restoreCvVersion(cvId: string, version: number): Promise<R
     ]);
     revalidatePath(`/dashboard/cvs/${cvId}`);
     return { ok: true, data: { content } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---- Import & tailor -------------------------------------------------
+
+export async function importCvFromUpload(
+  formData: FormData,
+): Promise<Result<{ id: string; notes: string[] }>> {
+  try {
+    const user = await requireUserApi();
+    await assertCanCreateCv(user.id);
+
+    const file = formData.get("file");
+    const pasted = String(formData.get("text") ?? "").trim();
+    const jobDescription = String(formData.get("jobDescription") ?? "").trim();
+    const title = String(formData.get("title") ?? "").trim().slice(0, 160);
+
+    let rawText = pasted;
+    if (file instanceof File && file.size > 0) {
+      rawText = await extractCvText(file);
+    }
+    if (rawText.length < 80) {
+      throw new ApiError(422, "NO_CV", "Upload a CV file or paste your current CV text (a few lines at least).");
+    }
+    if (jobDescription && jobDescription.length < 20) {
+      throw new ApiError(422, "JD_TOO_SHORT", "Paste a fuller job description, or leave it blank to just import.");
+    }
+
+    const result = await withAIUsage({ userId: user.id, feature: "cv.import" }, (provider) =>
+      provider.importCV(
+        { rawText, targetJobDescription: jobDescription || undefined },
+        { userId: user.id, feature: "cv.import" },
+      ),
+    );
+
+    const content = coerceCvContent(result.data.content);
+    const notes = (result.data.tailoringNotes ?? []).map((n) => String(n)).filter(Boolean).slice(0, 12);
+
+    const cv = await db.cV.create({
+      data: {
+        userId: user.id,
+        title: title || (jobDescription ? "Tailored CV" : "Imported CV"),
+        content: content as never,
+      },
+    });
+    await db.cVVersion.create({
+      data: { cvId: cv.id, version: 1, content: content as never, reason: jobDescription ? "ai import + tailor" : "ai import" },
+    });
+    await audit({
+      actorId: user.id,
+      action: "CV_CREATED",
+      entity: "CV",
+      entityId: cv.id,
+      metadata: { via: "import", tailored: !!jobDescription, completeness: scoreCvCompleteness(content) },
+    });
+    revalidatePath("/dashboard/cvs");
+    return { ok: true, data: { id: cv.id, notes } };
   } catch (err) {
     return fail(err);
   }

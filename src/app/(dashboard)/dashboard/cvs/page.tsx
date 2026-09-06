@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, Upload } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
@@ -30,7 +30,16 @@ export default async function CVsPage() {
       <PageHeader
         title="My CVs"
         description="Create, edit and export AI-assisted CVs."
-        action={<NewCvControl templates={templates.map((t) => ({ id: t.id, name: t.name, isPremium: t.isPremium }))} />}
+        action={
+          <div className="flex flex-col items-end gap-2">
+            <NewCvControl templates={templates.map((t) => ({ id: t.id, name: t.name, isPremium: t.isPremium }))} />
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard/cvs/import">
+                <Upload className="size-4" /> Import &amp; tailor a CV
+              </Link>
+            </Button>
+          </div>
+        }
       />
 
       {cvs.length === 0 ? (

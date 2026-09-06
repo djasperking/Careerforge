@@ -19,11 +19,14 @@ const CSP = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // CV import accepts an uploaded file (PDF/DOCX) through a Server Action;
+  // the default 1 MB action body cap is too small for a real CV.
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   // @react-pdf/renderer -> pdfkit loads its standard font files by path at
   // runtime; if Next bundles it into the serverless function those files are
   // not traced and CV PDF export 500s with MODULE_NOT_FOUND. Keep it external
   // and force the font data into the CV PDF function's trace.
-  serverExternalPackages: ["@react-pdf/renderer"],
+  serverExternalPackages: ["@react-pdf/renderer", "unpdf", "mammoth"],
   outputFileTracingIncludes: {
     "/api/cv/[id]/pdf": [
       "./node_modules/pdfkit/js/standard-fonts/**/*",

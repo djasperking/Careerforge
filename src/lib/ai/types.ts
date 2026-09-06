@@ -29,6 +29,20 @@ export interface CVGenerationInput {
   targetJobDescription?: string;
 }
 
+export interface CVImportInput {
+  /** Raw text of the candidate's existing CV (extracted from an upload or pasted). */
+  rawText: string;
+  /** If given, the parsed CV is re-ordered and re-phrased to target this role. */
+  targetJobDescription?: string;
+}
+
+export interface CVImportOutput {
+  /** Loosely-shaped CV document; caller runs it through coerceCvContent(). */
+  content: Record<string, unknown>;
+  /** Plain-language notes on what was changed / what the user should verify. */
+  tailoringNotes: string[];
+}
+
 export interface CVAnalysisInput {
   cv: Record<string, unknown>;
   jobDescription: string;
@@ -64,6 +78,7 @@ export interface GeneratedQuestion {
 export interface AIProvider {
   name: string;
   generateCV(input: CVGenerationInput, ctx: AIContext): Promise<AIResult<Record<string, unknown>>>;
+  importCV(input: CVImportInput, ctx: AIContext): Promise<AIResult<CVImportOutput>>;
   analyzeCV(input: CVAnalysisInput, ctx: AIContext): Promise<AIResult<CVAnalysisOutput>>;
   generateCoverLetter(
     input: { cv: Record<string, unknown>; jobDescription: string; tone?: string },

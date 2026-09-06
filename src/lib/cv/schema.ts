@@ -133,6 +133,29 @@ export function parseCvContent(raw: unknown): CVContent {
   return result.success ? result.data : emptyCvContent();
 }
 
+/**
+ * Coerce loosely-shaped JSON (e.g. an AI-parsed CV) into a valid CVContent:
+ * gives every list item a stable id before validating, so items that arrive
+ * without one aren't silently dropped.
+ */
+export function coerceCvContent(raw: unknown): CVContent {
+  if (!raw || typeof raw !== "object") return emptyCvContent();
+  const obj: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+  const withIds = ["experience", "education", "certifications", "projects", "languages", "volunteerExperience", "references"];
+  for (const key of withIds) {
+    const arr = obj[key];
+    if (Array.isArray(arr)) {
+      obj[key] = arr
+        .filter((it) => it && typeof it === "object")
+        .map((it, i) => ({
+          ...(it as Record<string, unknown>),
+          id: String((it as Record<string, unknown>).id ?? "").trim() || `${key}-${i + 1}-${Math.random().toString(36).slice(2, 8)}`,
+        }));
+    }
+  }
+  return parseCvContent(obj);
+}
+
 export interface CvTemplateConfig {
   columns: 1 | 2;
   font: string;
