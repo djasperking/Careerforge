@@ -60,6 +60,12 @@ model User {
   reviewedCourses   Course[]        @relation("CourseReviewer")
   instructorProfile InstructorProfile? @relation("InstructorProfileUser")
   instructorReviews InstructorProfile[] @relation("InstructorProfileReviewer")
+  digitalProducts       DigitalProduct[]         @relation("DigitalProductSeller")
+  digitalProductReviews DigitalProduct[]         @relation("DigitalProductReviewer")
+  digitalPurchases      DigitalProductPurchase[]
+  coachingOffers        CoachingOffer[]          @relation("CoachingOfferCoach")
+  coachingOfferReviews  CoachingOffer[]          @relation("CoachingOfferReviewer")
+  coachingBookings      CoachingBooking[]
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
 
@@ -100,6 +106,115 @@ model InstructorProfile {
   reviewedBy User? @relation("InstructorProfileReviewer", fields: [reviewedById], references: [id])
 
   @@index([status])
+}
+
+enum CoachingBookingStatus {
+  PENDING_PAYMENT
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+/// A downloadable product (ebook, template pack, etc.) sold by an approved instructor.
+/// Reuses CourseReviewStatus for the admin approval workflow.
+model DigitalProduct {
+  id                  String             @id @default(cuid())
+  slug                String             @unique
+  sellerId            String
+  title               String
+  description         String
+  coverImageUrl       String?
+  fileUrl             String
+  fileName            String
+  fileSizeBytes       Int                @default(0)
+  priceCents          Int                @default(0)
+  currency            String             @default("NGN")
+  status              PublishStatus      @default(DRAFT)
+  reviewStatus        CourseReviewStatus @default(DRAFT)
+  reviewNote          String?
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewedById        String?
+  discountPercent     Int?
+  discountEndsAt      DateTime?
+  revenueSharePercent Int                @default(70)
+  publishedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  seller     User                     @relation("DigitalProductSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  reviewedBy User?                    @relation("DigitalProductReviewer", fields: [reviewedById], references: [id])
+  purchases  DigitalProductPurchase[]
+
+  @@index([sellerId])
+  @@index([reviewStatus])
+  @@index([status])
+}
+
+model DigitalProductPurchase {
+  id            String   @id @default(cuid())
+  productId     String
+  userId        String
+  transactionId String?
+  createdAt     DateTime @default(now())
+
+  product DigitalProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([userId])
+}
+
+/// A bookable one-on-one coaching offer from an approved instructor.
+model CoachingOffer {
+  id                  String             @id @default(cuid())
+  slug                String             @unique
+  coachId             String
+  title               String
+  description         String
+  coverImageUrl       String?
+  durationMinutes     Int                @default(45)
+  priceCents          Int                @default(0)
+  currency            String             @default("NGN")
+  status              PublishStatus      @default(DRAFT)
+  reviewStatus        CourseReviewStatus @default(DRAFT)
+  reviewNote          String?
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewedById        String?
+  revenueSharePercent Int                @default(80)
+  publishedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  coach      User              @relation("CoachingOfferCoach", fields: [coachId], references: [id], onDelete: Cascade)
+  reviewedBy User?             @relation("CoachingOfferReviewer", fields: [reviewedById], references: [id])
+  bookings   CoachingBooking[]
+
+  @@index([coachId])
+  @@index([reviewStatus])
+}
+
+model CoachingBooking {
+  id             String                @id @default(cuid())
+  offerId        String
+  userId         String
+  transactionId  String?
+  status         CoachingBookingStatus @default(PENDING_PAYMENT)
+  preferredTimes String[]              @default([])
+  scheduledAt    DateTime?
+  meetingUrl     String?
+  note           String?
+  coachNote      String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  offer CoachingOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([offerId])
+  @@index([userId])
 }
 
 model Role {
@@ -727,6 +842,8 @@ enum ProductType {
   AI_PREMIUM
   SUBSCRIPTION
   EXAM
+  DIGITAL_PRODUCT
+  COACHING
   OTHER
 }
 

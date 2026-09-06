@@ -132,7 +132,10 @@ export default async function HomePage() {
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Career Forge. All rights reserved.
           </p>
-          <div className="flex gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <Link href="/courses" className="hover:text-foreground">Courses</Link>
+            <Link href="/products" className="hover:text-foreground">Digital products</Link>
+            <Link href="/coaching" className="hover:text-foreground">Coaching</Link>
             <Link href="/verify" className="hover:text-foreground">Verify a certificate</Link>
             <Link href="/login" className="hover:text-foreground">Log in</Link>
           </div>

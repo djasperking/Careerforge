@@ -130,3 +130,114 @@ export async function setCourseRevenueShare(courseId: string, percent: number): 
     return fail(err);
   }
 }
+
+// ---- Digital product submissions -----------------------------------------
+
+export async function decideDigitalProductReview(
+  productId: string,
+  decision: "APPROVED" | "CHANGES_REQUESTED" | "REJECTED",
+  rawNote?: unknown,
+): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("instructors:review");
+    const note = noteSchema.parse(rawNote ?? "");
+    const product = await db.digitalProduct.findUnique({ where: { id: productId } });
+    if (!product) throw new ApiError(404, "NOT_FOUND", "Product not found.");
+    if (product.reviewStatus !== "SUBMITTED") throw new ApiError(409, "NOT_PENDING", "This product is not awaiting review.");
+    if ((decision === "CHANGES_REQUESTED" || decision === "REJECTED") && !note) {
+      throw new ApiError(422, "NOTE_REQUIRED", "Add a note explaining what needs to change.");
+    }
+    const nextReview = decision === "APPROVED" ? "APPROVED" : decision === "CHANGES_REQUESTED" ? "CHANGES_REQUESTED" : "DRAFT";
+    await db.digitalProduct.update({
+      where: { id: productId },
+      data: { reviewStatus: nextReview, reviewNote: note || null, reviewedAt: new Date(), reviewedById: admin.id },
+    });
+    await db.notification.create({
+      data: {
+        userId: product.sellerId,
+        type: "ANNOUNCEMENT",
+        title:
+          decision === "APPROVED" ? `"${product.title}" approved` : `Update on "${product.title}"`,
+        body:
+          decision === "APPROVED"
+            ? "Your product was approved. Publish it from your products dashboard."
+            : `Reviewer note: ${note}`,
+        linkUrl: `/instructor/products/${productId}`,
+      },
+    });
+    await audit({ actorId: admin.id, action: `DIGITAL_PRODUCT_REVIEW_${decision}`, entity: "DigitalProduct", entityId: productId });
+    revalidatePath("/admin/review");
+    revalidatePath("/admin");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function setDigitalProductRevenueShare(productId: string, percent: number): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("instructors:review");
+    const p = z.coerce.number().int().min(0).max(100).parse(percent);
+    await db.digitalProduct.update({ where: { id: productId }, data: { revenueSharePercent: p } });
+    await audit({ actorId: admin.id, action: "DIGITAL_PRODUCT_REVENUE_SHARE_SET", entity: "DigitalProduct", entityId: productId, metadata: { percent: p } });
+    revalidatePath("/admin/review");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---- Coaching offer submissions -----------------------------------------
+
+export async function decideCoachingOfferReview(
+  offerId: string,
+  decision: "APPROVED" | "CHANGES_REQUESTED" | "REJECTED",
+  rawNote?: unknown,
+): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("instructors:review");
+    const note = noteSchema.parse(rawNote ?? "");
+    const offer = await db.coachingOffer.findUnique({ where: { id: offerId } });
+    if (!offer) throw new ApiError(404, "NOT_FOUND", "Offer not found.");
+    if (offer.reviewStatus !== "SUBMITTED") throw new ApiError(409, "NOT_PENDING", "This offer is not awaiting review.");
+    if ((decision === "CHANGES_REQUESTED" || decision === "REJECTED") && !note) {
+      throw new ApiError(422, "NOTE_REQUIRED", "Add a note explaining what needs to change.");
+    }
+    const nextReview = decision === "APPROVED" ? "APPROVED" : decision === "CHANGES_REQUESTED" ? "CHANGES_REQUESTED" : "DRAFT";
+    await db.coachingOffer.update({
+      where: { id: offerId },
+      data: { reviewStatus: nextReview, reviewNote: note || null, reviewedAt: new Date(), reviewedById: admin.id },
+    });
+    await db.notification.create({
+      data: {
+        userId: offer.coachId,
+        type: "ANNOUNCEMENT",
+        title: decision === "APPROVED" ? `"${offer.title}" approved` : `Update on "${offer.title}"`,
+        body:
+          decision === "APPROVED"
+            ? "Your coaching offer was approved. Publish it from your coaching dashboard."
+            : `Reviewer note: ${note}`,
+        linkUrl: `/instructor/coaching/${offerId}`,
+      },
+    });
+    await audit({ actorId: admin.id, action: `COACHING_OFFER_REVIEW_${decision}`, entity: "CoachingOffer", entityId: offerId });
+    revalidatePath("/admin/review");
+    revalidatePath("/admin");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function setCoachingOfferRevenueShare(offerId: string, percent: number): Promise<Result<null>> {
+  try {
+    const admin = await requirePermissionApi("instructors:review");
+    const p = z.coerce.number().int().min(0).max(100).parse(percent);
+    await db.coachingOffer.update({ where: { id: offerId }, data: { revenueSharePercent: p } });
+    await audit({ actorId: admin.id, action: "COACHING_OFFER_REVENUE_SHARE_SET", entity: "CoachingOffer", entityId: offerId, metadata: { percent: p } });
+    revalidatePath("/admin/review");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}

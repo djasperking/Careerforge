@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
-  ScrollText, Bell, Sparkles, ClipboardList, Presentation,
+  ScrollText, Bell, Sparkles, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@/lib/rbac";
@@ -18,7 +18,8 @@ export const customerNav: NavItem[] = [
   { label: "CV Builder", href: "/dashboard/cvs", icon: FileText },
   { label: "AI Career Tools", href: "/dashboard/ai", icon: Sparkles },
   { label: "My Learning", href: "/dashboard/courses", icon: GraduationCap },
-  { label: "Teach", href: "/instructor", icon: Presentation },
+  { label: "My Purchases", href: "/dashboard/purchases", icon: ShoppingBag },
+  { label: "Teach & Sell", href: "/instructor", icon: Presentation },
   { label: "Exams", href: "/dashboard/exams", icon: ClipboardCheck },
   { label: "Certificates", href: "/dashboard/certificates", icon: BadgeCheck },
   { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
@@ -30,6 +31,8 @@ export const customerNav: NavItem[] = [
 export const instructorNav: NavItem[] = [
   { label: "Overview", href: "/instructor", icon: LayoutDashboard },
   { label: "My Courses", href: "/instructor/courses", icon: BookOpen },
+  { label: "Digital Products", href: "/instructor/products", icon: Package },
+  { label: "Coaching", href: "/instructor/coaching", icon: CalendarClock },
   { label: "Back to dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 

@@ -1,0 +1,74 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { db } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { Brand } from "@/components/layout/brand";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils";
+import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
+import { userOwnsDigitalProduct } from "@/lib/marketplace/digital";
+import { BuyProductButton } from "./buy-button";
+
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const [product, user] = await Promise.all([
+    db.digitalProduct.findFirst({
+      where: { slug, status: "PUBLISHED", reviewStatus: "APPROVED" },
+      include: { seller: true },
+    }),
+    getCurrentUser(),
+  ]);
+  if (!product) notFound();
+
+  const owned = user ? await userOwnsDigitalProduct(user.id, product.id) : false;
+  const price = effectivePriceCents(product);
+
+  return (
+    <div className="min-h-screen">
+      <header className="border-b bg-card">
+        <div className="container flex h-16 items-center justify-between">
+          <Brand />
+          <Button asChild size="sm" variant={user ? "default" : "outline"}>
+            <Link href={user ? "/dashboard" : "/login"}>{user ? "Dashboard" : "Log in"}</Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="container grid gap-10 py-10 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {product.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.coverImageUrl} alt="" className="mb-6 w-full rounded-lg border object-cover" />
+          ) : null}
+          <h1 className="font-display text-3xl font-semibold">{product.title}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">By {product.seller?.name ?? "Career Forge"}</p>
+          <div className="prose prose-sm mt-6 max-w-none whitespace-pre-wrap text-foreground">{product.description}</div>
+        </div>
+
+        <aside className="lg:col-span-1">
+          <div className="rounded-lg border bg-card p-5">
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-2xl font-semibold">
+                {price === 0 ? "Free" : formatCurrency(price, product.currency)}
+              </span>
+              {discountIsActive(product) ? (
+                <span className="text-sm text-muted-foreground line-through">
+                  {formatCurrency(product.priceCents, product.currency)}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{product.fileName} · instant download</p>
+            <div className="mt-4">
+              <BuyProductButton
+                productId={product.id}
+                isLoggedIn={Boolean(user)}
+                owned={owned}
+                slug={product.slug}
+              />
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  );
+}

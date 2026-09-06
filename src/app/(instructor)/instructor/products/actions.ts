@@ -1,0 +1,182 @@
+"use server";
+
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { requireUserApi } from "@/lib/session";
+import { ApiError } from "@/lib/api";
+import { audit } from "@/lib/audit";
+import { requireApprovedInstructor } from "@/lib/instructor/service";
+import { uniqueDigitalProductSlug, requireOwnedDigitalProduct } from "@/lib/marketplace/digital";
+
+type Result<T> = { ok: true; data: T } | { ok: false; error: string };
+function fail(err: unknown): Result<never> {
+  if (err instanceof ApiError) return { ok: false, error: err.message };
+  console.error(err);
+  return { ok: false, error: "Something went wrong. Please try again." };
+}
+
+const productSchema = z.object({
+  title: z.string().min(3).max(160),
+  description: z.string().min(20).max(4000),
+  coverImageUrl: z.string().max(400).optional().or(z.literal("")),
+  fileUrl: z.string().url("Upload the product file first.").max(600),
+  fileName: z.string().max(200).default("download"),
+  fileSizeBytes: z.coerce.number().int().min(0).default(0),
+  priceCents: z.coerce.number().int().min(0).max(100_000_000),
+  currency: z.string().min(3).max(3).default("NGN"),
+  discountPercent: z.coerce.number().int().min(0).max(90).optional(),
+  discountEndsAt: z.string().optional().or(z.literal("")),
+});
+
+export async function createMyProduct(raw: unknown): Promise<Result<{ id: string }>> {
+  try {
+    const user = await requireUserApi();
+    await requireApprovedInstructor(user.id);
+    const input = productSchema.parse(raw);
+    const slug = await uniqueDigitalProductSlug(input.title);
+
+    const product = await db.digitalProduct.create({
+      data: {
+        slug,
+        sellerId: user.id,
+        title: input.title,
+        description: input.description,
+        coverImageUrl: input.coverImageUrl || null,
+        fileUrl: input.fileUrl,
+        fileName: input.fileName || "download",
+        fileSizeBytes: input.fileSizeBytes,
+        priceCents: input.priceCents,
+        currency: input.currency,
+        discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
+        discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : null,
+        status: "DRAFT",
+        reviewStatus: "DRAFT",
+      },
+    });
+    await audit({ actorId: user.id, action: "DIGITAL_PRODUCT_CREATED", entity: "DigitalProduct", entityId: product.id });
+    revalidatePath("/instructor/products");
+    return { ok: true, data: { id: product.id } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function updateMyProduct(id: string, raw: unknown): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await requireApprovedInstructor(user.id);
+    const product = await requireOwnedDigitalProduct(user.id, id);
+    if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "LOCKED", "This product is awaiting review.");
+    const input = productSchema.parse(raw);
+    const slug = product.title === input.title ? product.slug : await uniqueDigitalProductSlug(input.title, id);
+
+    await db.digitalProduct.update({
+      where: { id },
+      data: {
+        slug,
+        title: input.title,
+        description: input.description,
+        coverImageUrl: input.coverImageUrl || null,
+        fileUrl: input.fileUrl,
+        fileName: input.fileName || "download",
+        fileSizeBytes: input.fileSizeBytes,
+        priceCents: input.priceCents,
+        currency: input.currency,
+        discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
+        discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : null,
+        // Editing an approved product sends it back to draft for re-review.
+        reviewStatus: product.reviewStatus === "APPROVED" ? "DRAFT" : product.reviewStatus,
+        status: product.reviewStatus === "APPROVED" ? "DRAFT" : product.status,
+      },
+    });
+    await audit({ actorId: user.id, action: "DIGITAL_PRODUCT_UPDATED", entity: "DigitalProduct", entityId: id });
+    revalidatePath(`/instructor/products/${id}`);
+    revalidatePath("/instructor/products");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function submitProductForReview(id: string): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await requireApprovedInstructor(user.id);
+    const product = await requireOwnedDigitalProduct(user.id, id);
+    if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "ALREADY_SUBMITTED", "Already submitted for review.");
+    if (product.reviewStatus === "APPROVED") throw new ApiError(409, "ALREADY_APPROVED", "This product is already approved.");
+    if (!product.fileUrl) throw new ApiError(422, "NO_FILE", "Attach the product file before submitting.");
+    if (product.description.trim().length < 20) throw new ApiError(422, "THIN_DESCRIPTION", "Write a fuller description before submitting.");
+
+    await db.digitalProduct.update({
+      where: { id },
+      data: { reviewStatus: "SUBMITTED", submittedAt: new Date(), reviewNote: null },
+    });
+    await audit({ actorId: user.id, action: "DIGITAL_PRODUCT_SUBMITTED", entity: "DigitalProduct", entityId: id });
+
+    const reviewers = await db.user.findMany({
+      where: { roles: { some: { role: { permissions: { some: { permission: { key: "instructors:review" } } } } } } },
+      select: { id: true },
+      take: 25,
+    });
+    await db.notification.createMany({
+      data: reviewers.map((r) => ({
+        userId: r.id,
+        type: "ANNOUNCEMENT",
+        title: "Digital product awaiting review",
+        body: `"${product.title}" was submitted for review.`,
+        linkUrl: "/admin/review",
+      })),
+    });
+
+    revalidatePath(`/instructor/products/${id}`);
+    revalidatePath("/instructor/products");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function setMyProductPublished(id: string, publish: boolean): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await requireApprovedInstructor(user.id);
+    const product = await requireOwnedDigitalProduct(user.id, id);
+    if (publish && product.reviewStatus !== "APPROVED") {
+      throw new ApiError(409, "NOT_APPROVED", "Only an approved product can be published.");
+    }
+    await db.digitalProduct.update({
+      where: { id },
+      data: {
+        status: publish ? "PUBLISHED" : "UNPUBLISHED",
+        publishedAt: publish && !product.publishedAt ? new Date() : product.publishedAt,
+      },
+    });
+    await audit({ actorId: user.id, action: publish ? "DIGITAL_PRODUCT_PUBLISHED" : "DIGITAL_PRODUCT_UNPUBLISHED", entity: "DigitalProduct", entityId: id });
+    revalidatePath(`/instructor/products/${id}`);
+    revalidatePath("/instructor/products");
+    revalidatePath("/products");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function reopenMyProduct(id: string): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await requireApprovedInstructor(user.id);
+    const product = await requireOwnedDigitalProduct(user.id, id);
+    if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "LOCKED", "Wait for the current review to finish.");
+    await db.digitalProduct.update({
+      where: { id },
+      data: { reviewStatus: "DRAFT", status: product.status === "PUBLISHED" ? "DRAFT" : product.status },
+    });
+    revalidatePath(`/instructor/products/${id}`);
+    revalidatePath("/products");
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}

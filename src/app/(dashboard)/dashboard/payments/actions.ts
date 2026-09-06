@@ -63,3 +63,37 @@ export async function startCvUnlockCheckout(cvId: string): Promise<Result<{ auth
     return fail(err);
   }
 }
+
+export async function startDigitalProductCheckout(productId: string): Promise<Result<{ authorizationUrl: string }>> {
+  try {
+    const user = await requireUserApi();
+    rateLimit(`checkout:${user.id}`, { windowSeconds: 60, max: 10 });
+    const { authorizationUrl, reference } = await createCheckout({
+      userId: user.id,
+      email: user.email,
+      productType: "DIGITAL_PRODUCT",
+      productId,
+    });
+    await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "DigitalProduct", entityId: productId, metadata: { reference } });
+    return { ok: true, data: { authorizationUrl } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function startCoachingCheckout(bookingId: string): Promise<Result<{ authorizationUrl: string }>> {
+  try {
+    const user = await requireUserApi();
+    rateLimit(`checkout:${user.id}`, { windowSeconds: 60, max: 10 });
+    const { authorizationUrl, reference } = await createCheckout({
+      userId: user.id,
+      email: user.email,
+      productType: "COACHING",
+      productId: bookingId,
+    });
+    await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "CoachingBooking", entityId: bookingId, metadata: { reference } });
+    return { ok: true, data: { authorizationUrl } };
+  } catch (err) {
+    return fail(err);
+  }
+}

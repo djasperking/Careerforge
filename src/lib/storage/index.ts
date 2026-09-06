@@ -14,6 +14,16 @@ export const ALLOWED_UPLOADS: Record<string, { mime: string[]; maxBytes: number 
   "lesson-resource": { mime: ["application/pdf", "application/zip", "image/png", "image/jpeg"], maxBytes: 50 * 1024 * 1024 },
   "ad-image": { mime: ["image/png", "image/jpeg", "image/webp"], maxBytes: 3 * 1024 * 1024 },
   "cv-asset": { mime: ["image/png", "image/jpeg"], maxBytes: 2 * 1024 * 1024 },
+  "digital-product": {
+    mime: [
+      "application/pdf",
+      "application/zip",
+      "application/epub+zip",
+      "application/x-zip-compressed",
+      "application/octet-stream",
+    ],
+    maxBytes: 200 * 1024 * 1024,
+  },
 };
 
 export function assertUploadAllowed(kind: keyof typeof ALLOWED_UPLOADS, mime: string, size: number) {

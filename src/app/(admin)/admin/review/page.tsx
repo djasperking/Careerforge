@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { InstructorApplicationRow } from "./application-row";
 import { CourseReviewRow } from "./course-review-row";
+import { MarketplaceReviewRow } from "./marketplace-review-row";
 
 export const metadata = { title: "Review queue" };
 
 export default async function AdminReviewQueue() {
   await requirePermissionPage("instructors:review");
 
-  const [applications, courses] = await Promise.all([
+  const [applications, courses, products, coaching] = await Promise.all([
     db.instructorProfile.findMany({
       where: { status: "PENDING" },
       include: { user: { select: { name: true, email: true } } },
@@ -24,6 +25,16 @@ export default async function AdminReviewQueue() {
         instructor: { select: { name: true, email: true } },
         _count: { select: { modules: true } },
       },
+      orderBy: { submittedAt: "asc" },
+    }),
+    db.digitalProduct.findMany({
+      where: { reviewStatus: "SUBMITTED" },
+      include: { seller: { select: { name: true, email: true } } },
+      orderBy: { submittedAt: "asc" },
+    }),
+    db.coachingOffer.findMany({
+      where: { reviewStatus: "SUBMITTED" },
+      include: { coach: { select: { name: true, email: true } } },
       orderBy: { submittedAt: "asc" },
     }),
   ]);
@@ -104,6 +115,68 @@ export default async function AdminReviewQueue() {
                     lessonCount={lessonTotal[c.id] ?? 0}
                     submittedAt={c.submittedAt ? formatDate(c.submittedAt) : "—"}
                     previewHref={`/admin/courses/${c.id}`}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Digital products awaiting review ({products.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {products.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">Nothing awaiting review.</p>
+          ) : (
+            <ul className="space-y-4">
+              {products.map((p) => (
+                <li key={p.id}>
+                  <MarketplaceReviewRow
+                    kind="product"
+                    id={p.id}
+                    title={p.title}
+                    seller={p.seller?.name || p.seller?.email || "Unknown"}
+                    priceLabel={
+                      p.discountPercent && p.discountPercent > 0
+                        ? `${formatCurrency(p.priceCents, p.currency)} (${p.discountPercent}% off)`
+                        : formatCurrency(p.priceCents, p.currency)
+                    }
+                    meta={p.fileName}
+                    revenueSharePercent={p.revenueSharePercent}
+                    submittedAt={p.submittedAt ? formatDate(p.submittedAt) : "—"}
+                    previewHref={`/products/${p.slug}`}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Coaching offers awaiting review ({coaching.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {coaching.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">Nothing awaiting review.</p>
+          ) : (
+            <ul className="space-y-4">
+              {coaching.map((o) => (
+                <li key={o.id}>
+                  <MarketplaceReviewRow
+                    kind="coaching"
+                    id={o.id}
+                    title={o.title}
+                    seller={o.coach?.name || o.coach?.email || "Unknown"}
+                    priceLabel={formatCurrency(o.priceCents, o.currency)}
+                    meta={`${o.durationMinutes} min session`}
+                    revenueSharePercent={o.revenueSharePercent}
+                    submittedAt={o.submittedAt ? formatDate(o.submittedAt) : "—"}
+                    previewHref={`/coaching/${o.slug}`}
                   />
                 </li>
               ))}

@@ -52,6 +52,37 @@ async function resolveProduct(productType: ProductType, productId: string, userI
     return { amountCents, currency, description: `CV unlock: ${cv.title}` };
   }
 
+  if (productType === "DIGITAL_PRODUCT") {
+    const product = await db.digitalProduct.findUnique({ where: { id: productId } });
+    if (!product || product.status !== "PUBLISHED" || product.reviewStatus !== "APPROVED") {
+      throw new ApiError(404, "NOT_FOUND", "Product not available.");
+    }
+    if (product.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This product is free — download it directly.");
+    const owned = await db.digitalProductPurchase.findUnique({
+      where: { productId_userId: { productId, userId } },
+    });
+    if (owned) throw new ApiError(409, "ALREADY_OWNED", "You already own this product.");
+    const amountCents = effectivePriceCents(product);
+    const label = discountIsActive(product) ? `${product.title} (${product.discountPercent}% off)` : product.title;
+    return { amountCents, currency: product.currency, description: label };
+  }
+
+  if (productType === "COACHING") {
+    // productId is a CoachingBooking already created in PENDING_PAYMENT state.
+    const booking = await db.coachingBooking.findFirst({
+      where: { id: productId, userId },
+      include: { offer: true },
+    });
+    if (!booking) throw new ApiError(404, "NOT_FOUND", "Booking not found.");
+    if (booking.status !== "PENDING_PAYMENT") throw new ApiError(409, "ALREADY_PAID", "This booking has already been paid for.");
+    const offer = booking.offer;
+    if (offer.status !== "PUBLISHED" || offer.reviewStatus !== "APPROVED") {
+      throw new ApiError(404, "NOT_FOUND", "This coaching offer is no longer available.");
+    }
+    if (offer.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This session is free.");
+    return { amountCents: offer.priceCents, currency: offer.currency, description: `Coaching: ${offer.title}` };
+  }
+
   throw new ApiError(422, "UNSUPPORTED_PRODUCT", `Checkout for ${productType} is not implemented yet.`);
 }
 
@@ -123,6 +154,43 @@ async function activateProduct(transaction: { id: string; userId: string; produc
       where: { id: transaction.productId, userId: transaction.userId },
       data: { isPremium: true },
     });
+  } else if (transaction.productType === "DIGITAL_PRODUCT" && transaction.productId) {
+    await db.digitalProductPurchase.upsert({
+      where: { productId_userId: { productId: transaction.productId, userId: transaction.userId } },
+      create: { productId: transaction.productId, userId: transaction.userId, transactionId: transaction.id },
+      update: { transactionId: transaction.id },
+    });
+    await db.notification.create({
+      data: {
+        userId: transaction.userId,
+        type: "PAYMENT",
+        title: "Your download is ready",
+        body: "Open My Purchases to download your product.",
+        linkUrl: "/dashboard/purchases",
+      },
+    }).catch(() => {});
+  } else if (transaction.productType === "COACHING" && transaction.productId) {
+    const updated = await db.coachingBooking.updateMany({
+      where: { id: transaction.productId, userId: transaction.userId, status: "PENDING_PAYMENT" },
+      data: { status: "REQUESTED", transactionId: transaction.id },
+    });
+    if (updated.count > 0) {
+      const booking = await db.coachingBooking.findUnique({
+        where: { id: transaction.productId },
+        include: { offer: true },
+      });
+      if (booking) {
+        await db.notification.create({
+          data: {
+            userId: booking.offer.coachId,
+            type: "ANNOUNCEMENT",
+            title: "New coaching booking",
+            body: `Someone booked "${booking.offer.title}". Confirm a time from your coaching dashboard.`,
+            linkUrl: "/instructor/coaching",
+          },
+        }).catch(() => {});
+      }
+    }
   }
 }
 
