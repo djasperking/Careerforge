@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
-  ScrollText, Bell, Sparkles,
+  ScrollText, Bell, Sparkles, ClipboardList, Presentation,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@/lib/rbac";
@@ -18,6 +18,7 @@ export const customerNav: NavItem[] = [
   { label: "CV Builder", href: "/dashboard/cvs", icon: FileText },
   { label: "AI Career Tools", href: "/dashboard/ai", icon: Sparkles },
   { label: "My Learning", href: "/dashboard/courses", icon: GraduationCap },
+  { label: "Teach", href: "/instructor", icon: Presentation },
   { label: "Exams", href: "/dashboard/exams", icon: ClipboardCheck },
   { label: "Certificates", href: "/dashboard/certificates", icon: BadgeCheck },
   { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
@@ -26,8 +27,15 @@ export const customerNav: NavItem[] = [
   { label: "Profile", href: "/dashboard/profile", icon: User },
 ];
 
+export const instructorNav: NavItem[] = [
+  { label: "Overview", href: "/instructor", icon: LayoutDashboard },
+  { label: "My Courses", href: "/instructor/courses", icon: BookOpen },
+  { label: "Back to dashboard", href: "/dashboard", icon: LayoutDashboard },
+];
+
 export const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Review queue", href: "/admin/review", icon: ClipboardList, permission: "instructors:review" },
   { label: "Users", href: "/admin/users", icon: Users, permission: "users:read" },
   { label: "Courses", href: "/admin/courses", icon: BookOpen, permission: "courses:read" },
   { label: "Exams", href: "/admin/exams", icon: ClipboardCheck, permission: "exams:read" },

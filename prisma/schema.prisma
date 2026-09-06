@@ -57,11 +57,47 @@ model User {
   verificationTokens VerificationToken[]
   reviews           Review[]
   authoredCourses   Course[]        @relation("CourseInstructor")
+  reviewedCourses   Course[]        @relation("CourseReviewer")
+  instructorProfile InstructorProfile? @relation("InstructorProfileUser")
+  instructorReviews InstructorProfile[] @relation("InstructorProfileReviewer")
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
 
   @@index([status])
   @@index([createdAt])
+}
+
+enum InstructorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CourseReviewStatus {
+  DRAFT
+  SUBMITTED
+  CHANGES_REQUESTED
+  APPROVED
+}
+
+/// An application to become an instructor, plus the resulting instructor record.
+/// A user may only create/manage their own courses once status is APPROVED.
+model InstructorProfile {
+  id           String           @id @default(cuid())
+  userId       String           @unique
+  status       InstructorStatus @default(PENDING)
+  headline     String
+  bio          String
+  expertise    String[]         @default([])
+  reviewNote   String?
+  appliedAt    DateTime         @default(now())
+  reviewedAt   DateTime?
+  reviewedById String?
+
+  user       User  @relation("InstructorProfileUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("InstructorProfileReviewer", fields: [reviewedById], references: [id])
+
+  @@index([status])
 }
 
 model Role {
@@ -332,8 +368,19 @@ model Course {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
+  // Instructor marketplace: a course must be admin-APPROVED before it can be published.
+  reviewStatus        CourseReviewStatus @default(DRAFT)
+  reviewNote          String?
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewedById        String?
+  discountPercent     Int?               // 1-90; applied to priceCents at checkout
+  discountEndsAt      DateTime?
+  revenueSharePercent Int                @default(70) // instructor's cut of each sale
+
   category    Category?   @relation(fields: [categoryId], references: [id])
   instructor  User?       @relation("CourseInstructor", fields: [instructorId], references: [id])
+  reviewedBy  User?       @relation("CourseReviewer", fields: [reviewedById], references: [id])
   modules     CourseModule[]
   enrollments Enrollment[]
   exams       Exam[]
@@ -342,6 +389,7 @@ model Course {
 
   @@index([status])
   @@index([categoryId])
+  @@index([reviewStatus])
 }
 
 model CourseModule {

@@ -2,11 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requirePermissionApi } from "@/lib/session";
+import { requirePermissionApi, requireUserApi } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { ApiError } from "@/lib/api";
 import { courseFormSchema, moduleFormSchema, lessonFormSchema, linesToList } from "@/lib/course/schema";
-import { uniqueCourseSlug } from "@/lib/course/service";
+import { uniqueCourseSlug, assertCanEditCourse } from "@/lib/course/service";
+
+/** Re-render whichever course editor the caller is using. */
+function revalidateCourse(courseId: string) {
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath(`/instructor/courses/${courseId}`);
+}
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 function fail(err: unknown): Result<never> {
@@ -81,6 +87,9 @@ export async function setCourseStatus(id: string, status: "PUBLISHED" | "UNPUBLI
   try {
     const admin = await requirePermissionApi("courses:publish");
     const course = await db.course.findUniqueOrThrow({ where: { id } });
+    if (status === "PUBLISHED" && course.reviewStatus !== "APPROVED") {
+      throw new ApiError(409, "NOT_APPROVED", "This course must be approved in the review queue before it can be published.");
+    }
     await db.course.update({
       where: { id },
       data: { status, publishedAt: status === "PUBLISHED" && !course.publishedAt ? new Date() : course.publishedAt },
@@ -166,12 +175,13 @@ export async function duplicateCourse(id: string): Promise<Result<{ id: string }
 
 export async function createModule(courseId: string, raw: unknown): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("courses:write");
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
     const input = moduleFormSchema.parse(raw);
     const last = await db.courseModule.findFirst({ where: { courseId }, orderBy: { position: "desc" } });
     await db.courseModule.create({ data: { courseId, title: input.title, position: (last?.position ?? 0) + 1 } });
-    await audit({ actorId: admin.id, action: "MODULE_CREATED", entity: "Course", entityId: courseId });
-    revalidatePath(`/admin/courses/${courseId}`);
+    await audit({ actorId: user.id, action: "MODULE_CREATED", entity: "Course", entityId: courseId });
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -180,10 +190,11 @@ export async function createModule(courseId: string, raw: unknown): Promise<Resu
 
 export async function updateModule(moduleId: string, courseId: string, raw: unknown): Promise<Result<null>> {
   try {
-    await requirePermissionApi("courses:write");
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
     const input = moduleFormSchema.parse(raw);
-    await db.courseModule.update({ where: { id: moduleId }, data: { title: input.title } });
-    revalidatePath(`/admin/courses/${courseId}`);
+    await db.courseModule.update({ where: { id: moduleId, courseId }, data: { title: input.title } });
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -192,10 +203,11 @@ export async function updateModule(moduleId: string, courseId: string, raw: unkn
 
 export async function deleteModule(moduleId: string, courseId: string): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("courses:write");
-    await db.courseModule.delete({ where: { id: moduleId } });
-    await audit({ actorId: admin.id, action: "MODULE_DELETED", entity: "Course", entityId: courseId });
-    revalidatePath(`/admin/courses/${courseId}`);
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
+    await db.courseModule.delete({ where: { id: moduleId, courseId } });
+    await audit({ actorId: user.id, action: "MODULE_DELETED", entity: "Course", entityId: courseId });
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -204,7 +216,8 @@ export async function deleteModule(moduleId: string, courseId: string): Promise<
 
 export async function moveModule(moduleId: string, courseId: string, direction: "up" | "down"): Promise<Result<null>> {
   try {
-    await requirePermissionApi("courses:write");
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
     const modules = await db.courseModule.findMany({ where: { courseId }, orderBy: { position: "asc" } });
     const idx = modules.findIndex((m) => m.id === moduleId);
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
@@ -217,7 +230,7 @@ export async function moveModule(moduleId: string, courseId: string, direction: 
       db.courseModule.update({ where: { id: b.id }, data: { position: a.position } }),
       db.courseModule.update({ where: { id: a.id }, data: { position: b.position } }),
     ]);
-    revalidatePath(`/admin/courses/${courseId}`);
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -228,8 +241,11 @@ export async function moveModule(moduleId: string, courseId: string, direction: 
 
 export async function createLesson(moduleId: string, courseId: string, raw: unknown): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("courses:write");
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
     const input = lessonFormSchema.parse(raw);
+    const mod = await db.courseModule.findFirst({ where: { id: moduleId, courseId } });
+    if (!mod) throw new ApiError(404, "NOT_FOUND", "Module not found.");
     const last = await db.lesson.findFirst({ where: { moduleId }, orderBy: { position: "desc" } });
     await db.lesson.create({
       data: {
@@ -243,8 +259,8 @@ export async function createLesson(moduleId: string, courseId: string, raw: unkn
         position: (last?.position ?? 0) + 1,
       },
     });
-    await audit({ actorId: admin.id, action: "LESSON_CREATED", entity: "Course", entityId: courseId });
-    revalidatePath(`/admin/courses/${courseId}`);
+    await audit({ actorId: user.id, action: "LESSON_CREATED", entity: "Course", entityId: courseId });
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -253,8 +269,11 @@ export async function createLesson(moduleId: string, courseId: string, raw: unkn
 
 export async function updateLesson(lessonId: string, courseId: string, raw: unknown): Promise<Result<null>> {
   try {
-    await requirePermissionApi("courses:write");
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
     const input = lessonFormSchema.parse(raw);
+    const owned = await db.lesson.findFirst({ where: { id: lessonId, module: { courseId } } });
+    if (!owned) throw new ApiError(404, "NOT_FOUND", "Lesson not found.");
     await db.lesson.update({
       where: { id: lessonId },
       data: {
@@ -266,7 +285,7 @@ export async function updateLesson(lessonId: string, courseId: string, raw: unkn
         isPreview: input.isPreview,
       },
     });
-    revalidatePath(`/admin/courses/${courseId}`);
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -275,10 +294,13 @@ export async function updateLesson(lessonId: string, courseId: string, raw: unkn
 
 export async function deleteLesson(lessonId: string, courseId: string): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("courses:write");
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
+    const owned = await db.lesson.findFirst({ where: { id: lessonId, module: { courseId } } });
+    if (!owned) throw new ApiError(404, "NOT_FOUND", "Lesson not found.");
     await db.lesson.delete({ where: { id: lessonId } });
-    await audit({ actorId: admin.id, action: "LESSON_DELETED", entity: "Course", entityId: courseId });
-    revalidatePath(`/admin/courses/${courseId}`);
+    await audit({ actorId: user.id, action: "LESSON_DELETED", entity: "Course", entityId: courseId });
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);
@@ -287,8 +309,9 @@ export async function deleteLesson(lessonId: string, courseId: string): Promise<
 
 export async function moveLesson(lessonId: string, moduleId: string, courseId: string, direction: "up" | "down"): Promise<Result<null>> {
   try {
-    await requirePermissionApi("courses:write");
-    const lessons = await db.lesson.findMany({ where: { moduleId }, orderBy: { position: "asc" } });
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
+    const lessons = await db.lesson.findMany({ where: { moduleId, module: { courseId } }, orderBy: { position: "asc" } });
     const idx = lessons.findIndex((l) => l.id === lessonId);
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
     if (idx < 0 || swapIdx < 0 || swapIdx >= lessons.length) return { ok: true, data: null };
@@ -300,7 +323,7 @@ export async function moveLesson(lessonId: string, moduleId: string, courseId: s
       db.lesson.update({ where: { id: b.id }, data: { position: a.position } }),
       db.lesson.update({ where: { id: a.id }, data: { position: b.position } }),
     ]);
-    revalidatePath(`/admin/courses/${courseId}`);
+    revalidateCourse(courseId);
     return { ok: true, data: null };
   } catch (err) {
     return fail(err);

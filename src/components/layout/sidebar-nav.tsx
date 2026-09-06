@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { adminNav, customerNav } from "./nav-config";
+import { adminNav, customerNav, instructorNav } from "./nav-config";
 import { hasPermission, type PermissionKey } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 
@@ -16,15 +16,14 @@ export function SidebarNav({
   permissions,
   badges,
 }: {
-  area: "Dashboard" | "Admin";
+  area: "Dashboard" | "Admin" | "Instructor";
   permissions: PermissionKey[] | "*";
   badges?: Record<string, number>;
 }) {
   const pathname = usePathname();
-  const items = (area === "Admin" ? adminNav : customerNav).filter(
-    (i) => !i.permission || hasPermission(permissions, i.permission),
-  );
-  const root = area === "Admin" ? "/admin" : "/dashboard";
+  const nav = area === "Admin" ? adminNav : area === "Instructor" ? instructorNav : customerNav;
+  const items = nav.filter((i) => !i.permission || hasPermission(permissions, i.permission));
+  const root = area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard";
 
   return (
     <nav className="flex flex-col gap-1">

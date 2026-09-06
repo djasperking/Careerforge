@@ -31,6 +31,7 @@ export const PERMISSIONS = {
   "courses:write": "Create / edit courses",
   "courses:publish": "Publish / unpublish courses",
   "courses:delete": "Delete courses",
+  "instructors:review": "Approve instructors & course submissions",
   // exams
   "exams:read": "View exams & attempts",
   "exams:write": "Create / edit exams & questions",
@@ -64,14 +65,14 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
   SUPER_ADMIN: "*",
   ADMIN: [
     "users:read", "users:write", "users:suspend", "users:roles",
-    "courses:read", "courses:write", "courses:publish", "courses:delete",
+    "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
     "exams:read", "exams:write", "exams:grade", "exams:security",
     "cv:templates", "payments:read", "subscriptions:write",
     "ai:config", "ai:prompts", "ads:write", "content:write",
     "support:handle", "analytics:read", "audit:read", "settings:write",
   ],
   COURSE_MANAGER: [
-    "courses:read", "courses:write", "courses:publish", "courses:delete",
+    "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
     "exams:read", "exams:write", "exams:grade", "analytics:read",
   ],
   FINANCE_MANAGER: ["payments:read", "payments:refund", "subscriptions:write", "analytics:read"],

@@ -218,6 +218,7 @@ async function seedCatalog() {
       description:
         "A short demo course covering how to structure a CV, write impact-led bullet points and pass ATS screening.",
       status: "PUBLISHED",
+      reviewStatus: "APPROVED",
       publishedAt: new Date(),
       level: "BEGINNER",
       durationMinutes: 45,
@@ -273,7 +274,6 @@ async function seedCatalog() {
             type: "MULTIPLE_CHOICE",
             prompt: "What should lead each experience bullet point?",
             explanation: "Start with a strong action verb.",
-            reviewStatus: "APPROVED",
             position: 1,
             options: {
               create: [
@@ -288,7 +288,6 @@ async function seedCatalog() {
             type: "TRUE_FALSE",
             prompt: "ATS systems generally handle multi-column layouts and text boxes well.",
             explanation: "False — single-column, simple layouts parse most reliably.",
-            reviewStatus: "APPROVED",
             position: 2,
             options: {
               create: [
@@ -301,7 +300,6 @@ async function seedCatalog() {
             type: "MULTIPLE_CHOICE",
             prompt: "Which is the strongest achievement statement?",
             explanation: "The one with a concrete, quantified outcome.",
-            reviewStatus: "APPROVED",
             position: 3,
             options: {
               create: [
@@ -326,6 +324,7 @@ async function seedCatalog() {
       description:
         "A paid demo course for exercising checkout: structured interview frameworks, storytelling techniques and salary negotiation.",
       status: "PUBLISHED",
+      reviewStatus: "APPROVED",
       publishedAt: new Date(),
       level: "INTERMEDIATE",
       durationMinutes: 90,

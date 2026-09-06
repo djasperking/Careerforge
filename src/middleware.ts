@@ -19,11 +19,12 @@ export default auth((req) => {
 
   const isDashboard = path.startsWith("/dashboard");
   const isAdmin = path.startsWith("/admin");
+  const isInstructor = path.startsWith("/instructor");
   const isAuthPage = ["/login", "/register", "/forgot-password", "/reset-password"].some((p) =>
     path.startsWith(p),
   );
 
-  if ((isDashboard || isAdmin) && !isLoggedIn) {
+  if ((isDashboard || isAdmin || isInstructor) && !isLoggedIn) {
     const url = new URL("/login", nextUrl);
     url.searchParams.set("next", path);
     return NextResponse.redirect(url);
@@ -38,5 +39,8 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register", "/forgot-password", "/reset-password"],
+  matcher: [
+    "/dashboard/:path*", "/admin/:path*", "/instructor/:path*",
+    "/login", "/register", "/forgot-password", "/reset-password",
+  ],
 };

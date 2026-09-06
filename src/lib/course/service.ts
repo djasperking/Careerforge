@@ -2,6 +2,39 @@ import { db } from "@/lib/db";
 import { ApiError } from "@/lib/api";
 import { slugify } from "@/lib/utils";
 import { sendEmail } from "@/lib/email";
+import { hasPermission, type PermissionKey } from "@/lib/rbac";
+
+/**
+ * A user may edit a course's content if they hold `courses:write` (admins /
+ * course managers) OR they are the course's own instructor. Owner edits are
+ * blocked once the course is locked for review or approved — the instructor
+ * must first pull it back to draft.
+ */
+export async function assertCanEditCourse(
+  user: { id: string; permissions: PermissionKey[] | "*" },
+  courseId: string,
+  { allowLocked = false } = {},
+) {
+  const course = await db.course.findUnique({ where: { id: courseId } });
+  if (!course) throw new ApiError(404, "NOT_FOUND", "Course not found.");
+
+  if (hasPermission(user.permissions, "courses:write")) return course;
+
+  if (course.instructorId === user.id) {
+    if (!allowLocked && (course.reviewStatus === "SUBMITTED" || course.reviewStatus === "APPROVED")) {
+      throw new ApiError(
+        409,
+        "COURSE_LOCKED",
+        course.reviewStatus === "SUBMITTED"
+          ? "This course is awaiting review — you can't edit it until a decision is made."
+          : "This course is approved. Move it back to draft to make changes.",
+      );
+    }
+    return course;
+  }
+
+  throw new ApiError(403, "FORBIDDEN", "You do not have access to this course.");
+}
 
 export async function uniqueCourseSlug(title: string, excludeId?: string) {
   const base = slugify(title) || "course";

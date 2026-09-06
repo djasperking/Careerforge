@@ -1,23 +1,29 @@
+import Link from "next/link";
 import {
   Users, GraduationCap, BadgeCheck, CreditCard, Bot, FileText, ClipboardCheck, Megaphone,
+  ClipboardList, UserPlus, LifeBuoy, RefreshCcw, ArrowRight,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
 import { db } from "@/lib/db";
+import { hasPermission } from "@/lib/rbac";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PhaseNotice } from "@/components/ui/phase-notice";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Admin" };
 
 export default async function AdminDashboard() {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const canReview = hasPermission(admin.permissions, "instructors:review");
+  const canSupport = hasPermission(admin.permissions, "support:handle");
+  const canRefund = hasPermission(admin.permissions, "payments:refund") || hasPermission(admin.permissions, "payments:read");
 
   const since30 = new Date(Date.now() - 30 * 86_400_000);
   const [
     totalUsers, newUsers, activeUsers, enrollments, completions, certificates,
     aiRequests, cvCount, examsCompleted, adImpressions, revenueAgg, recentAudit,
+    pendingInstructors, coursesInReview, openTickets, disputedTx,
   ] = await Promise.all([
     db.user.count({ where: { deletedAt: null } }),
     db.user.count({ where: { createdAt: { gte: since30 } } }),
@@ -31,15 +37,44 @@ export default async function AdminDashboard() {
     db.adImpression.count({ where: { createdAt: { gte: since30 } } }),
     db.transaction.aggregate({ _sum: { amountCents: true }, where: { status: "SUCCESS" } }),
     db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8, include: { actor: true } }),
+    db.instructorProfile.count({ where: { status: "PENDING" } }),
+    db.course.count({ where: { reviewStatus: "SUBMITTED" } }),
+    db.supportTicket.count({ where: { status: { in: ["OPEN", "PENDING"] } } }),
+    db.transaction.count({ where: { status: "VERIFICATION_FAILED" } }),
   ]);
+
+  const attention: { label: string; count: number; href: string; icon: React.ElementType; show: boolean }[] = [
+    { label: "Instructor applications", count: pendingInstructors, href: "/admin/review", icon: UserPlus, show: canReview },
+    { label: "Courses awaiting review", count: coursesInReview, href: "/admin/review", icon: ClipboardList, show: canReview },
+    { label: "Open support tickets", count: openTickets, href: "/admin/support", icon: LifeBuoy, show: canSupport },
+    { label: "Payments to reconcile", count: disputedTx, href: "/admin/payments", icon: RefreshCcw, show: canRefund },
+  ].filter((x) => x.show);
 
   return (
     <div>
-      <PageHeader title="Admin dashboard" description="Platform activity at a glance." />
-      <PhaseNotice phase="Phase 1 — Foundation">
-        These metrics are live queries. Charts, date-range filters and full reports are expanded as
-        later phases populate the data.
-      </PhaseNotice>
+      <PageHeader title="Admin dashboard" description="What needs your attention, and platform activity." />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {attention.map((a) => (
+          <Link
+            key={a.label}
+            href={a.href}
+            className="group flex items-center justify-between rounded-lg border bg-card p-4 transition-colors hover:border-primary"
+          >
+            <div>
+              <p className="text-sm text-muted-foreground">{a.label}</p>
+              <p className={`mt-1 font-display text-2xl font-semibold ${a.count > 0 ? "text-foreground" : "text-muted-foreground"}`}>
+                {a.count}
+              </p>
+            </div>
+            {a.count > 0 ? (
+              <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
+            ) : (
+              <a.icon className="size-4 text-muted-foreground" />
+            )}
+          </Link>
+        ))}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total users" value={totalUsers} hint={`${newUsers} new in 30d`} icon={Users} />
