@@ -11,6 +11,14 @@ export function formatCurrency(cents: number, currency = "NGN") {
   );
 }
 
+/** Money is stored in minor units (kobo/cents); forms work in major units (naira). */
+export function minorToMajor(minor: number) {
+  return Math.round(minor) / 100;
+}
+export function majorToMinor(major: number) {
+  return Math.round((Number(major) || 0) * 100);
+}
+
 export function formatDate(date: Date | string, opts?: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",

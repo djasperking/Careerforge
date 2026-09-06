@@ -6,6 +6,7 @@ import { Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { minorToMajor, majorToMinor } from "@/lib/utils";
 import { updatePlan } from "./actions";
 
 export function PlanEditor({
@@ -49,8 +50,8 @@ export function PlanEditor({
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label className="text-xs">Price (cents)</Label>
-          <Input type="number" min={0} value={form.priceCents} onChange={(e) => setForm((f) => ({ ...f, priceCents: Number(e.target.value) }))} className="h-8" />
+          <Label className="text-xs">Price (₦)</Label>
+          <Input type="number" min={0} step="0.01" value={minorToMajor(form.priceCents)} onChange={(e) => setForm((f) => ({ ...f, priceCents: majorToMinor(e.target.value as unknown as number) }))} className="h-8" />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Billing period</Label>

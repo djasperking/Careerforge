@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { minorToMajor, majorToMinor } from "@/lib/utils";
 import { updateCourse, createCategory } from "../actions";
 
 interface Props {
@@ -119,9 +120,15 @@ export function CourseSettingsForm({ courseId, categories: initialCategories, in
           <Input type="number" min={0} value={form.durationMinutes} onChange={(e) => set("durationMinutes", Number(e.target.value))} />
         </div>
         <div className="space-y-1.5">
-          <Label>Price (in cents/kobo)</Label>
-          <Input type="number" min={0} value={form.priceCents} onChange={(e) => set("priceCents", Number(e.target.value))} />
-          <p className="text-xs text-muted-foreground">0 = free course. Checkout for paid courses arrives in Phase 6.</p>
+          <Label>Price (₦)</Label>
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            value={minorToMajor(form.priceCents)}
+            onChange={(e) => set("priceCents", majorToMinor(e.target.value as unknown as number))}
+          />
+          <p className="text-xs text-muted-foreground">Amount in Naira. 0 = free course.</p>
         </div>
         <div className="space-y-1.5">
           <Label>Currency</Label>

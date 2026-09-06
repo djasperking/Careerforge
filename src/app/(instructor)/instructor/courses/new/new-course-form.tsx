@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { minorToMajor, majorToMinor } from "@/lib/utils";
 import { createMyCourse } from "../../actions";
 
 export function NewCourseForm({ categories }: { categories: { id: string; name: string }[] }) {
@@ -77,8 +78,15 @@ export function NewCourseForm({ categories }: { categories: { id: string; name: 
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label>Price (kobo — 100000 = ₦1,000)</Label>
-          <Input type="number" min={0} value={form.priceCents} onChange={(e) => set("priceCents", Number(e.target.value))} />
+          <Label>Price (₦)</Label>
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            value={minorToMajor(form.priceCents)}
+            onChange={(e) => set("priceCents", majorToMinor(e.target.value as unknown as number))}
+          />
+          <p className="text-xs text-muted-foreground">Enter the amount in Naira. 0 = free.</p>
         </div>
         <div className="space-y-1.5">
           <Label>Currency</Label>
