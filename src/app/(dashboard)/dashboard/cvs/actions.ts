@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { requireUserApi } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { ApiError } from "@/lib/api";
-import { withAIUsage } from "@/lib/ai";
+import { withAIUsage, getAIProvider } from "@/lib/ai";
 import {
   cvContentSchema, coerceCvContent, emptyCvContent, parseCvContent, scoreCvCompleteness, type CVContent,
 } from "@/lib/cv/schema";
@@ -182,12 +182,13 @@ export async function importCvFromUpload(
       throw new ApiError(422, "JD_TOO_SHORT", "Paste a fuller job description, or leave it blank to just import.");
     }
 
-    const result = await withAIUsage({ userId: user.id, feature: "cv.import" }, (provider) =>
-      provider.importCV(
-        { rawText, targetJobDescription: jobDescription || undefined },
-        { userId: user.id, feature: "cv.import" },
-      ),
-    );
+    // Plain import (just structuring an uploaded CV into fields) is a free
+    // utility on every plan and does not count against the AI quota. Only
+    // tailoring to a job description goes through the metered path.
+    const ctx = { userId: user.id, feature: "cv.import" };
+    const result = jobDescription
+      ? await withAIUsage(ctx, (provider) => provider.importCV({ rawText, targetJobDescription: jobDescription }, ctx))
+      : await getAIProvider().importCV({ rawText }, ctx);
 
     const content = coerceCvContent(result.data.content);
     const notes = (result.data.tailoringNotes ?? []).map((n) => String(n)).filter(Boolean).slice(0, 12);

@@ -163,13 +163,39 @@ export interface CvTemplateConfig {
   sectionOrder: string[];
 }
 
+/** Legacy / shorthand section keys used in older template configs. */
+const SECTION_ALIASES: Record<string, (typeof CV_SECTIONS)[number]> = {
+  summary: "professionalSummary",
+  objective: "careerObjective",
+  volunteer: "volunteerExperience",
+  additional: "additionalInformation",
+  personal: "personalInfo",
+};
+
 export function parseTemplateConfig(raw: unknown): CvTemplateConfig {
   const c = (raw ?? {}) as Partial<CvTemplateConfig>;
+  const raw0 = Array.isArray(c.sectionOrder) && c.sectionOrder.length ? c.sectionOrder : [...CV_SECTIONS];
+
+  // Normalise aliases, drop unknowns, then append any real section the config
+  // forgot — so a section the user filled in is never silently hidden.
+  const seen = new Set<string>();
+  const normalised: string[] = [];
+  for (const key of raw0) {
+    const real = SECTION_ALIASES[key] ?? key;
+    if ((CV_SECTIONS as readonly string[]).includes(real) && !seen.has(real)) {
+      seen.add(real);
+      normalised.push(real);
+    }
+  }
+  for (const key of CV_SECTIONS) {
+    if (!seen.has(key)) normalised.push(key);
+  }
+
   return {
     columns: c.columns === 2 ? 2 : 1,
     font: c.font ?? "Helvetica",
     spacing: c.spacing ?? "comfortable",
-    sectionOrder: Array.isArray(c.sectionOrder) && c.sectionOrder.length ? c.sectionOrder : [...CV_SECTIONS],
+    sectionOrder: normalised,
   };
 }
 

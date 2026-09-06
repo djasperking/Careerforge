@@ -18,7 +18,7 @@ export default async function ImportCvPage() {
       </Link>
       <PageHeader
         title="Import & tailor a CV"
-        description="Upload an existing CV (or paste it), optionally add a job advert, and we'll turn it into an editable Career Forge CV — reordered and reworded for that role, with nothing invented."
+        description="Upload an existing CV (or paste it) and we'll read it into editable fields — free on every plan, no typing. Add a job advert to also have the AI reorder and reword your real experience for that role, with nothing invented."
       />
       <ImportCvForm />
     </div>

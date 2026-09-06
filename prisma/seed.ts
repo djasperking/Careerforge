@@ -151,7 +151,9 @@ export async function seedCvTemplates() {
           font: key === "modern" ? "Inter" : "Source Serif",
           spacing: "comfortable",
           sectionOrder: [
-            "summary", "experience", "education", "skills", "projects", "certifications", "languages",
+            "personalInfo", "professionalSummary", "careerObjective", "experience", "education",
+            "skills", "projects", "certifications", "achievements", "languages",
+            "volunteerExperience", "references", "additionalInformation",
           ],
         },
       },
