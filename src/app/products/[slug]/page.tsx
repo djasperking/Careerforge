@@ -20,7 +20,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   ]);
   if (!product) notFound();
 
-  const owned = user ? await userOwnsDigitalProduct(user.id, product.id) : false;
+  const isSeller = user?.id === product.sellerId;
+  const owned = user ? isSeller || (await userOwnsDigitalProduct(user.id, product.id)) : false;
   const price = effectivePriceCents(product);
 
   return (

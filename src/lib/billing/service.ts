@@ -58,6 +58,7 @@ async function resolveProduct(productType: ProductType, productId: string, userI
       throw new ApiError(404, "NOT_FOUND", "Product not available.");
     }
     if (product.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This product is free — download it directly.");
+    if (product.sellerId === userId) throw new ApiError(422, "OWN_PRODUCT", "You can't buy your own product.");
     const owned = await db.digitalProductPurchase.findUnique({
       where: { productId_userId: { productId, userId } },
     });
