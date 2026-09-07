@@ -33,7 +33,8 @@ export default async function JobsPage({
       <main className="container py-10">
         <h1 className="font-display text-3xl font-semibold">Jobs</h1>
         <p className="mt-1 text-muted-foreground">
-          Hand-picked roles for annotators, AI trainers and remote workers. New listings added regularly.
+          Real openings at other companies, hand-picked for annotators, AI trainers and remote workers.
+          Career Forge doesn&apos;t hire — we point you to the roles, and you apply.
         </p>
 
         <form className="mt-6 flex flex-wrap gap-2" action="/jobs">

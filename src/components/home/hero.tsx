@@ -128,7 +128,7 @@ function CoachingVisual() {
 const SLIDES: Slide[] = [
   { key: "cv", tag: "AI CV Builder", icon: FileText, title: "A CV that beats the bots", line: "Draft, analyse and tailor it to any job — with a live ATS match score.", visual: <CvVisual /> },
   { key: "learn", tag: "Courses & Certificates", icon: GraduationCap, title: "Learn the skill, prove it", line: "Video courses, timed exams and a certificate anyone can verify.", visual: <CertVisual /> },
-  { key: "jobs", tag: "Jobs board", icon: Briefcase, title: "Land the remote role", line: "Curated annotation and AI-training jobs, updated every week.", visual: <JobsVisual /> },
+  { key: "jobs", tag: "Jobs board", icon: Briefcase, title: "See who's hiring", line: "A weekly feed of real openings at other companies — you apply.", visual: <JobsVisual /> },
   { key: "coach", tag: "1-on-1 Coaching", icon: CalendarClock, title: "Get a mentor in your corner", line: "Book a vetted instructor for portfolio and interview prep.", visual: <CoachingVisual /> },
 ];
 
@@ -180,8 +180,8 @@ export function Hero({ loggedIn, stats }: { loggedIn: boolean; stats: { label: s
           </h1>
 
           <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-            One platform to build an AI-tailored CV, learn in-demand skills, earn a verifiable
-            certificate, and apply to real remote jobs — built for people who want to earn in dollars.
+            We train you in the skills companies hire for — data annotation, AI training and more —
+            then hand you the certificate, CV and coaching to go land the work yourself.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">

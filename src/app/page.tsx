@@ -17,7 +17,7 @@ const pillars = [
   { icon: Sparkles, title: "AI CV Builder", body: "Draft, analyse and tailor your CV to any job with a live ATS match score and honest AI edits.", href: "/register", accent: "from-primary/15 to-primary/5 text-primary" },
   { icon: GraduationCap, title: "Courses & Exams", body: "Structured video courses, secure timed exams, and progress tracked on the server — not the client.", href: "/courses", accent: "from-secondary/15 to-secondary/5 text-secondary" },
   { icon: BadgeCheck, title: "Verifiable Certificates", body: "Pass and earn a certificate with a public verification page you can put on LinkedIn.", href: "/verify", accent: "from-success/15 to-success/5 text-success" },
-  { icon: Briefcase, title: "Jobs Board", body: "Curated remote annotation and AI-training roles, refreshed weekly, with how-to-apply notes.", href: "/jobs", accent: "from-accent/15 to-accent/5 text-accent" },
+  { icon: Briefcase, title: "Jobs Board", body: "A weekly feed of real openings at other companies, with how-to-apply notes. We point you to them — you apply.", href: "/jobs", accent: "from-accent/15 to-accent/5 text-accent" },
   { icon: CalendarClock, title: "1-on-1 Coaching", body: "Book a vetted instructor for portfolio review, interview prep or a career plan.", href: "/coaching", accent: "from-warning/15 to-warning/5 text-warning" },
   { icon: BarChart3, title: "Career Guidance", body: "An AI assistant for planning, cover letters, skill-gap analysis and interview practice.", href: "/register", accent: "from-primary/15 to-accent/5 text-primary" },
 ];
@@ -28,9 +28,9 @@ const marqueeItems = [
 ];
 
 const steps = [
-  { n: "01", t: "Build", d: "Create an AI-assisted CV and pick a professional template — free." },
-  { n: "02", t: "Learn", d: "Take a course, complete the lessons and pass the exam." },
-  { n: "03", t: "Get hired", d: "Earn a verifiable certificate and apply to jobs on the board." },
+  { n: "01", t: "Learn a skill", d: "Pick a course — data annotation, AI training, or any instructor's track — and work through the lessons." },
+  { n: "02", t: "Prove it", d: "Pass the exam for a verifiable certificate, and build an AI-tailored CV to match." },
+  { n: "03", t: "Go get the work", d: "Use the jobs board to see who's hiring and apply directly — or take your new skill anywhere." },
 ];
 
 export default async function HomePage() {
@@ -66,7 +66,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Everything you need, in one place</h2>
             <p className="mt-3 text-muted-foreground">
-              From a blank page to a paid remote role — Career Forge covers the whole journey.
+              From your first lesson to job-ready — the training, the proof, and the tools to go get the work.
             </p>
           </div>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,7 +114,7 @@ export default async function HomePage() {
             <div className="flex items-end justify-between">
               <div>
                 <h2 className="font-display text-2xl font-bold sm:text-3xl">Latest jobs</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Fresh remote and on-site roles for our community.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Openings at other companies, hand-picked for our learners.</p>
               </div>
               <Link href="/jobs" className="text-sm font-medium text-primary hover:underline">All jobs →</Link>
             </div>
@@ -174,7 +174,7 @@ export default async function HomePage() {
               Forge the career you deserve
             </h2>
             <p className="relative mx-auto mt-3 max-w-xl text-primary-foreground/80">
-              Start with a free CV today. Learn a skill, get certified, and apply to real jobs — all in one place.
+              Learn a skill, earn a certificate that proves it, and build the CV to match. The work is out there — we get you ready for it.
             </p>
             <div className="relative mt-8">
               <Link
