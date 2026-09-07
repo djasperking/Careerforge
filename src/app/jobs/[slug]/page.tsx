@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Building2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
@@ -74,6 +75,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
           )}
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

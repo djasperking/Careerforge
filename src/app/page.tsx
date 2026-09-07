@@ -3,14 +3,12 @@ import {
   ArrowRight, Sparkles, GraduationCap, BadgeCheck, Briefcase,
   CalendarClock, BarChart3, MapPin,
 } from "lucide-react";
-import { Brand } from "@/components/layout/brand";
 import { MarketingHeader } from "@/components/layout/marketing-header";
-import { SocialLinks } from "@/components/layout/social-links";
-import { SubscribeForm } from "@/components/newsletter/subscribe-form";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Hero } from "@/components/home/hero";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
-import { getSocialLinks, getPlatformStats } from "@/lib/site";
+import { getPlatformStats } from "@/lib/site";
 import { listPublicJobs } from "@/lib/jobs/service";
 import { listPublishedPosts } from "@/lib/blog/service";
 import { formatDate } from "@/lib/utils";
@@ -36,9 +34,8 @@ const steps = [
 ];
 
 export default async function HomePage() {
-  const [user, social, stats, latestJobs, latestPosts] = await Promise.all([
+  const [user, stats, latestJobs, latestPosts] = await Promise.all([
     getCurrentUser(),
-    getSocialLinks(),
     getPlatformStats(),
     listPublicJobs().then((j) => j.slice(0, 4)),
     listPublishedPosts({ take: 3 }),
@@ -191,30 +188,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t">
-        <div className="container flex flex-col items-center gap-3 border-b py-10 text-center">
-          <p className="font-display text-lg font-semibold">Get the weekly digest</p>
-          <p className="max-w-md text-sm text-muted-foreground">
-            New jobs, guides and courses — one email every Monday. Unsubscribe anytime.
-          </p>
-          <div className="w-full max-w-sm">
-            <SubscribeForm source="footer" />
-          </div>
-        </div>
-        <div className="container flex flex-col items-center justify-between gap-4 py-8 sm:flex-row">
-          <Brand />
-          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Career Forge. All rights reserved.</p>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <Link href="/jobs" className="hover:text-foreground">Jobs</Link>
-            <Link href="/courses" className="hover:text-foreground">Courses</Link>
-            <Link href="/products" className="hover:text-foreground">Digital products</Link>
-            <Link href="/coaching" className="hover:text-foreground">Coaching</Link>
-            <Link href="/blog" className="hover:text-foreground">Blog</Link>
-            <Link href="/verify" className="hover:text-foreground">Verify a certificate</Link>
-            <SocialLinks links={social} className="ml-1" />
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

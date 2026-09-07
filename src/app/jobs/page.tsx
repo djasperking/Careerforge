@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Briefcase, MapPin } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -93,6 +94,7 @@ export default async function JobsPage({
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

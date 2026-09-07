@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FileText } from "lucide-react";
@@ -70,6 +71,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -59,7 +59,7 @@ export function MarketingHeader({ loggedIn }: { loggedIn: boolean }) {
       <div ref={wrapRef} className="container flex h-16 items-center gap-4">
         <Brand />
 
-        <nav className="ml-4 hidden items-center gap-6 md:flex">
+        <nav className="ml-auto hidden items-center gap-6 md:flex">
           <Link href="/jobs" className={navLink("/jobs", pathname.startsWith("/jobs"))}>Jobs</Link>
 
           <div className="relative" onMouseEnter={openLearn} onMouseLeave={scheduleClose}>
@@ -74,7 +74,7 @@ export function MarketingHeader({ loggedIn }: { loggedIn: boolean }) {
             </button>
             {learnOpen ? (
               <div
-                className="absolute left-0 top-full z-50 w-[320px] pt-3"
+                className="absolute right-0 top-full z-50 w-[300px] pt-3"
                 onMouseEnter={openLearn}
                 onMouseLeave={scheduleClose}
               >
@@ -102,7 +102,7 @@ export function MarketingHeader({ loggedIn }: { loggedIn: boolean }) {
           <Link href="/blog" className={navLink("/blog", pathname.startsWith("/blog"))}>Blog</Link>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 md:ml-6">
           {loggedIn ? (
             <Link href="/dashboard" className={ctaClass}>Dashboard</Link>
           ) : (

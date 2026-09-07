@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SubscribeForm } from "@/components/newsletter/subscribe-form";
 
@@ -31,6 +32,7 @@ export default async function NewsletterPage({ searchParams }: { searchParams: P
           <SubscribeForm source="newsletter-page" />
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }
