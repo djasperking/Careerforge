@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { appUrl } from "@/lib/email";
-import { getInstructorProfile } from "@/lib/instructor/service";
+import { getInstructorProfile, canSellMarketplace } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,7 +15,7 @@ import { ProductReviewPanel } from "./review-panel";
 export default async function InstructorProductEditor({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const profile = await getInstructorProfile(user.id);
-  if (!profile || profile.status !== "APPROVED") redirect("/instructor");
+  if (!canSellMarketplace(user.permissions, profile?.status).allowed) redirect("/instructor");
 
   const { id } = await params;
   const product = await db.digitalProduct.findFirst({

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { ApiError } from "@/lib/api";
-import { ROLES } from "@/lib/rbac";
+import { ROLES, hasPermission, type PermissionKey } from "@/lib/rbac";
 import type { Course } from "@prisma/client";
 
 /** The caller's instructor application/record, or null if they never applied. */
@@ -18,6 +18,28 @@ export async function requireApprovedInstructor(userId: string) {
     throw new ApiError(403, "NOT_AN_INSTRUCTOR", "You need an approved instructor account to do that.");
   }
   return profile;
+}
+
+/**
+ * Who can author marketplace items (courses, digital products, coaching): an
+ * APPROVED instructor, or a course manager / admin (`courses:write`). Staff
+ * authors skip the instructor review queue, exactly like admin-authored courses.
+ */
+export function canSellMarketplace(
+  permissions: PermissionKey[] | "*",
+  profileStatus?: string | null,
+): { allowed: boolean; isStaff: boolean } {
+  const isStaff = hasPermission(permissions, "courses:write");
+  return { allowed: isStaff || profileStatus === "APPROVED", isStaff };
+}
+
+export async function assertCanSell(user: { id: string; permissions: PermissionKey[] | "*" }) {
+  const profile = await getInstructorProfile(user.id);
+  const { allowed, isStaff } = canSellMarketplace(user.permissions, profile?.status);
+  if (!allowed) {
+    throw new ApiError(403, "NOT_A_SELLER", "You need an approved instructor account to do that.");
+  }
+  return { profile, isStaff };
 }
 
 /** Load a course that the caller owns (as its instructor), or throw 404. */

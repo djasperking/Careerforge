@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/session";
-import { getInstructorProfile } from "@/lib/instructor/service";
+import { getInstructorProfile, canSellMarketplace } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { bunnyEnabled } from "@/lib/video/bunny";
@@ -11,7 +11,7 @@ export const metadata = { title: "New product" };
 export default async function NewProductPage() {
   const user = await requireUser();
   const profile = await getInstructorProfile(user.id);
-  if (!profile || profile.status !== "APPROVED") redirect("/instructor");
+  if (!canSellMarketplace(user.permissions, profile?.status).allowed) redirect("/instructor");
 
   return (
     <div>

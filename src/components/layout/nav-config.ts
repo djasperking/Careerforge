@@ -53,6 +53,7 @@ export const adminNav: NavItem[] = [
   { group: "Learning", label: "Exams", href: "/admin/exams", icon: ClipboardCheck, permission: "exams:read" },
   { group: "Learning", label: "Certificates", href: "/admin/certificates", icon: BadgeCheck, permission: "courses:read" },
   { group: "Learning", label: "CV Templates", href: "/admin/cv-templates", icon: FileText, permission: "cv:templates" },
+  { group: "Learning", label: "Digital products", href: "/instructor/products", icon: Package, permission: "courses:write" },
   { group: "Learning", label: "AI", href: "/admin/ai", icon: Bot, permission: "ai:config" },
 
   { group: "Money", label: "Payments", href: "/admin/payments", icon: CreditCard, permission: "payments:read" },

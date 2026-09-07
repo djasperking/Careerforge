@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { requireUserApi } from "@/lib/session";
 import { ApiError } from "@/lib/api";
 import { audit } from "@/lib/audit";
-import { requireApprovedInstructor } from "@/lib/instructor/service";
+import { assertCanSell } from "@/lib/instructor/service";
 import { uniqueDigitalProductSlug, requireOwnedDigitalProduct } from "@/lib/marketplace/digital";
 import { parseVideoUrl } from "@/lib/marketplace/video";
 
@@ -96,7 +96,7 @@ function deliveryData(input: z.infer<typeof productSchema>) {
 export async function createMyProduct(raw: unknown): Promise<Result<{ id: string }>> {
   try {
     const user = await requireUserApi();
-    await requireApprovedInstructor(user.id);
+    const { isStaff } = await assertCanSell(user);
     const input = productSchema.parse(raw);
     const slug = await uniqueDigitalProductSlug(input.title);
 
@@ -113,7 +113,10 @@ export async function createMyProduct(raw: unknown): Promise<Result<{ id: string
         discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
         discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : null,
         status: "DRAFT",
-        reviewStatus: "DRAFT",
+        // Staff-authored products skip the review queue, like admin-authored courses.
+        ...(isStaff
+          ? { reviewStatus: "APPROVED", reviewedAt: new Date(), reviewedById: user.id }
+          : { reviewStatus: "DRAFT" }),
       },
     });
     await audit({ actorId: user.id, action: "DIGITAL_PRODUCT_CREATED", entity: "DigitalProduct", entityId: product.id });
@@ -127,11 +130,15 @@ export async function createMyProduct(raw: unknown): Promise<Result<{ id: string
 export async function updateMyProduct(id: string, raw: unknown): Promise<Result<null>> {
   try {
     const user = await requireUserApi();
-    await requireApprovedInstructor(user.id);
+    const { isStaff } = await assertCanSell(user);
     const product = await requireOwnedDigitalProduct(user.id, id);
     if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "LOCKED", "This product is awaiting review.");
     const input = productSchema.parse(raw);
     const slug = product.title === input.title ? product.slug : await uniqueDigitalProductSlug(input.title, id);
+
+    // Instructors: editing an approved product sends it back for re-review.
+    // Staff edits keep the product live.
+    const demote = !isStaff && product.reviewStatus === "APPROVED";
 
     await db.digitalProduct.update({
       where: { id },
@@ -145,9 +152,8 @@ export async function updateMyProduct(id: string, raw: unknown): Promise<Result<
         currency: input.currency,
         discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
         discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : null,
-        // Editing an approved product sends it back to draft for re-review.
-        reviewStatus: product.reviewStatus === "APPROVED" ? "DRAFT" : product.reviewStatus,
-        status: product.reviewStatus === "APPROVED" ? "DRAFT" : product.status,
+        reviewStatus: demote ? "DRAFT" : product.reviewStatus,
+        status: demote ? "DRAFT" : product.status,
       },
     });
     await audit({ actorId: user.id, action: "DIGITAL_PRODUCT_UPDATED", entity: "DigitalProduct", entityId: id });
@@ -162,7 +168,7 @@ export async function updateMyProduct(id: string, raw: unknown): Promise<Result<
 export async function submitProductForReview(id: string): Promise<Result<null>> {
   try {
     const user = await requireUserApi();
-    await requireApprovedInstructor(user.id);
+    await assertCanSell(user);
     const product = await requireOwnedDigitalProduct(user.id, id);
     if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "ALREADY_SUBMITTED", "Already submitted for review.");
     if (product.reviewStatus === "APPROVED") throw new ApiError(409, "ALREADY_APPROVED", "This product is already approved.");
@@ -207,7 +213,7 @@ export async function submitProductForReview(id: string): Promise<Result<null>> 
 export async function setMyProductPublished(id: string, publish: boolean): Promise<Result<null>> {
   try {
     const user = await requireUserApi();
-    await requireApprovedInstructor(user.id);
+    await assertCanSell(user);
     const product = await requireOwnedDigitalProduct(user.id, id);
     if (publish && product.reviewStatus !== "APPROVED") {
       throw new ApiError(409, "NOT_APPROVED", "Only an approved product can be published.");
@@ -232,7 +238,7 @@ export async function setMyProductPublished(id: string, publish: boolean): Promi
 export async function reopenMyProduct(id: string): Promise<Result<null>> {
   try {
     const user = await requireUserApi();
-    await requireApprovedInstructor(user.id);
+    await assertCanSell(user);
     const product = await requireOwnedDigitalProduct(user.id, id);
     if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "LOCKED", "Wait for the current review to finish.");
     await db.digitalProduct.update({

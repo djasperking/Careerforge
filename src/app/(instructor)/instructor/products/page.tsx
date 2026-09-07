@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Package } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { getInstructorProfile } from "@/lib/instructor/service";
+import { getInstructorProfile, canSellMarketplace } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ const BADGE: Record<string, { label: string; variant: "secondary" | "warning" | 
 export default async function InstructorProductsPage() {
   const user = await requireUser();
   const profile = await getInstructorProfile(user.id);
-  if (!profile || profile.status !== "APPROVED") {
+  if (!canSellMarketplace(user.permissions, profile?.status).allowed) {
     return (
       <div>
         <PageHeader title="Digital products" description="Sell ebooks, templates and downloadable resources." />
