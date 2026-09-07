@@ -5,6 +5,7 @@ import {
 import { Brand } from "@/components/layout/brand";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { SocialLinks } from "@/components/layout/social-links";
+import { SubscribeForm } from "@/components/newsletter/subscribe-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AdSlot } from "@/components/ads/ad-slot";
@@ -167,6 +168,15 @@ export default async function HomePage() {
       </main>
 
       <footer className="border-t">
+        <div className="container flex flex-col items-center gap-3 border-b py-8 text-center">
+          <p className="font-display text-lg font-semibold">Get the weekly digest</p>
+          <p className="max-w-md text-sm text-muted-foreground">
+            New jobs, guides and courses — one email every Monday. Unsubscribe anytime.
+          </p>
+          <div className="w-full max-w-sm">
+            <SubscribeForm source="footer" />
+          </div>
+        </div>
         <div className="container flex flex-col items-center justify-between gap-4 py-8 sm:flex-row">
           <Brand />
           <p className="text-sm text-muted-foreground">

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FileText } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
 import { listPublishedPosts, listBlogCategories, authorNames } from "@/lib/blog/service";
+import { SubscribeForm } from "@/components/newsletter/subscribe-form";
 
 export const metadata = {
   title: "Blog",
@@ -27,6 +28,11 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
       <main className="container max-w-4xl py-10">
         <h1 className="font-display text-3xl font-semibold">Blog & resources</h1>
         <p className="mt-1 text-muted-foreground">Career guides, annotation how-tos and platform updates.</p>
+
+        <div className="mt-5 rounded-lg border bg-card p-4">
+          <p className="text-sm font-medium">Get new posts + jobs by email, weekly</p>
+          <div className="mt-2 max-w-sm"><SubscribeForm source="blog" compact /></div>
+        </div>
 
         {categories.length > 0 ? (
           <div className="mt-5 flex flex-wrap gap-2">

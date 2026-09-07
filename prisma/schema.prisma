@@ -1294,6 +1294,23 @@ model JobApplyClick {
 }
 
 // ---------------------------------------------------------------------------
+// Phase E — Weekly digest newsletter
+// ---------------------------------------------------------------------------
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  token          String    @unique
+  status         String    @default("SUBSCRIBED") // SUBSCRIBED | UNSUBSCRIBED
+  source         String?
+  lastSentAt     DateTime?
+  createdAt      DateTime  @default(now())
+  unsubscribedAt DateTime?
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
 // Phase B — Scheduled cohorts ("classes")
 // ---------------------------------------------------------------------------
 

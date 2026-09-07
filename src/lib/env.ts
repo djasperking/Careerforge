@@ -46,6 +46,9 @@ const schema = z.object({
 
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(60),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(60),
+
+  // Shared secret for scheduled jobs (Vercel Cron sends it as a bearer token).
+  CRON_SECRET: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

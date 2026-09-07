@@ -15,6 +15,7 @@ export type EmailTemplate =
   | "password-changed"
   | "payment-confirmation"
   | "digital-product-ready"
+  | "newsletter-digest"
   | "course-enrollment"
   | "course-completion"
   | "exam-result"

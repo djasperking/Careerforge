@@ -74,6 +74,16 @@ function block(template: EmailTemplate, data: Record<string, unknown>): Block {
         ],
         cta: { label: "Download now", url: String(data.downloadUrl) },
       };
+    case "newsletter-digest":
+      return {
+        heading: String(data.title || "This week on Career Forge"),
+        lines: [
+          ...(data.intro ? [esc(data.intro)] : []),
+          ...((data.sections as string[] | undefined) ?? []),
+          `<span style="font-size:12px;color:#a1a1aa;">You're getting this because you subscribed at careerforge.com.ng. <a href="${esc(data.unsubscribeUrl)}" style="color:#a1a1aa;">Unsubscribe</a>.</span>`,
+        ],
+        cta: { label: "Visit Career Forge", url: appUrl("/") },
+      };
     case "course-enrollment":
       return {
         heading: "You're enrolled",
