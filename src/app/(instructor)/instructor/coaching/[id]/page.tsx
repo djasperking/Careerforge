@@ -2,10 +2,12 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
+import { appUrl } from "@/lib/email";
 import { getInstructorProfile } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SharePanel } from "@/components/ui/share-panel";
 import { OfferForm } from "../offer-form";
 import { OfferReviewPanel } from "./review-panel";
 
@@ -37,6 +39,23 @@ export default async function InstructorOfferEditor({ params }: { params: Promis
         reviewNote={offer.reviewNote}
         revenueSharePercent={offer.revenueSharePercent}
       />
+
+      {offer.reviewStatus === "APPROVED" ? (
+        <Card className="mb-6">
+          <CardHeader><CardTitle>Share your offer</CardTitle></CardHeader>
+          <CardContent>
+            <SharePanel
+              url={appUrl(`/coaching/${offer.slug}`)}
+              intro={
+                offer.status === "PUBLISHED"
+                  ? "Your coaching offer is live. Share this link — clients can book and pay directly."
+                  : "Your offer is approved. Publish it to make this link live, then share it anywhere."
+              }
+              shareText={`Book a coaching session: "${offer.title}" on Career Forge`}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {locked ? (
         <Alert variant="warning" className="mb-6">

@@ -41,13 +41,17 @@ export default async function InstructorProductEditor({ params }: { params: Prom
         shareUrl={appUrl(`/products/${product.slug}`)}
       />
 
-      {product.status === "PUBLISHED" && product.reviewStatus === "APPROVED" ? (
+      {product.reviewStatus === "APPROVED" ? (
         <Card className="mb-6">
           <CardHeader><CardTitle>Share your product</CardTitle></CardHeader>
           <CardContent>
             <SharePanel
               url={appUrl(`/products/${product.slug}`)}
-              intro="Your product is live. Share this link — buyers can pay without creating an account and get the file by email."
+              intro={
+                product.status === "PUBLISHED"
+                  ? "Your product is live. Share this link — buyers can pay without creating an account and get the file by email."
+                  : "Your product is approved. Publish it to make this link live, then share it anywhere."
+              }
               shareText={`"${product.title}" on Career Forge`}
             />
           </CardContent>

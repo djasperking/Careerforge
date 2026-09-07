@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { requirePermissionApi } from "@/lib/session";
 import { ApiError } from "@/lib/api";
 import { audit } from "@/lib/audit";
+import { appUrl } from "@/lib/email";
 import { ensureInstructorRole } from "@/lib/instructor/service";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -101,7 +102,7 @@ export async function decideCourseReview(
                 : `"${course.title}" was not approved`,
           body:
             decision === "APPROVED"
-              ? "Your course was approved. You can publish it from your instructor dashboard."
+              ? `Your course was approved. Publish it from your instructor dashboard, then share your link: ${appUrl(`/courses/${course.slug}`)}`
               : `Reviewer note: ${note}`,
           linkUrl: `/instructor/courses/${courseId}`,
         },
@@ -160,7 +161,7 @@ export async function decideDigitalProductReview(
           decision === "APPROVED" ? `"${product.title}" approved` : `Update on "${product.title}"`,
         body:
           decision === "APPROVED"
-            ? "Your product was approved. Publish it from your products dashboard."
+            ? `Your product was approved. Publish it from your products dashboard, then share your link: ${appUrl(`/products/${product.slug}`)}`
             : `Reviewer note: ${note}`,
         linkUrl: `/instructor/products/${productId}`,
       },
@@ -215,7 +216,7 @@ export async function decideCoachingOfferReview(
         title: decision === "APPROVED" ? `"${offer.title}" approved` : `Update on "${offer.title}"`,
         body:
           decision === "APPROVED"
-            ? "Your coaching offer was approved. Publish it from your coaching dashboard."
+            ? `Your coaching offer was approved. Publish it from your coaching dashboard, then share your link: ${appUrl(`/coaching/${offer.slug}`)}`
             : `Reviewer note: ${note}`,
         linkUrl: `/instructor/coaching/${offerId}`,
       },

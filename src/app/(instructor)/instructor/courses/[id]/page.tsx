@@ -67,13 +67,17 @@ export default async function InstructorCourseEditor({ params }: { params: Promi
         </Alert>
       ) : null}
 
-      {course.status === "PUBLISHED" ? (
+      {course.reviewStatus === "APPROVED" ? (
         <Card className="mb-6">
           <CardHeader><CardTitle>Share your course</CardTitle></CardHeader>
           <CardContent>
             <SharePanel
               url={appUrl(`/courses/${course.slug}`)}
-              intro="Your course is live. Share this link anywhere — anyone who opens it can sign up and enrol."
+              intro={
+                course.status === "PUBLISHED"
+                  ? "Your course is live. Share this link anywhere — anyone who opens it can sign up and enrol."
+                  : "Your course is approved. Publish it (button above) to make this link live, then share it anywhere."
+              }
               shareText={`Check out my course "${course.title}" on Career Forge`}
             />
           </CardContent>
