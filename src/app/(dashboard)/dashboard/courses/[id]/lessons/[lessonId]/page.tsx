@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { getLessonQuizForLearner, listQuizAttempts } from "@/lib/course/quiz";
 import { LessonPlayer } from "./lesson-player";
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string; lessonId: string }> }) {
@@ -26,6 +27,16 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
   const progress = await db.courseProgress.findUnique({ where: { userId_lessonId: { userId: user.id, lessonId } } });
 
+  const quiz = lesson.type === "QUIZ" ? await getLessonQuizForLearner(lesson.id) : null;
+  const quizAttempts =
+    quiz ? (await listQuizAttempts(quiz.id, user.id)).map((a) => ({ scorePercent: a.scorePercent, passed: a.passed, at: a.createdAt.toISOString() })) : [];
+  const assignmentSubmission =
+    lesson.type === "ASSIGNMENT"
+      ? await db.assignmentSubmission.findUnique({
+          where: { lessonId_userId: { lessonId: lesson.id, userId: user.id } },
+        })
+      : null;
+
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center gap-3">
@@ -47,6 +58,24 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         initiallyCompleted={progress?.completed ?? false}
         prevLessonId={flatLessons[idx - 1]?.id ?? null}
         nextLessonId={flatLessons[idx + 1]?.id ?? null}
+        quiz={quiz}
+        quizAttempts={quizAttempts}
+        assignment={
+          lesson.type === "ASSIGNMENT"
+            ? {
+                brief: lesson.content,
+                submission: assignmentSubmission
+                  ? {
+                      text: assignmentSubmission.text,
+                      fileUrl: assignmentSubmission.fileUrl,
+                      fileName: assignmentSubmission.fileName,
+                      status: assignmentSubmission.status,
+                      feedback: assignmentSubmission.feedback,
+                    }
+                  : null,
+              }
+            : null
+        }
       />
     </div>
   );

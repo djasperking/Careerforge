@@ -7,6 +7,7 @@ import { audit } from "@/lib/audit";
 import { ApiError } from "@/lib/api";
 import { courseFormSchema, moduleFormSchema, lessonFormSchema, linesToList } from "@/lib/course/schema";
 import { uniqueCourseSlug, assertCanEditCourse } from "@/lib/course/service";
+import { saveLessonQuiz, deleteLessonQuiz, getLessonQuizForEditor } from "@/lib/course/quiz";
 
 /** Re-render whichever course editor the caller is using. */
 function revalidateCourse(courseId: string) {
@@ -348,6 +349,100 @@ export async function createCategory(name: string): Promise<Result<{ id: string;
     });
     revalidatePath("/admin/courses");
     return { ok: true, data: { id: category.id, name: category.name } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---- Quiz lessons -------------------------------------------------------
+
+export async function saveLessonQuizAction(lessonId: string, courseId: string, raw: unknown): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
+    const lesson = await db.lesson.findFirst({ where: { id: lessonId, module: { courseId } } });
+    if (!lesson) throw new ApiError(404, "NOT_FOUND", "Lesson not found.");
+    if (lesson.type !== "QUIZ") throw new ApiError(409, "WRONG_TYPE", "This lesson is not a quiz.");
+    await saveLessonQuiz(lessonId, raw);
+    await audit({ actorId: user.id, action: "QUIZ_SAVED", entity: "Course", entityId: courseId });
+    revalidateCourse(courseId);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function getLessonQuizAction(
+  lessonId: string,
+  courseId: string,
+): Promise<Result<Awaited<ReturnType<typeof getLessonQuizForEditor>>>> {
+  try {
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId, { allowLocked: true });
+    const quiz = await getLessonQuizForEditor(lessonId);
+    return { ok: true, data: quiz };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function deleteLessonQuizAction(lessonId: string, courseId: string): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId);
+    await deleteLessonQuiz(lessonId);
+    revalidateCourse(courseId);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---- Assignment review -------------------------------------------------
+
+export async function reviewAssignmentAction(
+  submissionId: string,
+  courseId: string,
+  input: { feedback?: string; status: "SUBMITTED" | "REVIEWED" },
+): Promise<Result<null>> {
+  try {
+    const user = await requireUserApi();
+    await assertCanEditCourse(user, courseId, { allowLocked: true });
+
+    const submission = await db.assignmentSubmission.findFirst({
+      where: { id: submissionId, lesson: { module: { courseId } } },
+      include: { lesson: { select: { title: true } } },
+    });
+    if (!submission) throw new ApiError(404, "NOT_FOUND", "Submission not found.");
+
+    await db.assignmentSubmission.update({
+      where: { id: submissionId },
+      data: {
+        feedback: input.feedback?.trim().slice(0, 4000) || null,
+        status: input.status,
+        reviewedById: input.status === "REVIEWED" ? user.id : null,
+        reviewedAt: input.status === "REVIEWED" ? new Date() : null,
+      },
+    });
+
+    if (input.status === "REVIEWED") {
+      await db.notification
+        .create({
+          data: {
+            userId: submission.userId,
+            type: "COURSE",
+            title: "Your assignment was reviewed",
+            body: `Feedback is ready for "${submission.lesson.title}".`,
+            linkUrl: `/dashboard/courses/${courseId}`,
+          },
+        })
+        .catch(() => {});
+    }
+
+    await audit({ actorId: user.id, action: "ASSIGNMENT_REVIEWED", entity: "Course", entityId: courseId });
+    revalidatePath(`/instructor/courses/${courseId}/submissions`);
+    revalidatePath(`/admin/courses/${courseId}/submissions`);
+    return { ok: true, data: null };
   } catch (err) {
     return fail(err);
   }

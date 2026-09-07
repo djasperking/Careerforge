@@ -60,6 +60,18 @@ export default async function InstructorCourseEditor({ params }: { params: Promi
         </CardContent>
       </Card>
 
+      <Card className="mb-6">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+          <div>
+            <p className="font-medium">Assignment submissions</p>
+            <p className="text-sm text-muted-foreground">Read what learners submitted for assignment lessons and leave feedback.</p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/instructor/courses/${course.id}/submissions`}>View submissions</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
       {locked ? (
         <Alert variant="warning" className="mb-6">
           <AlertTitle>This course is awaiting review</AlertTitle>

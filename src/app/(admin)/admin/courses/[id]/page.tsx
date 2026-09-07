@@ -107,6 +107,18 @@ export default async function AdminCourseDetailPage({ params }: { params: Promis
               <ModuleManager courseId={course.id} modules={course.modules} />
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <div>
+                <p className="font-medium">Assignment submissions</p>
+                <p className="text-sm text-muted-foreground">Review learner submissions for assignment lessons.</p>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/instructor/courses/${course.id}/submissions`}>View submissions</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

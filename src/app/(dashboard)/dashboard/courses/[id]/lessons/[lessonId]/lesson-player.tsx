@@ -6,6 +6,8 @@ import Link from "next/link";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { QuizRunner, type LearnerQuiz } from "./quiz-runner";
+import { AssignmentPanel, type AssignmentData } from "./assignment-panel";
 
 interface Props {
   courseId: string;
@@ -16,6 +18,9 @@ interface Props {
   initiallyCompleted: boolean;
   prevLessonId: string | null;
   nextLessonId: string | null;
+  quiz?: LearnerQuiz | null;
+  quizAttempts?: { scorePercent: number; passed: boolean; at: string }[];
+  assignment?: AssignmentData | null;
 }
 
 async function postProgress(courseId: string, lessonId: string, body: object) {
@@ -29,11 +34,18 @@ async function postProgress(courseId: string, lessonId: string, body: object) {
 
 export function LessonPlayer({
   courseId, lessonId, type, videoUrl, content, initiallyCompleted, prevLessonId, nextLessonId,
+  quiz, quizAttempts = [], assignment,
 }: Props) {
   const router = useRouter();
   const [completed, setCompleted] = useState(initiallyCompleted);
   const [marking, setMarking] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Quiz pass / assignment submit complete the lesson server-side, then
+  // router.refresh() feeds a fresh prop — mirror it into local state.
+  useEffect(() => {
+    setCompleted(initiallyCompleted);
+  }, [initiallyCompleted]);
 
   // Heartbeat while a video is playing — the server, not the client, decides
   // how much watch-time to credit (see the progress route).
@@ -101,9 +113,23 @@ export function LessonPlayer({
         )
       ) : null}
 
-      {type === "QUIZ" || type === "ASSIGNMENT" || type === "EXAM" ? (
+      {type === "QUIZ" ? (
+        quiz ? (
+          <QuizRunner courseId={courseId} lessonId={lessonId} quiz={quiz} attempts={quizAttempts} />
+        ) : (
+          <div className="grid h-40 place-items-center rounded-lg border border-dashed text-sm text-muted-foreground">
+            No quiz has been added to this lesson yet.
+          </div>
+        )
+      ) : null}
+
+      {type === "ASSIGNMENT" && assignment ? (
+        <AssignmentPanel courseId={courseId} lessonId={lessonId} data={assignment} />
+      ) : null}
+
+      {type === "EXAM" ? (
         <div className="grid h-40 place-items-center rounded-lg border border-dashed text-sm text-muted-foreground">
-          {type === "EXAM" ? "Take this course's exam from the Exams tab." : `${type} lessons are not interactive yet — coming soon.`}
+          Take this course&apos;s exam from the Exams tab.
         </div>
       ) : null}
 
@@ -124,7 +150,15 @@ export function LessonPlayer({
             Mark as complete
           </Button>
         ) : (
-          <span className="text-xs text-muted-foreground">Watch to the end to complete this lesson.</span>
+          <span className="text-xs text-muted-foreground">
+            {type === "QUIZ"
+              ? "Pass the quiz to complete this lesson."
+              : type === "ASSIGNMENT"
+                ? "Submit the assignment to complete this lesson."
+                : type === "EXAM"
+                  ? "Complete the course exam separately."
+                  : "Watch to the end to complete this lesson."}
+          </span>
         )}
 
         <Button asChild size="sm" disabled={!nextLessonId}>

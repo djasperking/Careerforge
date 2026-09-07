@@ -12,6 +12,7 @@ import {
   createModule, updateModule, deleteModule, moveModule,
   createLesson, updateLesson, deleteLesson, moveLesson,
 } from "../actions";
+import { QuizBuilder } from "./quiz-builder";
 
 type LessonType = "VIDEO" | "TEXT" | "PDF" | "QUIZ" | "ASSIGNMENT" | "EXAM";
 
@@ -336,6 +337,29 @@ function LessonEditor({
             className="flex w-full rounded-md border border-input bg-card px-2 py-1.5 text-sm"
           />
         </div>
+      ) : null}
+
+      {form.type === "ASSIGNMENT" ? (
+        <div className="space-y-1">
+          <Label className="text-xs">Assignment brief</Label>
+          <textarea
+            value={form.content}
+            onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+            rows={4}
+            placeholder="What should the learner do and submit? They complete the lesson by submitting a written response (and an optional file)."
+            className="flex w-full rounded-md border border-input bg-card px-2 py-1.5 text-sm"
+          />
+        </div>
+      ) : null}
+
+      {form.type === "QUIZ" ? (
+        lesson ? (
+          <QuizBuilder lessonId={lesson.id} courseId={courseId} />
+        ) : (
+          <p className="rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+            Save this lesson first, then reopen it to build the quiz questions.
+          </p>
+        )
       ) : null}
 
       <label className="flex items-center gap-2 text-xs">

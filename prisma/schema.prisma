@@ -83,6 +83,9 @@ model User {
   conversations         ConversationParticipant[]
   sentMessages          Message[]
   jobPosts              JobPost[]               @relation("JobPostAuthor")
+  quizAttempts          QuizAttempt[]
+  assignmentSubmissions AssignmentSubmission[]
+  reviewedAssignments   AssignmentSubmission[]  @relation("AssignmentReviewer")
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
 
@@ -577,6 +580,7 @@ model Lesson {
   quiz       Quiz?
   notes      LessonNote[]
   bookmarks  LessonBookmark[]
+  assignmentSubmissions AssignmentSubmission[]
 
   @@unique([moduleId, position])
 }
@@ -681,12 +685,51 @@ enum GradingMode {
 }
 
 model Quiz {
-  id           String     @id @default(cuid())
-  lessonId     String     @unique
+  id           String        @id @default(cuid())
+  lessonId     String        @unique
   title        String
-  passingScore Int        @default(70)
-  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  passingScore Int           @default(70)
+  maxAttempts  Int           @default(0) // 0 = unlimited
+  lesson       Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   questions    Question[]
+  attempts     QuizAttempt[]
+}
+
+model QuizAttempt {
+  id           String   @id @default(cuid())
+  quizId       String
+  userId       String
+  scorePercent Int
+  passed       Boolean
+  answers      Json // { [questionId]: string[] } — selected option ids
+  createdAt    DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([quizId, userId])
+}
+
+model AssignmentSubmission {
+  id           String    @id @default(cuid())
+  lessonId     String
+  userId       String
+  text         String
+  fileUrl      String?
+  fileName     String?
+  status       String    @default("SUBMITTED") // SUBMITTED | REVIEWED
+  feedback     String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  lesson     Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User?  @relation("AssignmentReviewer", fields: [reviewedById], references: [id])
+
+  @@unique([lessonId, userId])
+  @@index([lessonId])
 }
 
 model Exam {

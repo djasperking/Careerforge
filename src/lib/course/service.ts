@@ -107,6 +107,27 @@ export async function recomputeCourseProgress(userId: string, courseId: string) 
   return { enrollment: updated, justCompleted };
 }
 
+/**
+ * Mark a single lesson complete for a learner and reflow course progress /
+ * certificate. Used by the interactive lesson types (quiz pass, assignment
+ * submitted) — the video/text path goes through the progress route instead.
+ */
+export async function markLessonComplete(userId: string, lessonId: string, courseId: string) {
+  const existing = await db.courseProgress.findUnique({ where: { userId_lessonId: { userId, lessonId } } });
+  const now = new Date();
+  await db.courseProgress.upsert({
+    where: { userId_lessonId: { userId, lessonId } },
+    create: { userId, lessonId, completed: true, completedAt: now },
+    update: { completed: true, completedAt: existing?.completedAt ?? now },
+  });
+  const result = await recomputeCourseProgress(userId, courseId);
+  if (result?.justCompleted) {
+    const { issueCourseCertificate } = await import("@/lib/certificate/service");
+    await issueCourseCertificate(userId, courseId).catch(() => {});
+  }
+  return result;
+}
+
 export async function assertEnrolled(userId: string, courseId: string) {
   const enrollment = await db.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } });
   if (!enrollment) throw new ApiError(403, "NOT_ENROLLED", "You are not enrolled in this course.");
