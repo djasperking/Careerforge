@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,11 @@ export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolea
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Creating account…" : "Create account"}
       </Button>
+      <p className="text-center text-xs text-muted-foreground">
+        By creating an account you agree to our{" "}
+        <Link href="/legal/terms" className="underline hover:text-foreground">Terms</Link> and{" "}
+        <Link href="/legal/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+      </p>
       {googleEnabled ? (
         <>
           <div className="flex items-center gap-3 py-1">

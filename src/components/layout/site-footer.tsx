@@ -15,7 +15,13 @@ const MORE = [
   { href: "/instructor", label: "Teach on Career Forge" },
   { href: "/verify", label: "Verify a certificate" },
   { href: "/newsletter", label: "Newsletter" },
+  { href: "/dashboard/support", label: "Support" },
   { href: "/login", label: "Log in" },
+];
+const LEGAL = [
+  { href: "/legal/terms", label: "Terms" },
+  { href: "/legal/privacy", label: "Privacy" },
+  { href: "/legal/refund", label: "Refunds" },
 ];
 
 export async function SiteFooter() {
@@ -56,7 +62,12 @@ export async function SiteFooter() {
         </p>
 
         <div className="mt-4 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row sm:items-center">
-          <span>© {new Date().getFullYear()} Career Forge. All rights reserved.</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>© {new Date().getFullYear()} Career Forge. All rights reserved.</span>
+            {LEGAL.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:text-white/80">{l.label}</Link>
+            ))}
+          </div>
           <SocialLinks links={social} onDark />
         </div>
       </div>
