@@ -12,7 +12,8 @@ import { getCurrentUser } from "@/lib/session";
 import { cvUnlockPrice } from "@/lib/cv/service";
 import { getSocialLinks } from "@/lib/site";
 import { listPublicJobs } from "@/lib/jobs/service";
-import { formatCurrency } from "@/lib/utils";
+import { listPublishedPosts } from "@/lib/blog/service";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const features = [
   { icon: Sparkles, title: "AI CV Builder", body: "Draft, analyse and tailor your CV to any job with an ATS match score." },
@@ -24,11 +25,12 @@ const features = [
 ];
 
 export default async function HomePage() {
-  const [user, price, social, latestJobs] = await Promise.all([
+  const [user, price, social, latestJobs, latestPosts] = await Promise.all([
     getCurrentUser(),
     cvUnlockPrice(),
     getSocialLinks(),
     listPublicJobs().then((j) => j.slice(0, 6)),
+    listPublishedPosts({ take: 3 }),
   ]);
   const cvPriceLabel = formatCurrency(price.amountCents, price.currency);
 
@@ -138,6 +140,27 @@ export default async function HomePage() {
           </section>
         ) : null}
 
+        {latestPosts.length > 0 ? (
+          <section className="border-t bg-card">
+            <div className="container py-14">
+              <div className="flex items-end justify-between">
+                <h2 className="font-display text-2xl font-semibold">From the blog</h2>
+                <Link href="/blog" className="text-sm font-medium text-primary hover:underline">All posts →</Link>
+              </div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                {latestPosts.map((p) => (
+                  <Link key={p.id} href={`/blog/${p.slug}`} className="group">
+                    <p className="text-xs font-medium uppercase tracking-wide text-primary">{p.categoryId ?? "Article"}</p>
+                    <h3 className="mt-1 font-display text-lg font-semibold group-hover:underline">{p.title}</h3>
+                    {p.excerpt ? <p className="mt-1 text-sm text-muted-foreground">{p.excerpt}</p> : null}
+                    <p className="mt-2 text-xs text-muted-foreground">{formatDate(p.publishedAt ?? p.createdAt)}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         <section className="container py-10">
           <AdSlot placement="HOMEPAGE" path="/" className="mx-auto max-w-2xl" />
         </section>
@@ -154,6 +177,7 @@ export default async function HomePage() {
             <Link href="/courses" className="hover:text-foreground">Courses</Link>
             <Link href="/products" className="hover:text-foreground">Digital products</Link>
             <Link href="/coaching" className="hover:text-foreground">Coaching</Link>
+            <Link href="/blog" className="hover:text-foreground">Blog</Link>
             <Link href="/verify" className="hover:text-foreground">Verify a certificate</Link>
             <Link href="/login" className="hover:text-foreground">Log in</Link>
             <SocialLinks links={social} className="ml-1" />

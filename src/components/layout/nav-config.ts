@@ -58,7 +58,7 @@ export const adminNav: NavItem[] = [
   { group: "Growth", label: "Analytics", href: "/admin/analytics", icon: BarChart3, permission: "analytics:read" },
   { group: "Growth", label: "Jobs board", href: "/admin/jobs", icon: Briefcase, permission: "jobs:write" },
   { group: "Growth", label: "Advertisements", href: "/admin/ads", icon: Megaphone, permission: "ads:write" },
-  { group: "Growth", label: "Content", href: "/admin/content", icon: ScrollText, permission: "content:write" },
+  { group: "Growth", label: "Blog", href: "/admin/content", icon: ScrollText, permission: "content:write" },
 
   { group: "People & system", label: "Users", href: "/admin/users", icon: Users, permission: "users:read" },
   { group: "People & system", label: "Support", href: "/admin/support", icon: LifeBuoy, permission: "support:handle" },

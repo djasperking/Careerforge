@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/courses", label: "Courses" },
   { href: "/products", label: "Digital products" },
   { href: "/coaching", label: "Coaching" },
+  { href: "/blog", label: "Blog" },
 ];
 
 /** Shared header for the public marketing / catalogue pages. */
