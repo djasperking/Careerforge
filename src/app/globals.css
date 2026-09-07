@@ -7,7 +7,7 @@
 /* ------------------------------------------------------------------ */
 :root {
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-sans);
+  /* --font-display is provided by next/font (Sora) in layout.tsx; falls back to sans. */
   --cf-radius: 0.75rem;
 
   --cf-background: 210 40% 98%;
@@ -64,4 +64,67 @@ body {
 
 .cf-focus {
   @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
+
+/* ---- Homepage motion ------------------------------------------------ */
+@keyframes cf-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes cf-float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-18px) rotate(3deg); }
+}
+@keyframes cf-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.08); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes cf-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cf-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes cf-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.cf-animate-float { animation: cf-float 6s ease-in-out infinite; }
+.cf-animate-float-slow { animation: cf-float-slow 9s ease-in-out infinite; }
+.cf-animate-blob { animation: cf-blob 18s ease-in-out infinite; }
+.cf-rise { animation: cf-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.cf-marquee { animation: cf-marquee 32s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-animate-float, .cf-animate-float-slow, .cf-animate-blob, .cf-rise, .cf-marquee {
+    animation: none !important;
+  }
+}
+
+.cf-gradient-text {
+  background: linear-gradient(100deg, hsl(var(--cf-primary)), hsl(var(--cf-accent)), hsl(var(--cf-secondary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes cf-word-in {
+  from { opacity: 0; transform: translateY(0.25em); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.cf-word {
+  display: inline-block;
+  animation: cf-word-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-word { animation: none !important; }
+}
+.cf-grid-bg {
+  background-image:
+    linear-gradient(hsl(var(--cf-border) / 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--cf-border) / 0.6) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 75%);
 }

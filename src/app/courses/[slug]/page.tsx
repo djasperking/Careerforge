@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, BarChart3 } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
@@ -144,6 +145,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </div>
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

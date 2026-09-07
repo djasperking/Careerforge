@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { formatDate } from "@/lib/utils";
 import { renderMarkdown } from "@/lib/markdown";
 import { getPublishedPost, authorNames } from "@/lib/blog/service";
@@ -53,6 +54,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </Link>
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

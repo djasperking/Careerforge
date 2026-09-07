@@ -3,6 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { BookForm } from "./book-form";
@@ -47,6 +48,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
           </div>
         </aside>
       </main>
+      <SiteFooter />
     </div>
   );
 }
