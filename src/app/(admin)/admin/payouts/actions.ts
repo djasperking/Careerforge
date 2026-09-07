@@ -5,7 +5,7 @@ import { requirePermissionApi } from "@/lib/session";
 import { ApiError } from "@/lib/api";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
-import { decidePayout } from "@/lib/earnings/service";
+import { decidePayout, payViaPaystack, finalizePaystackPayout } from "@/lib/earnings/service";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -62,5 +62,43 @@ export async function decidePayoutAction(input: {
     return { ok: true };
   } catch (err) {
     return fail(err);
+  }
+}
+
+type TransferResult = { ok: true; status: string } | { ok: false; error: string };
+
+export async function payViaPaystackAction(payoutId: string): Promise<TransferResult> {
+  try {
+    const admin = await requirePermissionApi("payouts:manage");
+    const status = await payViaPaystack(payoutId, admin.id);
+    await audit({
+      actorId: admin.id,
+      action: "PAYOUT_PAYSTACK_TRANSFER",
+      entity: "Payout",
+      entityId: payoutId,
+      metadata: { status },
+    });
+    revalidatePath("/admin/payouts");
+    return { ok: true, status };
+  } catch (err) {
+    return fail(err) as TransferResult;
+  }
+}
+
+export async function finalizePayoutOtpAction(payoutId: string, otp: string): Promise<TransferResult> {
+  try {
+    const admin = await requirePermissionApi("payouts:manage");
+    const status = await finalizePaystackPayout(payoutId, otp);
+    await audit({
+      actorId: admin.id,
+      action: "PAYOUT_PAYSTACK_FINALIZE",
+      entity: "Payout",
+      entityId: payoutId,
+      metadata: { status },
+    });
+    revalidatePath("/admin/payouts");
+    return { ok: true, status };
+  } catch (err) {
+    return fail(err) as TransferResult;
   }
 }

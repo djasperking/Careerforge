@@ -121,8 +121,10 @@ model InstructorProfile {
 
   // Payout destination (Phase C). Snapshotted onto each Payout at request time.
   payoutBankName      String?
+  payoutBankCode      String?
   payoutAccountNumber String?
   payoutAccountName   String?
+  payoutRecipientCode String? // cached Paystack transfer recipient code
 
   user       User  @relation("InstructorProfileUser", fields: [userId], references: [id], onDelete: Cascade)
   reviewedBy User? @relation("InstructorProfileReviewer", fields: [reviewedById], references: [id])
@@ -1538,6 +1540,9 @@ model Payout {
   note          String?
   adminNote     String?
   reference     String?
+  bankCode      String?
+  transferCode  String?      // Paystack transfer code, when paid via API
+  transferState String?      // pending | otp | success | failed | reversed
   requestedAt   DateTime     @default(now())
   decidedAt     DateTime?
   decidedById   String?

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { decidePayoutAction } from "./actions";
+import { decidePayoutAction, payViaPaystackAction, finalizePayoutOtpAction } from "./actions";
 
 const BADGE: Record<string, { label: string; variant: "secondary" | "warning" | "success" | "destructive" }> = {
   REQUESTED: { label: "Requested", variant: "warning" },
@@ -30,7 +30,9 @@ export function PayoutRow({
     note: string | null;
     adminNote: string | null;
     reference: string | null;
+    transferState: string | null;
     requestedAt: string;
+    autoTransfer: boolean;
   };
 }) {
   const router = useRouter();
@@ -38,7 +40,45 @@ export function PayoutRow({
   const [error, setError] = useState<string | null>(null);
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
+  const [otp, setOtp] = useState("");
+  const [needsOtp, setNeedsOtp] = useState(payout.transferState === "otp");
+  const [info, setInfo] = useState<string | null>(null);
   const badge = BADGE[payout.status];
+
+  async function sendViaPaystack() {
+    if (!confirm("Send this payout automatically via Paystack? This moves real money from your Paystack balance.")) return;
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+    const res = await payViaPaystackAction(payout.id);
+    setBusy(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    if (res.status === "otp") {
+      setNeedsOtp(true);
+      setInfo("Paystack sent an OTP to your account. Enter it below to release the transfer.");
+    } else if (res.status === "success") {
+      router.refresh();
+    } else {
+      setInfo("Transfer queued at Paystack. It will settle shortly; this page updates when the webhook confirms.");
+      router.refresh();
+    }
+  }
+
+  async function submitOtp() {
+    setBusy(true);
+    setError(null);
+    const res = await finalizePayoutOtpAction(payout.id, otp);
+    setBusy(false);
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    if (res.status === "success") router.refresh();
+    else setInfo("OTP accepted. Waiting for Paystack to settle the transfer.");
+  }
 
   async function run(decision: "approve" | "reject" | "mark_paid") {
     if (decision === "reject" && !confirm("Reject this payout? The earnings return to the instructor's available balance.")) return;
@@ -77,11 +117,37 @@ export function PayoutRow({
       {payout.adminNote ? <p className="mt-1 text-sm"><span className="text-muted-foreground">Admin note: </span>{payout.adminNote}</p> : null}
 
       {error ? <Alert variant="destructive" className="mt-3"><AlertDescription>{error}</AlertDescription></Alert> : null}
+      {info ? <Alert className="mt-3"><AlertDescription>{info}</AlertDescription></Alert> : null}
 
       {(payout.status === "REQUESTED" || payout.status === "APPROVED") ? (
         <div className="mt-4 space-y-2 border-t pt-4">
+          {payout.autoTransfer ? (
+            <div className="space-y-2 rounded-md bg-muted/50 p-3">
+              <p className="text-xs text-muted-foreground">
+                Automated transfer via Paystack — money leaves your Paystack balance immediately.
+              </p>
+              {needsOtp ? (
+                <div className="flex flex-wrap gap-2">
+                  <Input
+                    className="max-w-[160px]"
+                    placeholder="Paystack OTP"
+                    inputMode="numeric"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <Button size="sm" disabled={busy || !otp} onClick={submitOtp}>
+                    {busy ? <Loader2 className="size-4 animate-spin" /> : null} Confirm OTP
+                  </Button>
+                </div>
+              ) : (
+                <Button size="sm" disabled={busy} onClick={sendViaPaystack}>
+                  {busy ? <Loader2 className="size-4 animate-spin" /> : null} Send via Paystack
+                </Button>
+              )}
+            </div>
+          ) : null}
           <p className="text-xs text-muted-foreground">
-            Send the money from your bank / Paystack dashboard, then record it here. Career Forge does not move funds automatically.
+            Or send the money from your bank / Paystack dashboard, then record it here manually.
           </p>
           <div className="flex flex-wrap gap-2">
             <Input className="max-w-[220px]" placeholder="Bank transfer reference" value={reference} onChange={(e) => setReference(e.target.value)} />

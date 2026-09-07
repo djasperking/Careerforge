@@ -89,6 +89,7 @@ export default async function InstructorEarningsPage() {
           <PayoutMethodForm
             initial={{
               bankName: profile.payoutBankName ?? "",
+              bankCode: profile.payoutBankCode ?? "",
               accountNumber: profile.payoutAccountNumber ?? "",
               accountName: profile.payoutAccountName ?? "",
             }}

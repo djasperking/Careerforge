@@ -3,8 +3,10 @@ import { db } from "@/lib/db";
 import { handler, ok, ApiError } from "@/lib/api";
 import { getPaymentProvider } from "@/lib/payments";
 import { finalizeTransaction } from "@/lib/billing/service";
+import { handleTransferWebhook } from "@/lib/earnings/service";
 
 const SUCCESS_EVENTS = new Set(["charge.success", "checkout.success"]);
+const TRANSFER_EVENTS = new Set(["transfer.success", "transfer.failed", "transfer.reversed"]);
 
 /**
  * Webhook backstop: fires even if the customer closes the tab before the
@@ -32,7 +34,15 @@ export const POST = handler(async (req: NextRequest) => {
     data: { provider: provider.name, eventId: event.eventId, eventType: event.eventType, payload: event.raw as never },
   });
 
-  if (SUCCESS_EVENTS.has(event.eventType) && event.reference) {
+  if (TRANSFER_EVENTS.has(event.eventType)) {
+    try {
+      const data = (event.raw as { data?: { transfer_code?: string; reason?: string } }).data ?? {};
+      await handleTransferWebhook(event.eventType, data);
+    } catch (err) {
+      console.error("webhook transfer handling failed", err);
+    }
+    await db.paymentWebhookEvent.update({ where: { id: stored.id }, data: { processedAt: new Date() } });
+  } else if (SUCCESS_EVENTS.has(event.eventType) && event.reference) {
     try {
       const transaction = await finalizeTransaction(event.reference);
       await db.paymentWebhookEvent.update({

@@ -17,6 +17,7 @@ function fail(err: unknown): Result {
 
 export async function savePayoutMethodAction(input: {
   bankName: string;
+  bankCode?: string;
   accountNumber: string;
   accountName: string;
 }): Promise<Result> {

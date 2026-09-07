@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { transfersEnabled } from "@/lib/payments/transfers";
 import { PayoutRow } from "./payout-row";
 
 export const metadata = { title: "Payouts" };
@@ -14,6 +15,18 @@ export default async function AdminPayoutsPage() {
     orderBy: [{ status: "asc" }, { requestedAt: "desc" }],
     include: { instructor: { select: { name: true, email: true } } },
   });
+
+  const autoEnabled = transfersEnabled();
+  const bankCodeByInstructor = autoEnabled
+    ? new Map(
+        (
+          await db.instructorProfile.findMany({
+            where: { userId: { in: [...new Set(payouts.map((p) => p.instructorId))] } },
+            select: { userId: true, payoutBankCode: true },
+          })
+        ).map((r) => [r.userId, Boolean(r.payoutBankCode)]),
+      )
+    : new Map<string, boolean>();
 
   const pending = payouts.filter((p) => p.status === "REQUESTED" || p.status === "APPROVED");
   const settled = payouts.filter((p) => p.status === "PAID" || p.status === "REJECTED");
@@ -30,7 +43,9 @@ export default async function AdminPayoutsPage() {
     note: p.note,
     adminNote: p.adminNote,
     reference: p.reference,
+    transferState: p.transferState,
     requestedAt: formatDate(p.requestedAt),
+    autoTransfer: autoEnabled && (bankCodeByInstructor.get(p.instructorId) ?? false),
   });
 
   return (

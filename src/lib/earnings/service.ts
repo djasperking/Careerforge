@@ -140,17 +140,30 @@ export async function listInstructorEarnings(instructorId: string, take = 100) {
 
 export async function savePayoutMethod(
   userId: string,
-  input: { bankName: string; accountNumber: string; accountName: string },
+  input: { bankName: string; bankCode?: string; accountNumber: string; accountName: string },
 ) {
   const bankName = input.bankName.trim().slice(0, 120);
   const accountName = input.accountName.trim().slice(0, 120);
   const accountNumber = input.accountNumber.replace(/\s/g, "").slice(0, 32);
+  const bankCode = (input.bankCode ?? "").trim().slice(0, 20) || null;
   if (!bankName || !accountName || !/^\d{6,20}$/.test(accountNumber)) {
     throw new ApiError(422, "BAD_PAYOUT_METHOD", "Enter a valid bank name, account name and account number.");
   }
+  const current = await db.instructorProfile.findUnique({
+    where: { userId },
+    select: { payoutAccountNumber: true, payoutBankCode: true },
+  });
+  // If the destination changed, drop the cached Paystack recipient.
+  const changed = current?.payoutAccountNumber !== accountNumber || current?.payoutBankCode !== bankCode;
   await db.instructorProfile.update({
     where: { userId },
-    data: { payoutBankName: bankName, payoutAccountNumber: accountNumber, payoutAccountName: accountName },
+    data: {
+      payoutBankName: bankName,
+      payoutBankCode: bankCode,
+      payoutAccountNumber: accountNumber,
+      payoutAccountName: accountName,
+      ...(changed ? { payoutRecipientCode: null } : {}),
+    },
   });
 }
 
@@ -247,4 +260,134 @@ export async function decidePayout(
       },
     });
   });
+}
+
+// ---- Paystack API payouts ----------------------------------------
+
+/** Mark a payout complete (earnings paid out, notify). Shared by manual, API and webhook paths. */
+async function completePayout(payoutId: string, reference: string | null, note?: string) {
+  return db.$transaction(async (tx) => {
+    await tx.instructorEarning.updateMany({ where: { payoutId }, data: { status: "PAID_OUT" } });
+    const p = await tx.payout.update({
+      where: { id: payoutId },
+      data: {
+        status: "PAID",
+        paidAt: new Date(),
+        transferState: "success",
+        reference,
+        adminNote: note,
+      },
+    });
+    await tx.notification.create({
+      data: {
+        userId: p.instructorId,
+        type: "PAYMENT",
+        title: "Payout sent",
+        body: "Your payout has been sent to your bank account.",
+        linkUrl: "/instructor/earnings",
+      },
+    }).catch(() => {});
+    return p;
+  });
+}
+
+/** A Paystack transfer failed or reversed — release the earnings and flag it. */
+export async function markTransferFailed(payoutId: string, reason: string) {
+  await db.$transaction(async (tx) => {
+    await tx.payout.update({
+      where: { id: payoutId },
+      data: { status: "APPROVED", transferState: "failed", adminNote: `Transfer failed: ${reason}` },
+    });
+    await tx.notification.create({
+      data: {
+        userId: (await tx.payout.findUniqueOrThrow({ where: { id: payoutId } })).instructorId,
+        type: "PAYMENT",
+        title: "Payout could not be sent",
+        body: "We couldn't send your payout automatically. The team will retry.",
+        linkUrl: "/instructor/earnings",
+      },
+    }).catch(() => {});
+  });
+}
+
+/** Initiate an automated bank transfer for a payout via Paystack. */
+export async function payViaPaystack(payoutId: string, adminId: string) {
+  const { transfersEnabled, createRecipient, initiateTransfer } = await import("@/lib/payments/transfers");
+  if (!transfersEnabled()) throw new ApiError(503, "NOT_CONFIGURED", "Paystack transfers are not configured.");
+
+  const payout = await db.payout.findUnique({ where: { id: payoutId } });
+  if (!payout) throw new ApiError(404, "NOT_FOUND", "Payout not found.");
+  if (payout.status !== "APPROVED" && payout.status !== "REQUESTED") {
+    throw new ApiError(409, "BAD_STATE", "Approve the payout first.");
+  }
+  if (payout.transferState === "success") {
+    throw new ApiError(409, "ALREADY", "This payout was already sent.");
+  }
+
+  const profile = await db.instructorProfile.findUnique({ where: { userId: payout.instructorId } });
+  if (!profile?.payoutBankCode || !profile.payoutAccountNumber || !profile.payoutAccountName) {
+    throw new ApiError(422, "NO_BANK", "The instructor hasn't set a bank with a Paystack bank code.");
+  }
+
+  let recipientCode = profile.payoutRecipientCode;
+  if (!recipientCode) {
+    recipientCode = await createRecipient({
+      name: profile.payoutAccountName,
+      accountNumber: profile.payoutAccountNumber,
+      bankCode: profile.payoutBankCode,
+      currency: payout.currency,
+    });
+    await db.instructorProfile.update({
+      where: { userId: payout.instructorId },
+      data: { payoutRecipientCode: recipientCode },
+    });
+  }
+
+  const result = await initiateTransfer({
+    amountCents: payout.amountCents,
+    recipientCode,
+    reason: "Career Forge instructor payout",
+    reference: payout.id,
+  });
+
+  await db.payout.update({
+    where: { id: payoutId },
+    data: {
+      status: "APPROVED",
+      decidedById: payout.decidedById ?? adminId,
+      decidedAt: payout.decidedAt ?? new Date(),
+      transferCode: result.transfer_code,
+      transferState: result.status,
+      reference: result.reference,
+    },
+  });
+
+  if (result.status === "success") {
+    await completePayout(payoutId, result.reference, "Sent via Paystack");
+  }
+  return result.status; // success | pending | otp
+}
+
+export async function finalizePaystackPayout(payoutId: string, otp: string) {
+  const { finalizeTransfer } = await import("@/lib/payments/transfers");
+  const payout = await db.payout.findUnique({ where: { id: payoutId } });
+  if (!payout?.transferCode) throw new ApiError(409, "BAD_STATE", "No transfer awaiting an OTP.");
+  const result = await finalizeTransfer(payout.transferCode, otp.trim());
+  await db.payout.update({ where: { id: payoutId }, data: { transferState: result.status } });
+  if (result.status === "success") {
+    await completePayout(payoutId, result.reference, "Sent via Paystack");
+  }
+  return result.status;
+}
+
+/** Handle a Paystack transfer.* webhook event. */
+export async function handleTransferWebhook(event: string, data: { transfer_code?: string; reason?: string }) {
+  if (!data.transfer_code) return;
+  const payout = await db.payout.findFirst({ where: { transferCode: data.transfer_code } });
+  if (!payout || payout.status === "PAID") return;
+  if (event === "transfer.success") {
+    await completePayout(payout.id, payout.reference, "Sent via Paystack");
+  } else if (event === "transfer.failed" || event === "transfer.reversed") {
+    await markTransferFailed(payout.id, data.reason ?? event);
+  }
 }
