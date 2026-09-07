@@ -61,7 +61,7 @@ export async function requestCoachingBooking(offerId: string, raw: unknown): Pro
       productId: booking.id,
     });
     await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "CoachingBooking", entityId: booking.id, metadata: { reference } });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/dashboard/payments/callback?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }

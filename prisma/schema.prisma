@@ -37,6 +37,10 @@ model User {
   updatedAt         DateTime      @updatedAt
   deletedAt         DateTime?
 
+  referralCode      String?       @unique
+  referredById      String?
+  creditCents       Int           @default(0) // account credit, e.g. from referrals
+
   roles             UserRole[]
   profile           Profile?
   cvs               CV[]
@@ -69,6 +73,10 @@ model User {
   instructorEarnings    InstructorEarning[]     @relation("InstructorEarnings")
   instructorPayouts     Payout[]                @relation("InstructorPayouts")
   decidedPayouts        Payout[]                @relation("PayoutDecider")
+  referredBy            User?                   @relation("Referrals", fields: [referredById], references: [id])
+  referrals             User[]                  @relation("Referrals")
+  referralRewards       ReferralReward[]        @relation("ReferralEarner")
+  referredRewards       ReferralReward[]        @relation("ReferredUser")
   cohortEnrollments     CohortEnrollment[]
   jobPosts              JobPost[]               @relation("JobPostAuthor")
   notes             LessonNote[]
@@ -874,6 +882,7 @@ model Transaction {
   providerRef  String?
   metadata     Json?
   cohortId     String?       // set when a COURSE purchase is for a specific cohort
+  creditAppliedCents Int     @default(0) // account credit spent on this purchase
   paidAt       DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -1298,6 +1307,21 @@ model JobApplyClick {
 // ---------------------------------------------------------------------------
 // Phase E — Weekly digest newsletter
 // ---------------------------------------------------------------------------
+
+model ReferralReward {
+  id             String   @id @default(cuid())
+  earnerId       String   // who gets the credit
+  referredUserId String   @unique // the referred user's first paid purchase triggers one reward
+  transactionId  String?
+  amountCents    Int
+  currency       String   @default("NGN")
+  createdAt      DateTime @default(now())
+
+  earner       User @relation("ReferralEarner", fields: [earnerId], references: [id], onDelete: Cascade)
+  referredUser User @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([earnerId])
+}
 
 model NewsletterSubscriber {
   id             String    @id @default(cuid())

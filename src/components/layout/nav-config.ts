@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
   ScrollText, Bell, Sparkles, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
-  Wallet, Banknote, Briefcase, Mail,
+  Wallet, Banknote, Briefcase, Mail, Gift,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@/lib/rbac";
@@ -23,6 +23,7 @@ export const customerNav: NavItem[] = [
   { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "My Learning", href: "/dashboard/courses", icon: GraduationCap },
   { label: "My Purchases", href: "/dashboard/purchases", icon: ShoppingBag },
+  { label: "Refer & earn", href: "/dashboard/referrals", icon: Gift },
   { label: "Teach & Sell", href: "/instructor", icon: Presentation },
   { label: "Exams", href: "/dashboard/exams", icon: ClipboardCheck },
   { label: "Certificates", href: "/dashboard/certificates", icon: BadgeCheck },

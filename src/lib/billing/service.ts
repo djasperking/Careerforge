@@ -8,6 +8,12 @@ import { cvUnlockPrice } from "@/lib/cv/service";
 import { hasUnlimitedTools } from "@/lib/entitlements";
 import { recordEarningForTransaction, reverseEarningForTransaction } from "@/lib/earnings/service";
 import { enrollInCohort } from "@/lib/cohort/service";
+import {
+  creditToApply,
+  settleCreditSpend,
+  restoreCredit,
+  rewardReferralOnFirstPurchase,
+} from "@/lib/referral/service";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
 import type { ProductType } from "@prisma/client";
 
@@ -130,9 +136,13 @@ export async function createCheckout(input: {
   callbackPath?: string;
   /** For a COURSE purchase tied to a scheduled cohort. */
   cohortId?: string;
-}): Promise<{ authorizationUrl: string; reference: string }> {
+}): Promise<{ authorizationUrl?: string; reference: string; free?: boolean }> {
   const product = await resolveProduct(input.productType, input.productId, input.userId, input.cohortId);
   const reference = newPaymentReference(input.productType, input.userId);
+
+  // Account credit (e.g. referral rewards) reduces what the buyer pays.
+  const credit = await creditToApply(input.userId, product.amountCents).catch(() => 0);
+  const payable = product.amountCents - credit;
 
   await db.transaction.create({
     data: {
@@ -143,15 +153,21 @@ export async function createCheckout(input: {
       cohortId: input.cohortId ?? null,
       description: product.description,
       amountCents: product.amountCents,
+      creditAppliedCents: credit,
       currency: product.currency,
-      provider: getPaymentProvider().name,
+      provider: payable <= 0 ? "credit" : getPaymentProvider().name,
     },
   });
+
+  if (payable <= 0) {
+    await finalizeFreeTransaction(reference);
+    return { reference, free: true };
+  }
 
   const checkout = await getPaymentProvider().initCheckout({
     reference,
     email: input.email,
-    amountCents: product.amountCents,
+    amountCents: payable,
     currency: product.currency,
     metadata: { productType: input.productType, productId: input.productId, userId: input.userId },
     callbackUrl: appUrl(input.callbackPath ?? CALLBACK_PATH),
@@ -335,30 +351,50 @@ export async function finalizeTransaction(reference: string) {
     return t;
   });
 
-  await activateProduct(updated);
-  await recordEarningForTransaction(updated.id).catch((err) => console.error("earning record failed", err));
+  await runActivation(updated, transaction.user.email);
+  return updated;
+}
+
+/** Complete a transaction fully covered by account credit — no provider call. */
+export async function finalizeFreeTransaction(reference: string) {
+  const transaction = await db.transaction.findUnique({ where: { reference }, include: { user: true } });
+  if (!transaction || transaction.status === "SUCCESS") return transaction;
+  const updated = await db.transaction.update({
+    where: { reference },
+    data: { status: "SUCCESS", paidAt: new Date() },
+  });
+  await runActivation(updated, transaction.user.email);
+  return updated;
+}
+
+/** Shared post-SUCCESS work: grant access, settle credit, record earnings and
+ * referral rewards, notify, receipt. */
+async function runActivation(
+  tx: { id: string; userId: string; productType: ProductType; productId: string | null; cohortId?: string | null; description: string | null; amountCents: number; creditAppliedCents: number; currency: string },
+  email: string,
+) {
+  await activateProduct(tx);
+  await settleCreditSpend(tx.userId, tx.creditAppliedCents).catch((e) => console.error("credit settle failed", e));
+  await recordEarningForTransaction(tx.id).catch((e) => console.error("earning record failed", e));
+  await rewardReferralOnFirstPurchase({ id: tx.id, userId: tx.userId, currency: tx.currency }).catch((e) =>
+    console.error("referral reward failed", e),
+  );
 
   await db.notification.create({
     data: {
-      userId: transaction.userId,
+      userId: tx.userId,
       type: "PAYMENT",
       title: "Payment successful",
-      body: `${transaction.description ?? transaction.productType} — ${formatCurrency(transaction.amountCents, transaction.currency)}`,
+      body: `${tx.description ?? tx.productType} — ${formatCurrency(tx.amountCents, tx.currency)}`,
       linkUrl: "/dashboard/payments",
     },
-  });
+  }).catch(() => {});
   await sendEmail({
-    to: transaction.user.email,
+    to: email,
     template: "payment-confirmation",
     subject: "Your Career Forge receipt",
-    data: {
-      reference,
-      description: transaction.description,
-      amount: formatCurrency(transaction.amountCents, transaction.currency),
-    },
+    data: { reference: tx.id, description: tx.description, amount: formatCurrency(tx.amountCents, tx.currency) },
   }).catch(() => {});
-
-  return updated;
 }
 
 export async function refundTransaction(transactionId: string) {
@@ -369,6 +405,7 @@ export async function refundTransaction(transactionId: string) {
 
   await db.transaction.update({ where: { id: transactionId }, data: { status: "REFUNDED" } });
   await reverseEarningForTransaction(transactionId).catch((err) => console.error("earning reversal failed", err));
+  await restoreCredit(transaction.userId, transaction.creditAppliedCents).catch((err) => console.error("credit restore failed", err));
 
   if (transaction.productType === "COURSE" && transaction.productId) {
     await db.enrollment.updateMany({

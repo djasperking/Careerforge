@@ -36,7 +36,7 @@ export async function startCourseCheckout(
       entityId: courseId,
       metadata: { reference, cohortId: cohortId ?? null },
     });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/dashboard/payments/callback?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }
@@ -53,7 +53,7 @@ export async function startSubscriptionCheckout(planId: string): Promise<Result<
       productId: planId,
     });
     await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "SubscriptionPlan", entityId: planId, metadata: { reference } });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/dashboard/payments/callback?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }
@@ -70,7 +70,7 @@ export async function startCvUnlockCheckout(cvId: string): Promise<Result<{ auth
       productId: cvId,
     });
     await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "CV", entityId: cvId, metadata: { reference } });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/dashboard/payments/callback?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }
@@ -87,7 +87,7 @@ export async function startDigitalProductCheckout(productId: string): Promise<Re
       productId,
     });
     await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "DigitalProduct", entityId: productId, metadata: { reference } });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/dashboard/payments/callback?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }
@@ -126,7 +126,7 @@ export async function startGuestDigitalProductCheckout(input: {
       entityId: input.productId,
       metadata: { reference, guest: true },
     });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/checkout/complete?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }
@@ -143,7 +143,7 @@ export async function startCoachingCheckout(bookingId: string): Promise<Result<{
       productId: bookingId,
     });
     await audit({ actorId: user.id, action: "CHECKOUT_STARTED", entity: "CoachingBooking", entityId: bookingId, metadata: { reference } });
-    return { ok: true, data: { authorizationUrl } };
+    return { ok: true, data: { authorizationUrl: authorizationUrl ?? `/dashboard/payments/callback?reference=${reference}` } };
   } catch (err) {
     return fail(err);
   }

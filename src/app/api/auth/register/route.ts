@@ -50,6 +50,12 @@ export const POST = handler(async (req: NextRequest) => {
     },
   });
 
+  const refCode = req.cookies.get("cf_ref")?.value;
+  if (refCode) {
+    const { attributeReferral } = await import("@/lib/referral/service");
+    await attributeReferral(user.id, refCode).catch((e) => console.error("referral attribution failed", e));
+  }
+
   const token = await issueToken({
     userId: user.id,
     type: "EMAIL_VERIFICATION",
