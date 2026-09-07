@@ -37,6 +37,7 @@ export const instructorNav: NavItem[] = [
   { label: "My Courses", href: "/instructor/courses", icon: BookOpen },
   { label: "Digital Products", href: "/instructor/products", icon: Package },
   { label: "Coaching", href: "/instructor/coaching", icon: CalendarClock },
+  { label: "Analytics", href: "/instructor/analytics", icon: BarChart3 },
   { label: "Earnings", href: "/instructor/earnings", icon: Wallet },
   { label: "Back to dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
