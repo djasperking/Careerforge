@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
   ScrollText, Bell, Sparkles, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
-  Wallet, Banknote, Briefcase, Mail, Gift,
+  Wallet, Banknote, Briefcase, Mail, Gift, MessageSquare,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@/lib/rbac";
@@ -22,6 +22,7 @@ export const customerNav: NavItem[] = [
   { label: "AI Career Tools", href: "/dashboard/ai", icon: Sparkles },
   { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "My Learning", href: "/dashboard/courses", icon: GraduationCap },
+  { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   { label: "My Purchases", href: "/dashboard/purchases", icon: ShoppingBag },
   { label: "Refer & earn", href: "/dashboard/referrals", icon: Gift },
   { label: "Teach & Sell", href: "/instructor", icon: Presentation },
@@ -40,6 +41,7 @@ export const instructorNav: NavItem[] = [
   { label: "Coaching", href: "/instructor/coaching", icon: CalendarClock },
   { label: "Analytics", href: "/instructor/analytics", icon: BarChart3 },
   { label: "Earnings", href: "/instructor/earnings", icon: Wallet },
+  { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   { label: "Back to dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 
@@ -64,6 +66,7 @@ export const adminNav: NavItem[] = [
   { group: "Growth", label: "Newsletter", href: "/admin/newsletter", icon: Mail, permission: "content:write" },
 
   { group: "People & system", label: "Users", href: "/admin/users", icon: Users, permission: "users:read" },
+  { group: "People & system", label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   { group: "People & system", label: "Support", href: "/admin/support", icon: LifeBuoy, permission: "support:handle" },
   { group: "People & system", label: "Audit Logs", href: "/admin/audit", icon: ScrollText, permission: "audit:read" },
   { group: "People & system", label: "Settings", href: "/admin/settings", icon: Settings, permission: "settings:write" },

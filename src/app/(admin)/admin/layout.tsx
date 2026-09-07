@@ -2,12 +2,13 @@ import { requireAdmin } from "@/lib/session";
 import { db } from "@/lib/db";
 import { hasPermission } from "@/lib/rbac";
 import { AppShell } from "@/components/layout/app-shell";
+import { unreadConversationCount } from "@/lib/messaging/service";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireAdmin();
   const can = (p: Parameters<typeof hasPermission>[1]) => hasPermission(user.permissions, p);
 
-  const [reviewQueue, openTickets, payoutRequests] = await Promise.all([
+  const [reviewQueue, openTickets, payoutRequests, unreadMessages] = await Promise.all([
     can("instructors:review")
       ? Promise.all([
           db.instructorProfile.count({ where: { status: "PENDING" } }),
@@ -22,6 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     can("payouts:manage")
       ? db.payout.count({ where: { status: "REQUESTED" } })
       : Promise.resolve(0),
+    unreadConversationCount(user.id),
   ]);
 
   return (
@@ -32,6 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         "/admin/review": reviewQueue,
         "/admin/support": openTickets,
         "/admin/payouts": payoutRequests,
+        "/dashboard/messages": unreadMessages,
       }}
     >
       {children}

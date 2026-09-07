@@ -14,6 +14,10 @@ export const ALLOWED_UPLOADS: Record<string, { mime: string[]; maxBytes: number 
   "lesson-resource": { mime: ["application/pdf", "application/zip", "image/png", "image/jpeg"], maxBytes: 50 * 1024 * 1024 },
   "ad-image": { mime: ["image/png", "image/jpeg", "image/webp"], maxBytes: 3 * 1024 * 1024 },
   "cv-asset": { mime: ["image/png", "image/jpeg"], maxBytes: 2 * 1024 * 1024 },
+  "message-attachment": {
+    mime: ["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"],
+    maxBytes: 10 * 1024 * 1024,
+  },
   "digital-product": {
     mime: [
       "application/pdf",
