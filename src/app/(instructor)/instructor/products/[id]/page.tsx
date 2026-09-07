@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SharePanel } from "@/components/ui/share-panel";
+import { bunnyEnabled } from "@/lib/video/bunny";
 import { ProductForm } from "../product-form";
 import { ProductReviewPanel } from "./review-panel";
 
@@ -71,15 +72,21 @@ export default async function InstructorProductEditor({ params }: { params: Prom
           <ProductForm
             productId={product.id}
             locked={locked}
+            hostedVideoEnabled={bunnyEnabled()}
             initial={{
               title: product.title,
               description: product.description,
               coverImageUrl: product.coverImageUrl ?? "",
-              deliveryType: product.deliveryType === "EXTERNAL_VIDEO" ? "EXTERNAL_VIDEO" : "FILE",
+              deliveryType:
+                product.deliveryType === "EXTERNAL_VIDEO" || product.deliveryType === "HOSTED_VIDEO"
+                  ? product.deliveryType
+                  : "FILE",
               fileUrl: product.fileUrl,
               fileName: product.fileName,
               fileSizeBytes: product.fileSizeBytes,
               videoUrl: product.videoUrl ?? "",
+              videoAssetId: product.videoAssetId ?? "",
+              videoDurationSec: product.videoDurationSec ?? 0,
               priceCents: product.priceCents,
               currency: product.currency,
               discountPercent: product.discountPercent ?? 0,

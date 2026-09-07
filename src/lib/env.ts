@@ -44,6 +44,12 @@ const schema = z.object({
   STORAGE_PUBLIC_BASE_URL: z.string().default("http://localhost:3000/uploads"),
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
 
+  // Bunny Stream — protected video hosting for digital products (Phase 2).
+  BUNNY_STREAM_LIBRARY_ID: z.string().optional(),
+  BUNNY_STREAM_API_KEY: z.string().optional(),
+  BUNNY_STREAM_CDN_HOSTNAME: z.string().optional(), // e.g. vz-xxxxxxxx.b-cdn.net
+  BUNNY_STREAM_TOKEN_KEY: z.string().optional(), // library "Token Authentication Key" for signed playback
+
   RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().default(60),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(60),
 

@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { audit } from "@/lib/audit";
 import { resolveDigitalProductAccess } from "@/lib/marketplace/digital";
+import { bunnyEmbedUrl, bunnyEnabled } from "@/lib/video/bunny";
 
 export const metadata = { title: "Watch" };
 
@@ -45,6 +46,13 @@ export default async function ProductWatchPage({
     metadata: { via: token ? "token" : "session" },
   }).catch(() => {});
 
+  const playerSrc =
+    product.deliveryType === "HOSTED_VIDEO"
+      ? product.videoAssetId && bunnyEnabled()
+        ? bunnyEmbedUrl(product.videoAssetId)
+        : null
+      : product.videoUrl;
+
   return (
     <div className="min-h-screen">
       <MarketingHeader loggedIn={Boolean(user)} />
@@ -53,10 +61,10 @@ export default async function ProductWatchPage({
         <h1 className="font-display text-2xl font-semibold">{product.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">By {product.seller?.name ?? "Career Forge"}</p>
 
-        {product.videoUrl ? (
+        {playerSrc ? (
           <div className="mt-6 aspect-video w-full overflow-hidden rounded-lg border bg-black">
             <iframe
-              src={product.videoUrl}
+              src={playerSrc}
               title={product.title}
               className="h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"

@@ -59,7 +59,7 @@ export default async function PurchasesPage() {
                       By {row.product.seller?.name ?? "Career Forge"} · bought {formatDate(row.createdAt)}
                     </p>
                   </div>
-                  {row.product.deliveryType === "EXTERNAL_VIDEO" ? (
+                  {row.product.deliveryType !== "FILE" ? (
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/products/${row.product.slug}/watch`}>
                         <PlayCircle className="size-4" /> Watch

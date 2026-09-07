@@ -247,7 +247,7 @@ async function activateProduct(transaction: {
       where: { id: transaction.productId },
       select: { deliveryType: true },
     });
-    const isVideo = dp?.deliveryType === "EXTERNAL_VIDEO";
+    const isVideo = Boolean(dp && dp.deliveryType !== "FILE");
     await db.notification.create({
       data: {
         userId: transaction.userId,
@@ -293,7 +293,7 @@ export async function deliverDigitalProduct(purchaseId: string) {
   });
   if (!purchase || !purchase.downloadToken) return;
 
-  const isVideo = purchase.product.deliveryType === "EXTERNAL_VIDEO";
+  const isVideo = purchase.product.deliveryType !== "FILE";
   const accessUrl = isVideo
     ? appUrl(`/products/${purchase.product.slug}/watch?token=${purchase.downloadToken}`)
     : appUrl(`/api/products/${purchase.productId}/download?token=${purchase.downloadToken}`);

@@ -11,16 +11,19 @@ import { ImageField } from "@/components/ui/image-field";
 import { FileField } from "@/components/ui/file-field";
 import { formatCurrency, minorToMajor, majorToMinor } from "@/lib/utils";
 import { createMyProduct, updateMyProduct } from "./actions";
+import { HostedVideoField } from "./hosted-video-field";
 
 export interface ProductFormValues {
   title: string;
   description: string;
   coverImageUrl: string;
-  deliveryType: "FILE" | "EXTERNAL_VIDEO";
+  deliveryType: "FILE" | "EXTERNAL_VIDEO" | "HOSTED_VIDEO";
   fileUrl: string;
   fileName: string;
   fileSizeBytes: number;
   videoUrl: string;
+  videoAssetId: string;
+  videoDurationSec: number;
   priceCents: number;
   currency: string;
   discountPercent: number;
@@ -36,6 +39,8 @@ const EMPTY: ProductFormValues = {
   fileName: "",
   fileSizeBytes: 0,
   videoUrl: "",
+  videoAssetId: "",
+  videoDurationSec: 0,
   priceCents: 0,
   currency: "NGN",
   discountPercent: 0,
@@ -46,10 +51,12 @@ export function ProductForm({
   productId,
   initial,
   locked = false,
+  hostedVideoEnabled = false,
 }: {
   productId?: string;
   initial?: ProductFormValues;
   locked?: boolean;
+  hostedVideoEnabled?: boolean;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<ProductFormValues>(initial ?? EMPTY);
@@ -113,11 +120,14 @@ export function ProductForm({
 
         <div className="space-y-1.5">
           <Label>How is this delivered?</Label>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             {(
               [
                 ["FILE", "Downloadable file", "PDF, ZIP or EPUB the buyer downloads"],
-                ["EXTERNAL_VIDEO", "Video (external link)", "YouTube, Vimeo or Loom — plays on Career Forge, no download"],
+                ["EXTERNAL_VIDEO", "Video link", "YouTube, Vimeo or Loom — embedded, not download-proof"],
+                ...(hostedVideoEnabled
+                  ? ([["HOSTED_VIDEO", "Hosted video", "Upload here — signed streaming, locked to our domain"]] as const)
+                  : []),
               ] as const
             ).map(([value, label, hint]) => (
               <button
@@ -146,6 +156,18 @@ export function ProductForm({
               onChange={({ url, name, size }) => setForm((f) => ({ ...f, fileUrl: url, fileName: name, fileSizeBytes: size }))}
             />
           </div>
+        ) : form.deliveryType === "HOSTED_VIDEO" ? (
+          <div className="space-y-1.5">
+            <Label>Video file</Label>
+            <HostedVideoField
+              assetId={form.videoAssetId}
+              durationSec={form.videoDurationSec}
+              disabled={locked}
+              onChange={({ assetId, durationSec }) =>
+                setForm((f) => ({ ...f, videoAssetId: assetId, videoDurationSec: durationSec }))
+              }
+            />
+          </div>
         ) : (
           <div className="space-y-1.5">
             <Label>Video link</Label>
@@ -156,7 +178,8 @@ export function ProductForm({
             />
             <p className="text-xs text-muted-foreground">
               Unlisted links are fine. Buyers watch it embedded on Career Forge — there&apos;s no download button, but this
-              is not download-proof. For locked-down hosting, hosted video is coming soon.
+              is not download-proof.
+              {hostedVideoEnabled ? " For locked-down streaming, choose Hosted video instead." : ""}
             </p>
           </div>
         )}

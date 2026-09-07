@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getInstructorProfile } from "@/lib/instructor/service";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { bunnyEnabled } from "@/lib/video/bunny";
 import { ProductForm } from "../product-form";
 
 export const metadata = { title: "New product" };
@@ -17,7 +18,7 @@ export default async function NewProductPage() {
       <PageHeader title="New digital product" description="You can refine everything before submitting it for review." />
       <Card>
         <CardContent className="p-6">
-          <ProductForm />
+          <ProductForm hostedVideoEnabled={bunnyEnabled()} />
         </CardContent>
       </Card>
     </div>

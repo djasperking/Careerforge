@@ -22,11 +22,13 @@ const productSchema = z
     title: z.string().min(3).max(160),
     description: z.string().min(20).max(4000),
     coverImageUrl: z.string().max(400).optional().or(z.literal("")),
-    deliveryType: z.enum(["FILE", "EXTERNAL_VIDEO"]).default("FILE"),
+    deliveryType: z.enum(["FILE", "EXTERNAL_VIDEO", "HOSTED_VIDEO"]).default("FILE"),
     fileUrl: z.string().max(600).optional().or(z.literal("")),
     fileName: z.string().max(200).default("download"),
     fileSizeBytes: z.coerce.number().int().min(0).default(0),
     videoUrl: z.string().max(600).optional().or(z.literal("")),
+    videoAssetId: z.string().max(120).optional().or(z.literal("")),
+    videoDurationSec: z.coerce.number().int().min(0).optional(),
     priceCents: z.coerce.number().int().min(0).max(100_000_000),
     currency: z.string().min(3).max(3).default("NGN"),
     discountPercent: z.coerce.number().int().min(0).max(90).optional(),
@@ -45,6 +47,10 @@ const productSchema = z
           message: "Paste a valid YouTube, Vimeo or Loom link.",
         });
       }
+    } else if (val.deliveryType === "HOSTED_VIDEO") {
+      if (!val.videoAssetId) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["videoAssetId"], message: "Upload the video first." });
+      }
     }
   });
 
@@ -59,6 +65,20 @@ function deliveryData(input: z.infer<typeof productSchema>) {
       fileSizeBytes: 0,
       videoUrl: parsed.embedUrl,
       videoProvider: parsed.provider,
+      videoAssetId: null,
+      videoDurationSec: input.videoDurationSec ?? null,
+    };
+  }
+  if (input.deliveryType === "HOSTED_VIDEO") {
+    return {
+      deliveryType: "HOSTED_VIDEO",
+      fileUrl: "",
+      fileName: "",
+      fileSizeBytes: 0,
+      videoUrl: null,
+      videoProvider: "bunny",
+      videoAssetId: input.videoAssetId || null,
+      videoDurationSec: input.videoDurationSec ?? null,
     };
   }
   return {
@@ -68,6 +88,8 @@ function deliveryData(input: z.infer<typeof productSchema>) {
     fileSizeBytes: input.fileSizeBytes,
     videoUrl: null,
     videoProvider: null,
+    videoAssetId: null,
+    videoDurationSec: null,
   };
 }
 
@@ -146,6 +168,8 @@ export async function submitProductForReview(id: string): Promise<Result<null>> 
     if (product.reviewStatus === "APPROVED") throw new ApiError(409, "ALREADY_APPROVED", "This product is already approved.");
     if (product.deliveryType === "EXTERNAL_VIDEO") {
       if (!product.videoUrl) throw new ApiError(422, "NO_VIDEO", "Add the video link before submitting.");
+    } else if (product.deliveryType === "HOSTED_VIDEO") {
+      if (!product.videoAssetId) throw new ApiError(422, "NO_VIDEO", "Upload the video before submitting.");
     } else if (!product.fileUrl) {
       throw new ApiError(422, "NO_FILE", "Attach the product file before submitting.");
     }

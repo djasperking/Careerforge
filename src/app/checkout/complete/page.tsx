@@ -42,7 +42,7 @@ export default async function CheckoutCompletePage({
         select: { slug: true, deliveryType: true },
       }),
     ]);
-    isVideo = product?.deliveryType === "EXTERNAL_VIDEO";
+    isVideo = Boolean(product && product.deliveryType !== "FILE");
     if (purchase?.downloadToken) {
       downloadUrl =
         isVideo && product

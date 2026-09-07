@@ -55,8 +55,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ) : null}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {product.deliveryType === "EXTERNAL_VIDEO"
-                ? "Video · watch on Career Forge"
+              {product.deliveryType !== "FILE"
+                ? product.videoDurationSec
+                  ? `Video · ${Math.round(product.videoDurationSec / 60)} min · watch on Career Forge`
+                  : "Video · watch on Career Forge"
                 : `${product.fileName || "File"} · instant download`}
             </p>
             <div className="mt-4">
@@ -65,7 +67,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 isLoggedIn={Boolean(user)}
                 owned={owned}
                 slug={product.slug}
-                deliveryType={product.deliveryType === "EXTERNAL_VIDEO" ? "EXTERNAL_VIDEO" : "FILE"}
+                isVideo={product.deliveryType !== "FILE"}
               />
             </div>
           </div>

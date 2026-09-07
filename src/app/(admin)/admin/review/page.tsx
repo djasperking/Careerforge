@@ -145,8 +145,8 @@ export default async function AdminReviewQueue() {
                         : formatCurrency(p.priceCents, p.currency)
                     }
                     meta={
-                      p.deliveryType === "EXTERNAL_VIDEO"
-                        ? `Video · ${p.videoProvider ?? "link"}`
+                      p.deliveryType !== "FILE"
+                        ? `Video · ${p.deliveryType === "HOSTED_VIDEO" ? "hosted" : (p.videoProvider ?? "link")}`
                         : p.fileName || "File"
                     }
                     revenueSharePercent={p.revenueSharePercent}

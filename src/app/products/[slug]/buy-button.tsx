@@ -17,13 +17,13 @@ export function BuyProductButton({
   isLoggedIn,
   owned,
   slug,
-  deliveryType = "FILE",
+  isVideo = false,
 }: {
   productId: string;
   isLoggedIn: boolean;
   owned: boolean;
   slug: string;
-  deliveryType?: "FILE" | "EXTERNAL_VIDEO";
+  isVideo?: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export function BuyProductButton({
   if (owned) {
     return (
       <Button asChild size="lg">
-        {deliveryType === "EXTERNAL_VIDEO" ? (
+        {isVideo ? (
           <a href={`/products/${slug}/watch`}>Watch now</a>
         ) : (
           <a href={`/api/products/${productId}/download`}>Download</a>
