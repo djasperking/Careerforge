@@ -29,35 +29,45 @@ export function SidebarNav({
   if (showAdminLink) items.push({ label: "Admin console", href: "/admin", icon: Shield });
   const root = area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard";
 
+  let lastGroup: string | undefined;
+
   return (
     <nav className="flex flex-col gap-1">
       {items.map((item) => {
         const active = item.href === root ? pathname === root : pathname.startsWith(item.href);
         const badge = badges?.[item.href];
+        const showGroup = item.group && item.group !== lastGroup;
+        lastGroup = item.group;
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <item.icon className="size-4 shrink-0" />
-            <span className="flex-1">{item.label}</span>
-            {badge ? (
-              <span
-                className={cn(
-                  "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold",
-                  active ? "bg-primary-foreground/20" : "bg-destructive text-destructive-foreground",
-                )}
-              >
-                {badge > 99 ? "99+" : badge}
-              </span>
+          <div key={item.href}>
+            {showGroup ? (
+              <p className="mb-1 mt-3 px-3 text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
+                {item.group}
+              </p>
             ) : null}
-          </Link>
+            <Link
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                active
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <item.icon className="size-4 shrink-0" />
+              <span className="flex-1">{item.label}</span>
+              {badge ? (
+                <span
+                  className={cn(
+                    "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold",
+                    active ? "bg-primary-foreground/20" : "bg-destructive text-destructive-foreground",
+                  )}
+                >
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              ) : null}
+            </Link>
+          </div>
         );
       })}
     </nav>

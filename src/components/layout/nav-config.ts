@@ -12,6 +12,8 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   permission?: PermissionKey;
+  /** Section heading this item sits under (admin nav only). */
+  group?: string;
 }
 
 export const customerNav: NavItem[] = [
@@ -41,19 +43,23 @@ export const instructorNav: NavItem[] = [
 export const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Review queue", href: "/admin/review", icon: ClipboardList, permission: "instructors:review" },
-  { label: "Users", href: "/admin/users", icon: Users, permission: "users:read" },
-  { label: "Courses", href: "/admin/courses", icon: BookOpen, permission: "courses:read" },
-  { label: "Exams", href: "/admin/exams", icon: ClipboardCheck, permission: "exams:read" },
-  { label: "Certificates", href: "/admin/certificates", icon: BadgeCheck, permission: "courses:read" },
-  { label: "CV Templates", href: "/admin/cv-templates", icon: FileText, permission: "cv:templates" },
-  { label: "AI", href: "/admin/ai", icon: Bot, permission: "ai:config" },
-  { label: "Payments", href: "/admin/payments", icon: CreditCard, permission: "payments:read" },
-  { label: "Payouts", href: "/admin/payouts", icon: Banknote, permission: "payouts:manage" },
-  { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard, permission: "subscriptions:write" },
-  { label: "Advertisements", href: "/admin/ads", icon: Megaphone, permission: "ads:write" },
-  { label: "Content", href: "/admin/content", icon: ScrollText, permission: "content:write" },
-  { label: "Support", href: "/admin/support", icon: LifeBuoy, permission: "support:handle" },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart3, permission: "analytics:read" },
-  { label: "Audit Logs", href: "/admin/audit", icon: ScrollText, permission: "audit:read" },
-  { label: "Settings", href: "/admin/settings", icon: Settings, permission: "settings:write" },
+
+  { group: "Learning", label: "Courses", href: "/admin/courses", icon: BookOpen, permission: "courses:read" },
+  { group: "Learning", label: "Exams", href: "/admin/exams", icon: ClipboardCheck, permission: "exams:read" },
+  { group: "Learning", label: "Certificates", href: "/admin/certificates", icon: BadgeCheck, permission: "courses:read" },
+  { group: "Learning", label: "CV Templates", href: "/admin/cv-templates", icon: FileText, permission: "cv:templates" },
+  { group: "Learning", label: "AI", href: "/admin/ai", icon: Bot, permission: "ai:config" },
+
+  { group: "Money", label: "Payments", href: "/admin/payments", icon: CreditCard, permission: "payments:read" },
+  { group: "Money", label: "Payouts", href: "/admin/payouts", icon: Banknote, permission: "payouts:manage" },
+  { group: "Money", label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard, permission: "subscriptions:write" },
+
+  { group: "Growth", label: "Analytics", href: "/admin/analytics", icon: BarChart3, permission: "analytics:read" },
+  { group: "Growth", label: "Advertisements", href: "/admin/ads", icon: Megaphone, permission: "ads:write" },
+  { group: "Growth", label: "Content", href: "/admin/content", icon: ScrollText, permission: "content:write" },
+
+  { group: "People & system", label: "Users", href: "/admin/users", icon: Users, permission: "users:read" },
+  { group: "People & system", label: "Support", href: "/admin/support", icon: LifeBuoy, permission: "support:handle" },
+  { group: "People & system", label: "Audit Logs", href: "/admin/audit", icon: ScrollText, permission: "audit:read" },
+  { group: "People & system", label: "Settings", href: "/admin/settings", icon: Settings, permission: "settings:write" },
 ];

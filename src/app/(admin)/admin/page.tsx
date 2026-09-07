@@ -1,117 +1,138 @@
 import Link from "next/link";
 import {
-  Users, GraduationCap, BadgeCheck, CreditCard, Bot, FileText, ClipboardCheck, Megaphone,
-  ClipboardList, UserPlus, LifeBuoy, RefreshCcw, ArrowRight,
+  Users, CreditCard, GraduationCap, Bot, ArrowRight, ArrowUpRight, ArrowDownRight,
+  UserPlus, ClipboardList, LifeBuoy, RefreshCcw, Banknote, CalendarClock,
+  Plus, FilePlus2, Settings as SettingsIcon,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
 import { db } from "@/lib/db";
 import { hasPermission } from "@/lib/rbac";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { getAdminOverview } from "@/lib/admin/metrics";
 
 export const metadata = { title: "Admin" };
 
+function Delta({ value }: { value: number | null }) {
+  if (value === null) return <span className="text-xs text-muted-foreground">new</span>;
+  const up = value >= 0;
+  return (
+    <span className={cn("inline-flex items-center gap-0.5 text-xs font-medium", up ? "text-success" : "text-destructive")}>
+      {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+      {Math.abs(value)}%
+    </span>
+  );
+}
+
+function Kpi({
+  label, value, delta, hint, icon: Icon,
+}: {
+  label: string; value: string; delta?: number | null; hint: string; icon: React.ElementType;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <span className="rounded-md bg-primary/10 p-1.5 text-primary"><Icon className="size-4" /></span>
+        </div>
+        <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
+        <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          {delta !== undefined ? <Delta value={delta} /> : null} {hint}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default async function AdminDashboard() {
   const admin = await requireAdmin();
-  const canReview = hasPermission(admin.permissions, "instructors:review");
-  const canSupport = hasPermission(admin.permissions, "support:handle");
-  const canRefund = hasPermission(admin.permissions, "payments:refund") || hasPermission(admin.permissions, "payments:read");
+  const can = (p: Parameters<typeof hasPermission>[1]) => hasPermission(admin.permissions, p);
 
-  const since30 = new Date(Date.now() - 30 * 86_400_000);
-  const [
-    totalUsers, newUsers, activeUsers, enrollments, completions, certificates,
-    aiRequests, cvCount, examsCompleted, adImpressions, revenueAgg, recentAudit,
-    pendingInstructors, coursesInReview, openTickets, disputedTx,
-  ] = await Promise.all([
-    db.user.count({ where: { deletedAt: null } }),
-    db.user.count({ where: { createdAt: { gte: since30 } } }),
-    db.user.count({ where: { lastLoginAt: { gte: since30 } } }),
-    db.enrollment.count(),
-    db.enrollment.count({ where: { status: "COMPLETED" } }),
-    db.certificate.count({ where: { revokedAt: null } }),
-    db.aIRequest.count({ where: { createdAt: { gte: since30 } } }),
-    db.cV.count({ where: { deletedAt: null } }),
-    db.examAttempt.count({ where: { status: "GRADED" } }),
-    db.adImpression.count({ where: { createdAt: { gte: since30 } } }),
-    db.transaction.aggregate({ _sum: { amountCents: true }, where: { status: "SUCCESS" } }),
-    db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 8, include: { actor: true } }),
-    db.instructorProfile.count({ where: { status: "PENDING" } }),
-    db.course.count({ where: { reviewStatus: "SUBMITTED" } }),
-    db.supportTicket.count({ where: { status: { in: ["OPEN", "PENDING"] } } }),
-    db.transaction.count({ where: { status: "VERIFICATION_FAILED" } }),
+  const [{ kpis, attention }, recentAudit] = await Promise.all([
+    getAdminOverview(),
+    db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10, include: { actor: true } }),
   ]);
 
-  const attention: { label: string; count: number; href: string; icon: React.ElementType; show: boolean }[] = [
-    { label: "Instructor applications", count: pendingInstructors, href: "/admin/review", icon: UserPlus, show: canReview },
-    { label: "Courses awaiting review", count: coursesInReview, href: "/admin/review", icon: ClipboardList, show: canReview },
-    { label: "Open support tickets", count: openTickets, href: "/admin/support", icon: LifeBuoy, show: canSupport },
-    { label: "Payments to reconcile", count: disputedTx, href: "/admin/payments", icon: RefreshCcw, show: canRefund },
+  const attentionItems = [
+    { label: "Instructor applications", count: attention.pendingInstructors, href: "/admin/review", icon: UserPlus, show: can("instructors:review") },
+    { label: "Submissions in review", count: attention.coursesInReview, href: "/admin/review", icon: ClipboardList, show: can("instructors:review") },
+    { label: "Payout requests", count: attention.payoutRequests, href: "/admin/payouts", icon: Banknote, show: can("payouts:manage") },
+    { label: "Open support tickets", count: attention.openTickets, href: "/admin/support", icon: LifeBuoy, show: can("support:handle") },
+    { label: "Payments to reconcile", count: attention.failedTx, href: "/admin/payments", icon: RefreshCcw, show: can("payments:read") },
+    { label: "Classes starting soon", count: attention.cohortsSoon, href: "/admin/courses", icon: CalendarClock, show: can("courses:read") },
   ].filter((x) => x.show);
 
+  const quickActions = [
+    { label: "New course", href: "/admin/courses", icon: Plus, show: can("courses:write") },
+    { label: "New exam", href: "/admin/exams/new", icon: FilePlus2, show: can("exams:write") },
+    { label: "Review queue", href: "/admin/review", icon: ClipboardList, show: can("instructors:review") },
+    { label: "Analytics", href: "/admin/analytics", icon: ArrowUpRight, show: can("analytics:read") },
+    { label: "Settings", href: "/admin/settings", icon: SettingsIcon, show: can("settings:write") },
+  ].filter((x) => x.show);
+
+  const openAttention = attentionItems.filter((a) => a.count > 0);
+
   return (
-    <div>
-      <PageHeader title="Admin dashboard" description="What needs your attention, and platform activity." />
+    <div className="space-y-6">
+      <PageHeader title={`Welcome back, ${admin.name?.split(" ")[0] ?? "there"}`} description="Platform health at a glance." />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {attention.map((a) => (
-          <Link
-            key={a.label}
-            href={a.href}
-            className="group flex items-center justify-between rounded-lg border bg-card p-4 transition-colors hover:border-primary"
-          >
-            <div>
-              <p className="text-sm text-muted-foreground">{a.label}</p>
-              <p className={`mt-1 font-display text-2xl font-semibold ${a.count > 0 ? "text-foreground" : "text-muted-foreground"}`}>
-                {a.count}
-              </p>
-            </div>
-            {a.count > 0 ? (
-              <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
-            ) : (
-              <a.icon className="size-4 text-muted-foreground" />
-            )}
-          </Link>
-        ))}
-      </div>
+      {openAttention.length > 0 ? (
+        <section>
+          <h2 className="mb-2 text-sm font-medium text-muted-foreground">Needs attention</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {openAttention.map((a) => (
+              <Link key={a.label} href={a.href} className="group flex items-center justify-between rounded-lg border bg-card p-4 transition-colors hover:border-primary">
+                <div className="flex items-center gap-3">
+                  <span className="rounded-md bg-destructive/10 p-2 text-destructive"><a.icon className="size-4" /></span>
+                  <div>
+                    <p className="font-display text-xl font-semibold">{a.count}</p>
+                    <p className="text-xs text-muted-foreground">{a.label}</p>
+                  </div>
+                </div>
+                <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <p className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">Nothing needs your attention right now.</p>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total users" value={totalUsers} hint={`${newUsers} new in 30d`} icon={Users} />
-        <StatCard label="Active users (30d)" value={activeUsers} icon={Users} />
-        <StatCard
-          label="Revenue (all time)"
-          value={formatCurrency(revenueAgg._sum.amountCents ?? 0)}
-          icon={CreditCard}
-        />
-        <StatCard label="Course enrollments" value={enrollments} hint={`${completions} completed`} icon={GraduationCap} />
-        <StatCard label="Certificates issued" value={certificates} icon={BadgeCheck} />
-        <StatCard label="CVs created" value={cvCount} icon={FileText} />
-        <StatCard label="Exams completed" value={examsCompleted} icon={ClipboardCheck} />
-        <StatCard label="AI requests (30d)" value={aiRequests} icon={Bot} />
-        <StatCard label="Ad impressions (30d)" value={adImpressions} icon={Megaphone} />
-      </div>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Revenue" value={formatCurrency(kpis.revenue.value)} delta={kpis.revenue.delta} hint={`${formatCurrency(kpis.revenue.last30)} in 30d`} icon={CreditCard} />
+        <Kpi label="Users" value={String(kpis.users.value)} delta={kpis.users.delta} hint={`${kpis.users.last30} new in 30d`} icon={Users} />
+        <Kpi label="Enrolments" value={String(kpis.enrollments.value)} delta={kpis.enrollments.delta} hint={`${kpis.enrollments.last30} in 30d`} icon={GraduationCap} />
+        <Kpi label="AI requests (30d)" value={String(kpis.ai.last30)} delta={kpis.ai.delta} hint={`${kpis.activeUsers} active users`} icon={Bot} />
+      </section>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Recent activity</CardTitle>
-        </CardHeader>
+      {quickActions.length > 0 ? (
+        <section className="flex flex-wrap gap-2">
+          {quickActions.map((q) => (
+            <Link key={q.label} href={q.href} className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm font-medium hover:bg-muted">
+              <q.icon className="size-4 text-muted-foreground" /> {q.label}
+            </Link>
+          ))}
+        </section>
+      ) : null}
+
+      <Card>
+        <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>
         <CardContent>
           {recentAudit.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">No audit records yet.</p>
           ) : (
             <ul className="divide-y">
               {recentAudit.map((a) => (
-                <li key={a.id} className="flex items-center justify-between py-3 text-sm">
-                  <div>
+                <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
+                  <div className="min-w-0">
                     <p className="font-medium">{a.action}</p>
-                    <p className="text-muted-foreground">
-                      {a.entity}
-                      {a.entityId ? ` · ${a.entityId.slice(0, 8)}` : ""} ·{" "}
-                      {a.actor?.email ?? "system"}
+                    <p className="truncate text-muted-foreground">
+                      {a.entity}{a.entityId ? ` · ${a.entityId.slice(0, 8)}` : ""} · {a.actor?.email ?? "system"}
                     </p>
                   </div>
-                  <span className="text-muted-foreground">{formatDate(a.createdAt)}</span>
+                  <span className="shrink-0 text-muted-foreground">{formatDate(a.createdAt)}</span>
                 </li>
               ))}
             </ul>
