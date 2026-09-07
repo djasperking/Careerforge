@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api";
 import { audit } from "@/lib/audit";
 import { requireApprovedInstructor } from "@/lib/instructor/service";
 import { uniqueDigitalProductSlug, requireOwnedDigitalProduct } from "@/lib/marketplace/digital";
+import { parseVideoUrl } from "@/lib/marketplace/video";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 function fail(err: unknown): Result<never> {
@@ -16,18 +17,59 @@ function fail(err: unknown): Result<never> {
   return { ok: false, error: "Something went wrong. Please try again." };
 }
 
-const productSchema = z.object({
-  title: z.string().min(3).max(160),
-  description: z.string().min(20).max(4000),
-  coverImageUrl: z.string().max(400).optional().or(z.literal("")),
-  fileUrl: z.string().url("Upload the product file first.").max(600),
-  fileName: z.string().max(200).default("download"),
-  fileSizeBytes: z.coerce.number().int().min(0).default(0),
-  priceCents: z.coerce.number().int().min(0).max(100_000_000),
-  currency: z.string().min(3).max(3).default("NGN"),
-  discountPercent: z.coerce.number().int().min(0).max(90).optional(),
-  discountEndsAt: z.string().optional().or(z.literal("")),
-});
+const productSchema = z
+  .object({
+    title: z.string().min(3).max(160),
+    description: z.string().min(20).max(4000),
+    coverImageUrl: z.string().max(400).optional().or(z.literal("")),
+    deliveryType: z.enum(["FILE", "EXTERNAL_VIDEO"]).default("FILE"),
+    fileUrl: z.string().max(600).optional().or(z.literal("")),
+    fileName: z.string().max(200).default("download"),
+    fileSizeBytes: z.coerce.number().int().min(0).default(0),
+    videoUrl: z.string().max(600).optional().or(z.literal("")),
+    priceCents: z.coerce.number().int().min(0).max(100_000_000),
+    currency: z.string().min(3).max(3).default("NGN"),
+    discountPercent: z.coerce.number().int().min(0).max(90).optional(),
+    discountEndsAt: z.string().optional().or(z.literal("")),
+  })
+  .superRefine((val, ctx) => {
+    if (val.deliveryType === "FILE") {
+      if (!val.fileUrl || !/^https?:\/\//.test(val.fileUrl)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["fileUrl"], message: "Upload the product file first." });
+      }
+    } else if (val.deliveryType === "EXTERNAL_VIDEO") {
+      if (!val.videoUrl || !parseVideoUrl(val.videoUrl)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["videoUrl"],
+          message: "Paste a valid YouTube, Vimeo or Loom link.",
+        });
+      }
+    }
+  });
+
+/** Normalise the delivery fields so only the relevant ones are stored. */
+function deliveryData(input: z.infer<typeof productSchema>) {
+  if (input.deliveryType === "EXTERNAL_VIDEO") {
+    const parsed = parseVideoUrl(input.videoUrl ?? "")!;
+    return {
+      deliveryType: "EXTERNAL_VIDEO",
+      fileUrl: "",
+      fileName: "",
+      fileSizeBytes: 0,
+      videoUrl: parsed.embedUrl,
+      videoProvider: parsed.provider,
+    };
+  }
+  return {
+    deliveryType: "FILE",
+    fileUrl: input.fileUrl || "",
+    fileName: input.fileName || "download",
+    fileSizeBytes: input.fileSizeBytes,
+    videoUrl: null,
+    videoProvider: null,
+  };
+}
 
 export async function createMyProduct(raw: unknown): Promise<Result<{ id: string }>> {
   try {
@@ -43,9 +85,7 @@ export async function createMyProduct(raw: unknown): Promise<Result<{ id: string
         title: input.title,
         description: input.description,
         coverImageUrl: input.coverImageUrl || null,
-        fileUrl: input.fileUrl,
-        fileName: input.fileName || "download",
-        fileSizeBytes: input.fileSizeBytes,
+        ...deliveryData(input),
         priceCents: input.priceCents,
         currency: input.currency,
         discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
@@ -78,9 +118,7 @@ export async function updateMyProduct(id: string, raw: unknown): Promise<Result<
         title: input.title,
         description: input.description,
         coverImageUrl: input.coverImageUrl || null,
-        fileUrl: input.fileUrl,
-        fileName: input.fileName || "download",
-        fileSizeBytes: input.fileSizeBytes,
+        ...deliveryData(input),
         priceCents: input.priceCents,
         currency: input.currency,
         discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
@@ -106,7 +144,11 @@ export async function submitProductForReview(id: string): Promise<Result<null>> 
     const product = await requireOwnedDigitalProduct(user.id, id);
     if (product.reviewStatus === "SUBMITTED") throw new ApiError(409, "ALREADY_SUBMITTED", "Already submitted for review.");
     if (product.reviewStatus === "APPROVED") throw new ApiError(409, "ALREADY_APPROVED", "This product is already approved.");
-    if (!product.fileUrl) throw new ApiError(422, "NO_FILE", "Attach the product file before submitting.");
+    if (product.deliveryType === "EXTERNAL_VIDEO") {
+      if (!product.videoUrl) throw new ApiError(422, "NO_VIDEO", "Add the video link before submitting.");
+    } else if (!product.fileUrl) {
+      throw new ApiError(422, "NO_FILE", "Attach the product file before submitting.");
+    }
     if (product.description.trim().length < 20) throw new ApiError(422, "THIN_DESCRIPTION", "Write a fuller description before submitting.");
 
     await db.digitalProduct.update({

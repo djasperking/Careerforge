@@ -243,12 +243,19 @@ async function activateProduct(transaction: {
       },
       update: { transactionId: transaction.id },
     });
+    const dp = await db.digitalProduct.findUnique({
+      where: { id: transaction.productId },
+      select: { deliveryType: true },
+    });
+    const isVideo = dp?.deliveryType === "EXTERNAL_VIDEO";
     await db.notification.create({
       data: {
         userId: transaction.userId,
         type: "PAYMENT",
-        title: "Your download is ready",
-        body: "Open My Purchases to download your product.",
+        title: isVideo ? "Your video is ready to watch" : "Your download is ready",
+        body: isVideo
+          ? "Open My Purchases to start watching."
+          : "Open My Purchases to download your product.",
         linkUrl: "/dashboard/purchases",
       },
     }).catch(() => {});
@@ -286,18 +293,22 @@ export async function deliverDigitalProduct(purchaseId: string) {
   });
   if (!purchase || !purchase.downloadToken) return;
 
-  const downloadUrl = appUrl(`/api/products/${purchase.productId}/download?token=${purchase.downloadToken}`);
+  const isVideo = purchase.product.deliveryType === "EXTERNAL_VIDEO";
+  const accessUrl = isVideo
+    ? appUrl(`/products/${purchase.product.slug}/watch?token=${purchase.downloadToken}`)
+    : appUrl(`/api/products/${purchase.productId}/download?token=${purchase.downloadToken}`);
   const isGuest = !purchase.user.passwordHash;
 
   await sendEmail({
     to: purchase.user.email,
     template: "digital-product-ready",
-    subject: `Your download: ${purchase.product.title}`,
+    subject: isVideo ? `Watch: ${purchase.product.title}` : `Your download: ${purchase.product.title}`,
     data: {
       name: purchase.user.name,
       productTitle: purchase.product.title,
       fileName: purchase.product.fileName,
-      downloadUrl,
+      downloadUrl: accessUrl,
+      isVideo,
       isGuest,
       claimUrl: appUrl("/forgot-password"),
     },

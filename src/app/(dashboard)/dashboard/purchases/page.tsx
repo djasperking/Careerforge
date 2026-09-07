@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download, CalendarClock } from "lucide-react";
+import { Download, CalendarClock, PlayCircle } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
@@ -59,11 +59,19 @@ export default async function PurchasesPage() {
                       By {row.product.seller?.name ?? "Career Forge"} · bought {formatDate(row.createdAt)}
                     </p>
                   </div>
-                  <Button asChild size="sm" variant="outline">
-                    <a href={`/api/products/${row.productId}/download`}>
-                      <Download className="size-4" /> Download
-                    </a>
-                  </Button>
+                  {row.product.deliveryType === "EXTERNAL_VIDEO" ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/products/${row.product.slug}/watch`}>
+                        <PlayCircle className="size-4" /> Watch
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild size="sm" variant="outline">
+                      <a href={`/api/products/${row.productId}/download`}>
+                        <Download className="size-4" /> Download
+                      </a>
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>

@@ -64,15 +64,17 @@ function block(template: EmailTemplate, data: Record<string, unknown>): Block {
       };
     case "digital-product-ready":
       return {
-        heading: "Your download is ready",
+        heading: data.isVideo ? "Your video is ready to watch" : "Your download is ready",
         lines: [
           `Hi ${name},`,
-          `Thanks for your purchase of <strong>${esc(data.productTitle)}</strong>. Use the button below to download ${esc(data.fileName) || "your file"} — the link stays active, so you can come back to it any time.`,
+          data.isVideo
+            ? `Thanks for your purchase of <strong>${esc(data.productTitle)}</strong>. Use the button below to watch it on Career Forge — the link stays active, so you can come back to it any time.`
+            : `Thanks for your purchase of <strong>${esc(data.productTitle)}</strong>. Use the button below to download ${esc(data.fileName) || "your file"} — the link stays active, so you can come back to it any time.`,
           data.isGuest
             ? `We created a Career Forge account for this email so your purchases are always available. Set a password here to sign in: ${esc(data.claimUrl)}`
             : "You can also find this under My Purchases in your dashboard.",
         ],
-        cta: { label: "Download now", url: String(data.downloadUrl) },
+        cta: { label: data.isVideo ? "Watch now" : "Download now", url: String(data.downloadUrl) },
       };
     case "newsletter-digest":
       return {

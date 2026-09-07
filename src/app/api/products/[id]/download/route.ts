@@ -16,6 +16,12 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const product = await db.digitalProduct.findUnique({ where: { id } });
   if (!product) return Response.redirect(appUrl("/products"), 302);
 
+  // Video products have nothing to download — send them to the watch page.
+  if (product.deliveryType === "EXTERNAL_VIDEO") {
+    const t = new URL(req.url).searchParams.get("token");
+    return Response.redirect(appUrl(`/products/${product.slug}/watch${t ? `?token=${t}` : ""}`), 302);
+  }
+
   const token = new URL(req.url).searchParams.get("token");
   if (token) {
     const purchase = await db.digitalProductPurchase.findFirst({

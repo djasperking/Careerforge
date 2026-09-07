@@ -149,9 +149,14 @@ model DigitalProduct {
   title               String
   description         String
   coverImageUrl       String?
-  fileUrl             String
-  fileName            String
+  deliveryType        String             @default("FILE") // FILE | EXTERNAL_VIDEO | HOSTED_VIDEO
+  fileUrl             String             @default("")
+  fileName            String             @default("")
   fileSizeBytes       Int                @default(0)
+  videoUrl            String? // embeddable player URL (EXTERNAL_VIDEO) or playback base (HOSTED_VIDEO)
+  videoProvider       String? // youtube | vimeo | loom | bunny
+  videoAssetId        String? // provider-side id for HOSTED_VIDEO (Phase 2)
+  videoDurationSec    Int?
   priceCents          Int                @default(0)
   currency            String             @default("NGN")
   status              PublishStatus      @default(DRAFT)

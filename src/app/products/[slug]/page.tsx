@@ -54,13 +54,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               ) : null}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">{product.fileName} · instant download</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {product.deliveryType === "EXTERNAL_VIDEO"
+                ? "Video · watch on Career Forge"
+                : `${product.fileName || "File"} · instant download`}
+            </p>
             <div className="mt-4">
               <BuyProductButton
                 productId={product.id}
                 isLoggedIn={Boolean(user)}
                 owned={owned}
                 slug={product.slug}
+                deliveryType={product.deliveryType === "EXTERNAL_VIDEO" ? "EXTERNAL_VIDEO" : "FILE"}
               />
             </div>
           </div>

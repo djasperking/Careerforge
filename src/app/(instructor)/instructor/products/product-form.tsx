@@ -16,9 +16,11 @@ export interface ProductFormValues {
   title: string;
   description: string;
   coverImageUrl: string;
+  deliveryType: "FILE" | "EXTERNAL_VIDEO";
   fileUrl: string;
   fileName: string;
   fileSizeBytes: number;
+  videoUrl: string;
   priceCents: number;
   currency: string;
   discountPercent: number;
@@ -29,9 +31,11 @@ const EMPTY: ProductFormValues = {
   title: "",
   description: "",
   coverImageUrl: "",
+  deliveryType: "FILE",
   fileUrl: "",
   fileName: "",
   fileSizeBytes: 0,
+  videoUrl: "",
   priceCents: 0,
   currency: "NGN",
   discountPercent: 0,
@@ -108,14 +112,54 @@ export function ProductForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label>Product file (PDF, ZIP or EPUB)</Label>
-          <FileField
-            value={form.fileUrl}
-            fileName={form.fileName}
-            disabled={locked}
-            onChange={({ url, name, size }) => setForm((f) => ({ ...f, fileUrl: url, fileName: name, fileSizeBytes: size }))}
-          />
+          <Label>How is this delivered?</Label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(
+              [
+                ["FILE", "Downloadable file", "PDF, ZIP or EPUB the buyer downloads"],
+                ["EXTERNAL_VIDEO", "Video (external link)", "YouTube, Vimeo or Loom — plays on Career Forge, no download"],
+              ] as const
+            ).map(([value, label, hint]) => (
+              <button
+                type="button"
+                key={value}
+                disabled={locked}
+                onClick={() => set("deliveryType", value)}
+                className={`rounded-md border p-3 text-left text-sm transition ${
+                  form.deliveryType === value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted"
+                }`}
+              >
+                <span className="font-medium">{label}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {form.deliveryType === "FILE" ? (
+          <div className="space-y-1.5">
+            <Label>Product file (PDF, ZIP or EPUB)</Label>
+            <FileField
+              value={form.fileUrl}
+              fileName={form.fileName}
+              disabled={locked}
+              onChange={({ url, name, size }) => setForm((f) => ({ ...f, fileUrl: url, fileName: name, fileSizeBytes: size }))}
+            />
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <Label>Video link</Label>
+            <Input
+              value={form.videoUrl}
+              onChange={(e) => set("videoUrl", e.target.value)}
+              placeholder="https://youtube.com/watch?v=…  ·  https://vimeo.com/…  ·  https://loom.com/share/…"
+            />
+            <p className="text-xs text-muted-foreground">
+              Unlisted links are fine. Buyers watch it embedded on Career Forge — there&apos;s no download button, but this
+              is not download-proof. For locked-down hosting, hosted video is coming soon.
+            </p>
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">

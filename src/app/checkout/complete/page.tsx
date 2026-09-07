@@ -30,13 +30,24 @@ export default async function CheckoutCompletePage({
   const pending = transaction?.status === "PENDING";
 
   let downloadUrl: string | null = null;
+  let isVideo = false;
   if (success && transaction?.productType === "DIGITAL_PRODUCT" && transaction.productId) {
-    const purchase = await db.digitalProductPurchase.findUnique({
-      where: { productId_userId: { productId: transaction.productId, userId: transaction.userId } },
-      select: { downloadToken: true },
-    });
+    const [purchase, product] = await Promise.all([
+      db.digitalProductPurchase.findUnique({
+        where: { productId_userId: { productId: transaction.productId, userId: transaction.userId } },
+        select: { downloadToken: true },
+      }),
+      db.digitalProduct.findUnique({
+        where: { id: transaction.productId },
+        select: { slug: true, deliveryType: true },
+      }),
+    ]);
+    isVideo = product?.deliveryType === "EXTERNAL_VIDEO";
     if (purchase?.downloadToken) {
-      downloadUrl = `/api/products/${transaction.productId}/download?token=${purchase.downloadToken}`;
+      downloadUrl =
+        isVideo && product
+          ? `/products/${product.slug}/watch?token=${purchase.downloadToken}`
+          : `/api/products/${transaction.productId}/download?token=${purchase.downloadToken}`;
     }
   }
 
@@ -54,17 +65,18 @@ export default async function CheckoutCompletePage({
                   {transaction?.description} — {formatCurrency(transaction!.amountCents, transaction!.currency)}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  We&apos;ve emailed your download link to {transaction ? "your inbox" : "you"}. You can also download it right here:
+                  We&apos;ve emailed your {isVideo ? "access" : "download"} link to {transaction ? "your inbox" : "you"}. You can also
+                  {isVideo ? " watch" : " download"} it right here:
                 </p>
                 {downloadUrl ? (
                   <Button asChild className="mt-6">
                     <a href={downloadUrl}>
-                      <Download className="size-4" /> Download now
+                      <Download className="size-4" /> {isVideo ? "Watch now" : "Download now"}
                     </a>
                   </Button>
                 ) : (
                   <p className="mt-6 text-sm text-muted-foreground">
-                    Your download link is on its way by email.
+                    Your {isVideo ? "access" : "download"} link is on its way by email.
                   </p>
                 )}
                 <p className="mt-4 text-xs text-muted-foreground">

@@ -27,3 +27,28 @@ export async function userOwnsDigitalProduct(userId: string, productId: string) 
   });
   return Boolean(purchase);
 }
+
+/**
+ * Decide whether a visitor may access a product's content — via a logged-in
+ * session that owns it (or sells it) or an unguessable delivery-email token.
+ * Mirrors the entitlement check in the download route so guest buyers can also
+ * reach the watch page without an account.
+ */
+export async function resolveDigitalProductAccess(
+  productId: string,
+  opts: { userId?: string | null; token?: string | null },
+): Promise<boolean> {
+  if (opts.token) {
+    const viaToken = await db.digitalProductPurchase.findFirst({
+      where: { productId, downloadToken: opts.token },
+      select: { id: true },
+    });
+    if (viaToken) return true;
+  }
+  if (opts.userId) {
+    const product = await db.digitalProduct.findUnique({ where: { id: productId }, select: { sellerId: true } });
+    if (product?.sellerId === opts.userId) return true;
+    return userOwnsDigitalProduct(opts.userId, productId);
+  }
+  return false;
+}
