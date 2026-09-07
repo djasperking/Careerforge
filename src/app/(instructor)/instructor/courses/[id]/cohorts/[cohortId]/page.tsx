@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { attendanceByCohort } from "@/lib/cohort/service";
 import { CohortForm } from "../cohort-form";
-import { StatusControls, SessionManager } from "./cohort-controls";
+import { StatusControls, SessionManager, IssueCertificatesButton } from "./cohort-controls";
 import { AttendanceSheet, NotifyWaitlistButton } from "./attendance";
 
 export const metadata = { title: "Class" };
@@ -34,7 +34,7 @@ export default async function CohortDetailPage({
   }
   if (cohort.courseId !== id) notFound();
 
-  const [roster, waitlist, attendance] = await Promise.all([
+  const [roster, waitlist, attendance, certCount] = await Promise.all([
     db.cohortEnrollment.findMany({
       where: { cohortId },
       orderBy: { createdAt: "asc" },
@@ -46,6 +46,7 @@ export default async function CohortDetailPage({
       include: { user: { select: { name: true, email: true } } },
     }),
     attendanceByCohort(cohortId),
+    db.certificate.count({ where: { cohortId } }),
   ]);
   const left = seatsLeft(cohort);
   const rosterMembers = roster.map((r) => ({ userId: r.user.id, name: r.user.name ?? r.user.email }));
@@ -89,6 +90,7 @@ export default async function CohortDetailPage({
               priceNaira: cohort.priceCents != null ? String(cohort.priceCents / 100) : "",
               meetingUrl: cohort.meetingUrl ?? "",
               scheduleNote: cohort.scheduleNote ?? "",
+              minAttendancePercent: String(cohort.minAttendancePercent),
             }}
           />
         </CardContent>
@@ -128,6 +130,27 @@ export default async function CohortDetailPage({
           </CardContent>
         </Card>
       ) : null}
+
+      <Card>
+        <CardHeader><CardTitle>Certificates</CardTitle></CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <p className="text-muted-foreground">
+            {cohort.minAttendancePercent > 0
+              ? `Learners marked present for at least ${cohort.minAttendancePercent}% of live sessions are certified.`
+              : "Every learner on the roster is certified."}{" "}
+            Certificates are issued automatically when the class is marked completed.
+          </p>
+          <p>
+            {certCount} certificate{certCount === 1 ? "" : "s"} issued
+            {cohort.certificatesIssuedAt ? ` · last run ${formatDate(cohort.certificatesIssuedAt)}` : ""}
+          </p>
+          {cohort.status === "COMPLETED" ? (
+            <IssueCertificatesButton cohortId={cohort.id} />
+          ) : (
+            <p className="text-xs text-muted-foreground">Mark the class completed to issue certificates.</p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">

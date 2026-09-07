@@ -27,6 +27,7 @@ const cohortSchema = z.object({
   priceNaira: z.coerce.number().min(0).max(10_000_000).optional(),
   meetingUrl: z.string().url().or(z.literal("")).optional(),
   scheduleNote: z.string().max(2000).optional(),
+  minAttendancePercent: z.coerce.number().int().min(0).max(100).optional(),
 });
 
 function parseDates(d: { startDate: string; endDate: string; enrollByDate?: string }) {
@@ -59,6 +60,7 @@ export async function createCohort(courseId: string, input: unknown): Promise<Re
         currency: course.currency,
         meetingUrl: d.meetingUrl || null,
         scheduleNote: d.scheduleNote?.trim() || null,
+        minAttendancePercent: d.minAttendancePercent ?? 0,
       },
     });
     await audit({ actorId: user.id, action: "COHORT_CREATED", entity: "Cohort", entityId: cohort.id });
@@ -87,6 +89,7 @@ export async function updateCohort(cohortId: string, input: unknown): Promise<Re
         priceCents: d.priceNaira != null && d.priceNaira > 0 ? majorToMinor(d.priceNaira) : null,
         meetingUrl: d.meetingUrl || null,
         scheduleNote: d.scheduleNote?.trim() || null,
+        minAttendancePercent: d.minAttendancePercent ?? 0,
       },
     });
     revalidatePath(`/instructor/courses/${cohort.courseId}/cohorts/${cohortId}`);
@@ -116,9 +119,41 @@ export async function setCohortStatus(cohortId: string, status: CohortStatus): P
     }
     await db.cohort.update({ where: { id: cohortId }, data: { status } });
     await audit({ actorId: user.id, action: "COHORT_STATUS", entity: "Cohort", entityId: cohortId, metadata: { status } });
+
+    if (status === "COMPLETED") {
+      const { issueCohortCertificates } = await import("@/lib/certificate/service");
+      await issueCohortCertificates(cohortId).catch((err) => console.error("cohort certificates failed", err));
+    }
+
     revalidatePath(`/instructor/courses/${cohort.courseId}/cohorts/${cohortId}`);
     revalidatePath(`/instructor/courses/${cohort.courseId}/cohorts`);
     return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/** Manually (re)issue certificates for a completed cohort. */
+export async function issueCohortCertificatesAction(
+  cohortId: string,
+): Promise<Result<{ issued: number; skipped: { name: string; reason: string }[]; rosterSize: number }>> {
+  try {
+    const user = await requireUserApi();
+    const cohort = await requireOwnedCohort(user.id, cohortId);
+    if (cohort.status !== "COMPLETED") {
+      throw new ApiError(409, "NOT_COMPLETED", "Mark the class completed before issuing certificates.");
+    }
+    const { issueCohortCertificates } = await import("@/lib/certificate/service");
+    const result = await issueCohortCertificates(cohortId);
+    await audit({
+      actorId: user.id,
+      action: "COHORT_CERTIFICATES_ISSUED",
+      entity: "Cohort",
+      entityId: cohortId,
+      metadata: { issued: result.issued, skipped: result.skipped.length },
+    });
+    revalidatePath(`/instructor/courses/${cohort.courseId}/cohorts/${cohortId}`);
+    return { ok: true, data: result };
   } catch (err) {
     return fail(err);
   }

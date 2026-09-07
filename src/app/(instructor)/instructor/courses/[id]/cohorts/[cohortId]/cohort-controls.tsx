@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { setCohortStatus, addSession, deleteSession } from "../actions";
+import { setCohortStatus, addSession, deleteSession, issueCohortCertificatesAction } from "../actions";
 import type { CohortStatus } from "@prisma/client";
 
 const TRANSITIONS: Record<string, { to: CohortStatus; label: string; variant?: "outline" | "ghost" }[]> = {
@@ -44,6 +44,44 @@ export function StatusControls({ cohortId, status }: { cohortId: string; status:
         ))}
       </div>
       {error ? <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert> : null}
+    </div>
+  );
+}
+
+export function IssueCertificatesButton({ cohortId }: { cohortId: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function run() {
+    setBusy(true);
+    setMsg(null);
+    const res = await issueCohortCertificatesAction(cohortId);
+    setBusy(false);
+    if (!res.ok) {
+      setMsg({ ok: false, text: res.error });
+      return;
+    }
+    const { issued, skipped } = res.data;
+    setMsg({
+      ok: true,
+      text:
+        `Issued ${issued} new certificate${issued === 1 ? "" : "s"}.` +
+        (skipped.length ? ` Skipped ${skipped.length} for low attendance: ${skipped.map((s) => s.name).join(", ")}.` : ""),
+    });
+    router.refresh();
+  }
+
+  return (
+    <div className="space-y-2">
+      <Button size="sm" variant="outline" disabled={busy} onClick={run}>
+        {busy ? <Loader2 className="size-4 animate-spin" /> : null} Issue / re-run certificates
+      </Button>
+      {msg ? (
+        <Alert variant={msg.ok ? "success" : "destructive"}>
+          <AlertDescription>{msg.text}</AlertDescription>
+        </Alert>
+      ) : null}
     </div>
   );
 }

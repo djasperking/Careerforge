@@ -20,11 +20,12 @@ export type CohortFormValues = {
   priceNaira: string;
   meetingUrl: string;
   scheduleNote: string;
+  minAttendancePercent: string;
 };
 
 const EMPTY: CohortFormValues = {
   title: "", startDate: "", endDate: "", enrollByDate: "",
-  capacity: "0", priceNaira: "", meetingUrl: "", scheduleNote: "",
+  capacity: "0", priceNaira: "", meetingUrl: "", scheduleNote: "", minAttendancePercent: "0",
 };
 
 export function CohortForm({
@@ -55,6 +56,7 @@ export function CohortForm({
       priceNaira: f.priceNaira || undefined,
       meetingUrl: f.meetingUrl || "",
       scheduleNote: f.scheduleNote || "",
+      minAttendancePercent: f.minAttendancePercent || "0",
     };
     const res = cohortId ? await updateCohort(cohortId, payload) : await createCohort(courseId, payload);
     setBusy(false);
@@ -108,6 +110,21 @@ export function CohortForm({
       <div className="space-y-1">
         <Label htmlFor="scheduleNote">Schedule notes (optional)</Label>
         <textarea id="scheduleNote" rows={3} className={TA} placeholder="e.g. Live sessions every Tue & Thu, 7–8pm WAT" value={f.scheduleNote} onChange={(e) => set("scheduleNote", e.target.value)} />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="minAttendancePercent">Attendance needed for a certificate (%)</Label>
+        <Input
+          id="minAttendancePercent"
+          type="number"
+          min={0}
+          max={100}
+          value={f.minAttendancePercent}
+          onChange={(e) => set("minAttendancePercent", e.target.value)}
+        />
+        <p className="text-xs text-muted-foreground">
+          0 = every learner on the roster gets a certificate when the class completes. Above 0, only learners marked
+          present for at least this share of live sessions are certified.
+        </p>
       </div>
       {msg ? <Alert variant={msg.ok ? "success" : "destructive"}><AlertDescription>{msg.text}</AlertDescription></Alert> : null}
       <Button type="submit" disabled={busy}>

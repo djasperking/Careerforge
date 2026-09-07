@@ -882,6 +882,7 @@ model Certificate {
   publicId      String   @unique // CF-XXXXXX used in verification URL
   userId        String
   courseId      String?
+  cohortId      String?
   examAttemptId String?
   studentName   String
   title         String
@@ -894,8 +895,10 @@ model Certificate {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Course? @relation(fields: [courseId], references: [id])
+  cohort Cohort? @relation(fields: [cohortId], references: [id])
 
   @@index([userId])
+  @@index([cohortId])
 }
 
 // ===========================================================================
@@ -1462,6 +1465,8 @@ model Cohort {
   meetingUrl   String?
   scheduleNote String?
   status       CohortStatus @default(DRAFT)
+  minAttendancePercent Int   @default(0) // 0 = certify everyone on the roster
+  certificatesIssuedAt DateTime?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
@@ -1469,6 +1474,7 @@ model Cohort {
   enrollments CohortEnrollment[]
   sessions    CohortSession[]
   waitlist    CohortWaitlist[]
+  certificates Certificate[]
 
   @@index([courseId])
   @@index([status])
