@@ -70,6 +70,7 @@ model User {
   instructorPayouts     Payout[]                @relation("InstructorPayouts")
   decidedPayouts        Payout[]                @relation("PayoutDecider")
   cohortEnrollments     CohortEnrollment[]
+  jobPosts              JobPost[]               @relation("JobPostAuthor")
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
 
@@ -1224,6 +1225,72 @@ model SystemSetting {
   value     Json
   updatedAt DateTime @updatedAt
   updatedBy String?
+}
+
+// ---------------------------------------------------------------------------
+// Phase E — Jobs board
+// ---------------------------------------------------------------------------
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+}
+
+enum JobLocationType {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+model JobPost {
+  id             String          @id @default(cuid())
+  slug           String          @unique
+  title          String
+  company        String
+  companyLogoUrl String?
+  location       String?
+  locationType   JobLocationType @default(REMOTE)
+  type           JobType         @default(FULL_TIME)
+  category       String?
+  salaryText     String?
+  description    String
+  howToApply     String?
+  applyUrl       String
+  featured       Boolean         @default(false)
+  status         JobStatus       @default(DRAFT)
+  postedAt       DateTime?
+  expiresAt      DateTime?
+  createdById    String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  createdBy User?           @relation("JobPostAuthor", fields: [createdById], references: [id])
+  clicks    JobApplyClick[]
+
+  @@index([status])
+  @@index([category])
+  @@index([featured])
+}
+
+model JobApplyClick {
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  job JobPost @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
 }
 
 // ---------------------------------------------------------------------------

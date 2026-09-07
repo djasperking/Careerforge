@@ -3,6 +3,7 @@ import { Brand } from "@/components/layout/brand";
 import { Button } from "@/components/ui/button";
 
 const LINKS = [
+  { href: "/jobs", label: "Jobs" },
   { href: "/courses", label: "Courses" },
   { href: "/products", label: "Digital products" },
   { href: "/coaching", label: "Coaching" },

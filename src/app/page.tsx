@@ -11,6 +11,7 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getCurrentUser } from "@/lib/session";
 import { cvUnlockPrice } from "@/lib/cv/service";
 import { getSocialLinks } from "@/lib/site";
+import { listPublicJobs } from "@/lib/jobs/service";
 import { formatCurrency } from "@/lib/utils";
 
 const features = [
@@ -23,7 +24,12 @@ const features = [
 ];
 
 export default async function HomePage() {
-  const [user, price, social] = await Promise.all([getCurrentUser(), cvUnlockPrice(), getSocialLinks()]);
+  const [user, price, social, latestJobs] = await Promise.all([
+    getCurrentUser(),
+    cvUnlockPrice(),
+    getSocialLinks(),
+    listPublicJobs().then((j) => j.slice(0, 6)),
+  ]);
   const cvPriceLabel = formatCurrency(price.amountCents, price.currency);
 
   return (
@@ -104,6 +110,34 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {latestJobs.length > 0 ? (
+          <section className="container py-14">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="font-display text-2xl font-semibold">Latest jobs</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Fresh remote and on-site roles for our community.</p>
+              </div>
+              <Link href="/jobs" className="text-sm font-medium text-primary hover:underline">All jobs →</Link>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {latestJobs.map((j) => (
+                <Link key={j.id} href={`/jobs/${j.slug}`}>
+                  <Card className="h-full transition-colors hover:border-primary/40">
+                    <CardContent className="p-5">
+                      <p className="font-medium">{j.title}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">{j.company}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {j.locationType === "REMOTE" ? "Remote" : j.locationType === "HYBRID" ? "Hybrid" : "On-site"}
+                        {j.salaryText ? ` · ${j.salaryText}` : ""}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="container py-10">
           <AdSlot placement="HOMEPAGE" path="/" className="mx-auto max-w-2xl" />
         </section>
@@ -116,6 +150,7 @@ export default async function HomePage() {
             © {new Date().getFullYear()} Career Forge. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <Link href="/jobs" className="hover:text-foreground">Jobs</Link>
             <Link href="/courses" className="hover:text-foreground">Courses</Link>
             <Link href="/products" className="hover:text-foreground">Digital products</Link>
             <Link href="/coaching" className="hover:text-foreground">Coaching</Link>

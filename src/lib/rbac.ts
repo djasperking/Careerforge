@@ -53,6 +53,7 @@ export const PERMISSIONS = {
   "ads:write": "Manage advertising campaigns",
   // content
   "content:write": "Manage CMS content & blog",
+  "jobs:write": "Manage the jobs board",
   // support
   "support:handle": "View & respond to support tickets",
   // analytics / audit / settings
@@ -71,7 +72,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
     "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
     "exams:read", "exams:write", "exams:grade", "exams:security",
     "cv:templates", "payments:read", "payouts:manage", "subscriptions:write",
-    "ai:config", "ai:prompts", "ads:write", "content:write",
+    "ai:config", "ai:prompts", "ads:write", "content:write", "jobs:write",
     "support:handle", "analytics:read", "audit:read", "settings:write",
     "tools:unlimited",
   ],
@@ -82,7 +83,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
   ],
   FINANCE_MANAGER: ["payments:read", "payments:refund", "payouts:manage", "subscriptions:write", "analytics:read", "tools:unlimited"],
   SUPPORT_MANAGER: ["support:handle", "users:read", "analytics:read", "tools:unlimited"],
-  CONTENT_MANAGER: ["content:write", "ads:write", "cv:templates", "tools:unlimited"],
+  CONTENT_MANAGER: ["content:write", "jobs:write", "ads:write", "cv:templates", "tools:unlimited"],
   INSTRUCTOR: ["courses:read", "courses:write", "exams:write"],
   CUSTOMER: [],
 };
