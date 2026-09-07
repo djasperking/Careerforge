@@ -11,6 +11,8 @@ import { formatCurrency } from "@/lib/utils";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { listOpenCohorts } from "@/lib/cohort/service";
+import { courseRatingSummary, listCourseReviews } from "@/lib/review/service";
+import { Stars } from "@/components/ui/star-rating";
 import { EnrollButton } from "./enroll-button";
 import { CohortList } from "./cohort-list";
 
@@ -29,11 +31,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   ]);
   if (!course) notFound();
 
-  const [enrollment, openCohorts] = await Promise.all([
+  const [enrollment, openCohorts, rating, reviews] = await Promise.all([
     user
       ? db.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } } })
       : Promise.resolve(null),
     listOpenCohorts(course.id),
+    courseRatingSummary(course.id),
+    listCourseReviews(course.id),
   ]);
   const joinedCohortIds = user
     ? new Set(
@@ -56,7 +60,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           <h1 className="mt-3 font-display text-3xl font-semibold">{course.title}</h1>
           <p className="mt-3 text-muted-foreground">{course.description}</p>
 
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            {rating.count > 0 ? (
+              <a href="#reviews" className="flex items-center gap-1.5 text-foreground">
+                <Stars value={rating.average} />
+                <span className="font-medium">{rating.average.toFixed(1)}</span>
+                <span className="text-muted-foreground">({rating.count})</span>
+              </a>
+            ) : null}
             <span className="flex items-center gap-1"><BarChart3 className="size-4" /> {course.level}</span>
             <span className="flex items-center gap-1"><Clock className="size-4" /> {course.durationMinutes} min · {lessonCount} lessons</span>
             <span>By {course.instructor?.name ?? "Career Forge"}</span>
@@ -123,6 +134,25 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               ))}
             </div>
           </div>
+
+          {rating.count > 0 ? (
+            <div id="reviews" className="mt-10 scroll-mt-20">
+              <h2 className="font-display text-lg font-semibold">
+                Reviews <span className="text-muted-foreground">· {rating.average.toFixed(1)} out of 5 ({rating.count})</span>
+              </h2>
+              <div className="mt-4 space-y-4">
+                {reviews.map((r) => (
+                  <div key={r.id} className="rounded-lg border p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium">{r.user.name ?? "Learner"}</span>
+                      <Stars value={r.rating} size={14} />
+                    </div>
+                    {r.body ? <p className="mt-1.5 text-sm text-muted-foreground">{r.body}</p> : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div>

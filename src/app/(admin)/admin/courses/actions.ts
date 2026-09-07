@@ -352,3 +352,27 @@ export async function createCategory(name: string): Promise<Result<{ id: string;
     return fail(err);
   }
 }
+
+/** Admin moderation of a course review. */
+export async function moderateReview(
+  reviewId: string,
+  action: "hide" | "show" | "delete",
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+    const review = await db.review.findUnique({ where: { id: reviewId } });
+    if (!review) throw new ApiError(404, "NOT_FOUND", "Review not found.");
+    if (action === "delete") {
+      await db.review.delete({ where: { id: reviewId } });
+    } else {
+      await db.review.update({ where: { id: reviewId }, data: { status: action === "hide" ? "HIDDEN" : "VISIBLE" } });
+    }
+    await audit({ actorId: admin.id, action: `REVIEW_${action.toUpperCase()}`, entity: "Review", entityId: reviewId });
+    revalidateCourse(review.courseId);
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ApiError) return { ok: false, error: err.message };
+    console.error(err);
+    return { ok: false, error: "Something went wrong." };
+  }
+}

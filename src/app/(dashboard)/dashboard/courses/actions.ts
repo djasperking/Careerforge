@@ -59,3 +59,34 @@ export async function enrollInCourse(courseId: string): Promise<Result<{ enrolle
     return fail(err);
   }
 }
+
+export async function submitCourseReview(input: {
+  courseId: string;
+  rating: number;
+  body?: string;
+}): Promise<Result<{ saved: true }>> {
+  try {
+    const user = await requireUserApi();
+    const { upsertReview } = await import("@/lib/review/service");
+    await upsertReview(user.id, input.courseId, input.rating, input.body);
+    await audit({ actorId: user.id, action: "COURSE_REVIEWED", entity: "Course", entityId: input.courseId, metadata: { rating: input.rating } });
+    const course = await db.course.findUnique({ where: { id: input.courseId }, select: { slug: true } });
+    if (course) revalidatePath(`/courses/${course.slug}`);
+    revalidatePath(`/dashboard/courses/${input.courseId}`);
+    return { ok: true, data: { saved: true } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function removeCourseReview(courseId: string): Promise<Result<{ removed: true }>> {
+  try {
+    const user = await requireUserApi();
+    const { deleteOwnReview } = await import("@/lib/review/service");
+    await deleteOwnReview(user.id, courseId);
+    revalidatePath(`/dashboard/courses/${courseId}`);
+    return { ok: true, data: { removed: true } };
+  } catch (err) {
+    return fail(err);
+  }
+}

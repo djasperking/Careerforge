@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Users, GraduationCap, ClipboardCheck } from "lucide-react";
 import { CourseSettingsForm } from "./course-settings-form";
 import { ModuleManager } from "./module-manager";
+import { ReviewModeration } from "./review-moderation";
+import { formatDate } from "@/lib/utils";
 import { CourseStatusControl } from "./course-status-control";
 
 export default async function AdminCourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +30,14 @@ export default async function AdminCourseDetailPage({ params }: { params: Promis
   ]);
   if (!course) notFound();
 
-  const completedCount = await db.enrollment.count({ where: { courseId: id, status: "COMPLETED" } });
+  const [completedCount, reviews] = await Promise.all([
+    db.enrollment.count({ where: { courseId: id, status: "COMPLETED" } }),
+    db.review.findMany({
+      where: { courseId: id },
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { name: true } } },
+    }),
+  ]);
 
   return (
     <div>
@@ -100,6 +109,22 @@ export default async function AdminCourseDetailPage({ params }: { params: Promis
           </Card>
         </div>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader><CardTitle>Reviews ({reviews.length})</CardTitle></CardHeader>
+        <CardContent>
+          <ReviewModeration
+            reviews={reviews.map((r) => ({
+              id: r.id,
+              rating: r.rating,
+              body: r.body,
+              status: r.status,
+              author: r.user.name ?? "Learner",
+              date: formatDate(r.createdAt),
+            }))}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

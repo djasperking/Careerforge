@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CourseThumb } from "@/components/ui/course-thumb";
+import { Stars } from "@/components/ui/star-rating";
+import { ratingSummaries } from "@/lib/review/service";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/session";
 
@@ -22,6 +24,7 @@ export default async function PublicCoursesPage() {
     }),
     getCurrentUser(),
   ]);
+  const ratings = await ratingSummaries(courses.map((c) => c.id));
 
   return (
     <div className="min-h-screen">
@@ -48,9 +51,15 @@ export default async function PublicCoursesPage() {
                     </div>
                     <h2 className="mt-3 font-display text-lg font-semibold">{c.title}</h2>
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {c.level} · {c.instructor?.name ?? "Career Forge"}
-                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                      {ratings.get(c.id)?.count ? (
+                        <span className="flex items-center gap-1">
+                          <Stars value={ratings.get(c.id)!.average} size={12} />
+                          {ratings.get(c.id)!.average.toFixed(1)}
+                        </span>
+                      ) : null}
+                      <span>{c.level} · {c.instructor?.name ?? "Career Forge"}</span>
+                    </div>
                   </CardContent>
                 </Card>
               </Link>

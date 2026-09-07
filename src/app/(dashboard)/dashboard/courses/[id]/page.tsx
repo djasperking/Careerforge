@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatDate } from "@/lib/utils";
+import { getUserReview } from "@/lib/review/service";
+import { CourseReviewForm } from "./review-form";
 
 export default async function EnrolledCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -35,6 +37,8 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
   const nextLesson = enrollment.course.modules
     .flatMap((m) => m.lessons)
     .find((l) => !progressByLesson.get(l.id)?.completed);
+
+  const myReview = await getUserReview(user.id, id);
 
   const cohortEnrolment = await db.cohortEnrollment.findFirst({
     where: { userId: user.id, cohort: { courseId: id } },
@@ -165,6 +169,16 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
             </CardContent>
           </Card>
         ) : null}
+
+        <Card>
+          <CardHeader><CardTitle>{myReview ? "Your review" : "Rate this course"}</CardTitle></CardHeader>
+          <CardContent>
+            <CourseReviewForm
+              courseId={id}
+              initial={myReview ? { rating: myReview.rating, body: myReview.body ?? "" } : null}
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
