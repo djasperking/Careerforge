@@ -47,6 +47,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         })).map((r) => r.cohortId),
       )
     : new Set<string>();
+  const waitlistedCohortIds = user
+    ? new Set(
+        (await db.cohortWaitlist.findMany({
+          where: { userId: user.id, cohortId: { in: openCohorts.map((c) => c.id) } },
+          select: { cohortId: true },
+        })).map((r) => r.cohortId),
+      )
+    : new Set<string>();
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
 
   return (
@@ -113,6 +121,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               seatsLeft: c.seatsLeft,
               scheduleNote: c.scheduleNote,
               joined: joinedCohortIds.has(c.id),
+              waitlisted: waitlistedCohortIds.has(c.id),
             }))}
           />
 

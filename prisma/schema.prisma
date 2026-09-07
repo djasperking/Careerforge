@@ -78,6 +78,8 @@ model User {
   referralRewards       ReferralReward[]        @relation("ReferralEarner")
   referredRewards       ReferralReward[]        @relation("ReferredUser")
   cohortEnrollments     CohortEnrollment[]
+  cohortWaitlists       CohortWaitlist[]
+  sessionAttendance     SessionAttendance[]
   jobPosts              JobPost[]               @relation("JobPostAuthor")
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
@@ -1367,6 +1369,7 @@ model Cohort {
   course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
   enrollments CohortEnrollment[]
   sessions    CohortSession[]
+  waitlist    CohortWaitlist[]
 
   @@index([courseId])
   @@index([status])
@@ -1396,9 +1399,38 @@ model CohortSession {
   meetingUrl      String?
   note            String?
 
-  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  cohort     Cohort              @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  attendance SessionAttendance[]
 
   @@index([cohortId])
+}
+
+model CohortWaitlist {
+  id         String    @id @default(cuid())
+  cohortId   String
+  userId     String
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  cohort Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([cohortId, userId])
+  @@index([cohortId])
+}
+
+model SessionAttendance {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String
+  present   Boolean  @default(true)
+  markedAt  DateTime @default(now())
+
+  session CohortSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------

@@ -173,3 +173,39 @@ export async function deleteSession(sessionId: string): Promise<Result> {
     return fail(err);
   }
 }
+
+export async function notifyCohortWaitlist(cohortId: string): Promise<Result> {
+  try {
+    const user = await requireUserApi();
+    const cohort = await requireOwnedCohort(user.id, cohortId);
+    const { notifyWaitlist } = await import("@/lib/cohort/service");
+    const n = await notifyWaitlist(cohortId);
+    await audit({ actorId: user.id, action: "COHORT_WAITLIST_NOTIFIED", entity: "Cohort", entityId: cohortId, metadata: { count: n } });
+    revalidatePath(`/instructor/courses/${cohort.courseId}/cohorts/${cohortId}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function saveAttendance(
+  sessionId: string,
+  entries: { userId: string; present: boolean }[],
+): Promise<Result> {
+  try {
+    const user = await requireUserApi();
+    const session = await db.cohortSession.findUnique({
+      where: { id: sessionId },
+      include: { cohort: { select: { id: true, courseId: true, course: { select: { instructorId: true } } } } },
+    });
+    if (!session || session.cohort.course.instructorId !== user.id) {
+      throw new ApiError(404, "NOT_FOUND", "Session not found.");
+    }
+    const { markAttendance } = await import("@/lib/cohort/service");
+    await markAttendance(sessionId, entries);
+    revalidatePath(`/instructor/courses/${session.cohort.courseId}/cohorts/${session.cohort.id}`);
+    return { ok: true, data: null };
+  } catch (err) {
+    return fail(err);
+  }
+}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Loader2, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { joinCohortFree } from "./actions";
+import { joinCohortFree, joinCohortWaitlist } from "./actions";
 import { startCourseCheckout } from "@/app/(dashboard)/dashboard/payments/actions";
 
 export type PublicCohort = {
@@ -20,6 +20,7 @@ export type PublicCohort = {
   seatsLeft: number | null;
   scheduleNote: string | null;
   joined: boolean;
+  waitlisted: boolean;
 };
 
 function fmt(d: string) {
@@ -65,6 +66,15 @@ export function CohortList({
     }
   }
 
+  async function waitlist(c: PublicCohort) {
+    setBusyId(c.id);
+    setError(null);
+    const res = await joinCohortWaitlist(c.id, slug);
+    setBusyId(null);
+    if (res.ok) router.refresh();
+    else setError(res.error);
+  }
+
   return (
     <div className="mt-8">
       <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
@@ -100,8 +110,13 @@ export function CohortList({
                 <Button asChild size="sm">
                   <Link href={`/login?next=${encodeURIComponent(`/courses/${slug}`)}`}>Log in to join</Link>
                 </Button>
+              ) : c.waitlisted ? (
+                <Button size="sm" variant="outline" disabled>On the waitlist</Button>
               ) : c.seatsLeft === 0 ? (
-                <Button size="sm" disabled>Class full</Button>
+                <Button size="sm" variant="outline" onClick={() => waitlist(c)} disabled={busyId === c.id}>
+                  {busyId === c.id ? <Loader2 className="size-4 animate-spin" /> : null}
+                  Join the waitlist
+                </Button>
               ) : (
                 <Button size="sm" onClick={() => join(c)} disabled={busyId === c.id}>
                   {busyId === c.id ? <Loader2 className="size-4 animate-spin" /> : null}

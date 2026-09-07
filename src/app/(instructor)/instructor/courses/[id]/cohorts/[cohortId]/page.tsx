@@ -7,8 +7,10 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { attendanceByCohort } from "@/lib/cohort/service";
 import { CohortForm } from "../cohort-form";
 import { StatusControls, SessionManager } from "./cohort-controls";
+import { AttendanceSheet, NotifyWaitlistButton } from "./attendance";
 
 export const metadata = { title: "Class" };
 
@@ -32,12 +34,21 @@ export default async function CohortDetailPage({
   }
   if (cohort.courseId !== id) notFound();
 
-  const roster = await db.cohortEnrollment.findMany({
-    where: { cohortId },
-    orderBy: { createdAt: "asc" },
-    include: { user: { select: { name: true, email: true } } },
-  });
+  const [roster, waitlist, attendance] = await Promise.all([
+    db.cohortEnrollment.findMany({
+      where: { cohortId },
+      orderBy: { createdAt: "asc" },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    }),
+    db.cohortWaitlist.findMany({
+      where: { cohortId },
+      orderBy: { createdAt: "asc" },
+      include: { user: { select: { name: true, email: true } } },
+    }),
+    attendanceByCohort(cohortId),
+  ]);
   const left = seatsLeft(cohort);
+  const rosterMembers = roster.map((r) => ({ userId: r.user.id, name: r.user.name ?? r.user.email }));
 
   return (
     <div className="space-y-6">
@@ -97,6 +108,47 @@ export default async function CohortDetailPage({
               note: s.note,
             }))}
           />
+        </CardContent>
+      </Card>
+
+      {cohort.sessions.length > 0 ? (
+        <Card>
+          <CardHeader><CardTitle>Attendance</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {cohort.sessions.map((s) => (
+              <AttendanceSheet
+                key={s.id}
+                sessionId={s.id}
+                title={s.title}
+                when={new Date(s.startsAt).toLocaleString()}
+                roster={rosterMembers}
+                present={[...(attendance.get(s.id) ?? [])]}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Waitlist ({waitlist.length})</CardTitle>
+          <NotifyWaitlistButton cohortId={cohort.id} count={waitlist.filter((w) => !w.notifiedAt).length} />
+        </CardHeader>
+        <CardContent>
+          {waitlist.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">No one is waiting.</p>
+          ) : (
+            <ul className="divide-y text-sm">
+              {waitlist.map((w) => (
+                <li key={w.id} className="flex items-center justify-between py-2">
+                  <span>{w.user.name ?? w.user.email}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {w.notifiedAt ? `notified ${formatDate(w.notifiedAt)}` : `waiting since ${formatDate(w.createdAt)}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
 
