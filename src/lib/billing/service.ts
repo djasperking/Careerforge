@@ -34,7 +34,10 @@ async function resolveProduct(
 ): Promise<CheckoutProduct> {
   if (productType === "COURSE") {
     const course = await db.course.findUnique({ where: { id: productId } });
-    if (!course || course.status !== "PUBLISHED" || course.reviewStatus !== "APPROVED") {
+    // A published course is buyable. The review gate governs *publishing*, not
+    // checkout — some live courses predate the marketplace review flow and sit
+    // at reviewStatus DRAFT while fully public.
+    if (!course || course.status !== "PUBLISHED") {
       throw new ApiError(404, "NOT_FOUND", "Course not available.");
     }
     const existing = await db.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: productId } } });
@@ -84,7 +87,7 @@ async function resolveProduct(
 
   if (productType === "DIGITAL_PRODUCT") {
     const product = await db.digitalProduct.findUnique({ where: { id: productId } });
-    if (!product || product.status !== "PUBLISHED" || product.reviewStatus !== "APPROVED") {
+    if (!product || product.status !== "PUBLISHED") {
       throw new ApiError(404, "NOT_FOUND", "Product not available.");
     }
     if (product.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This product is free — download it directly.");
@@ -107,7 +110,7 @@ async function resolveProduct(
     if (!booking) throw new ApiError(404, "NOT_FOUND", "Booking not found.");
     if (booking.status !== "PENDING_PAYMENT") throw new ApiError(409, "ALREADY_PAID", "This booking has already been paid for.");
     const offer = booking.offer;
-    if (offer.status !== "PUBLISHED" || offer.reviewStatus !== "APPROVED") {
+    if (offer.status !== "PUBLISHED") {
       throw new ApiError(404, "NOT_FOUND", "This coaching offer is no longer available.");
     }
     if (offer.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This session is free.");
