@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { ApiError } from "@/lib/api";
 import type { AIContext, AIProvider, AIResult } from "./types";
 import { mockAIProvider } from "./mock";
 import { getActiveSystemPrompt, type AIFeatureKey } from "./prompts";
@@ -19,42 +20,63 @@ const SYSTEM_BASE = `You are Career Forge's AI assistant. Rules you must never b
  * apply on top. Any method without a real prompt — and every method when
  * GEMINI_API_KEY is unset — falls back to the deterministic mock.
  */
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function jsonCall<T>(
   ctx: AIContext,
   defaultInstruction: string,
   userPrompt: string,
   schemaHint: string,
+  opts: { maxTokens?: number } = {},
 ): Promise<AIResult<T>> {
   const started = Date.now();
   const custom = await getActiveSystemPrompt(ctx.feature as AIFeatureKey).catch(() => null);
   const system = `${SYSTEM_BASE}\n\n${custom ?? defaultInstruction}\n\nSchema:\n${schemaHint}`;
+  const maxOutputTokens = Math.max(opts.maxTokens ?? 0, env.AI_MAX_OUTPUT_TOKENS);
 
-  const res = await fetch(`${BASE}/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        maxOutputTokens: env.AI_MAX_OUTPUT_TOKENS,
-        temperature: 0.4,
-      },
-    }),
-  });
+  // Gemini flash returns 429/503 under load — retry a few times before giving up.
+  let res: Response | null = null;
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    res = await fetch(`${BASE}/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        generationConfig: { responseMimeType: "application/json", maxOutputTokens, temperature: 0.4 },
+      }),
+    });
+    if (res.ok) break;
+    lastStatus = res.status;
+    if (res.status !== 429 && res.status !== 503 && res.status !== 500) break;
+    await sleep(700 * 2 ** attempt); // 0.7s, 1.4s, 2.8s
+  }
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Gemini ${res.status}: ${body.slice(0, 300)}`);
+  if (!res || !res.ok) {
+    if (lastStatus === 429 || lastStatus === 503 || lastStatus === 500) {
+      throw new ApiError(503, "AI_BUSY", "The AI is busy right now — please try again in a moment.");
+    }
+    const body = res ? await res.text().catch(() => "") : "";
+    throw new ApiError(502, "AI_ERROR", `The AI request failed (${lastStatus}). ${body.slice(0, 160)}`);
   }
 
   const json = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
     usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
   };
-  const text = (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+  const candidate = json.candidates?.[0];
+  const text = (candidate?.content?.parts ?? []).map((p) => p.text ?? "").join("");
   const start = Math.max(text.indexOf("{"), text.indexOf("["));
-  const parsed = JSON.parse(start >= 0 ? text.slice(start) : text) as T;
+  let parsed: T;
+  try {
+    parsed = JSON.parse(start >= 0 ? text.slice(start) : text) as T;
+  } catch {
+    if (candidate?.finishReason === "MAX_TOKENS") {
+      throw new ApiError(502, "AI_TRUNCATED", "That CV was too long for the AI to process in one pass — try a shorter version or paste just the key sections.");
+    }
+    throw new ApiError(502, "AI_BAD_RESPONSE", "The AI response came back incomplete. Please try again.");
+  }
 
   return {
     data: parsed,
@@ -113,6 +135,7 @@ export const googleAIProvider: AIProvider = {
         `achievements:[string], languages:[{name,proficiency}], ` +
         `volunteerExperience:[{organization,role,startDate,endDate,description}], ` +
         `references:[{name,relationship,contact}], additionalInformation }, tailoringNotes:[string] }`,
+      { maxTokens: 8192 },
     );
   },
 
@@ -123,6 +146,7 @@ export const googleAIProvider: AIProvider = {
       "Analyse the CV against the job description and identify concrete, actionable gaps.",
       `CV:\n${JSON.stringify(input.cv)}\n\nJob description:\n${input.jobDescription}`,
       `{ matchScore:number, missingKeywords:string[], missingSkills:string[], weakSections:string[], suggestions:[{section:string,suggestion:string,requiresVerification:boolean}], atsRecommendations:string[], improvedSummary:string }`,
+      { maxTokens: 6144 },
     );
   },
 

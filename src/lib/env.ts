@@ -27,7 +27,7 @@ const schema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default("gemini-3.6-flash"),
   AI_MODEL: z.string().default("claude-sonnet-5"),
-  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(2000),
+  AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(4096),
 
   PAYMENT_PROVIDER: z.enum(["paystack", "mock"]).default("mock"),
   PAYSTACK_SECRET_KEY: z.string().optional(),
