@@ -11,21 +11,27 @@ Font.registerHyphenationCallback((word) => [word]);
 
 const SPACING = { compact: 6, comfortable: 10, spacious: 14 } as const;
 
-function styles(spacing: keyof typeof SPACING) {
-  const gap = SPACING[spacing];
+function styles(template: CvTemplateConfig) {
+  const gap = SPACING[template.spacing];
+  const accent = template.accent || "#404040";
+  const align = template.headerAlign === "left" ? "left" : "center";
   return StyleSheet.create({
     page: { padding: 36, fontSize: 9.5, fontFamily: "Helvetica", color: "#171717", lineHeight: 1.4 },
-    name: { fontSize: 19, fontFamily: "Helvetica-Bold", textAlign: "center" },
-    headline: { fontSize: 10, color: "#525252", marginTop: 2, textAlign: "center" },
-    contact: { fontSize: 8.5, color: "#737373", marginTop: 6, textAlign: "center" },
+    name: { fontSize: 19, fontFamily: "Helvetica-Bold", textAlign: align, color: accent },
+    headline: { fontSize: 10, color: "#525252", marginTop: 2, textAlign: align },
+    contact: { fontSize: 8.5, color: "#737373", marginTop: 6, textAlign: align },
     hr: { borderBottomWidth: 1, borderBottomColor: "#e5e5e5", marginTop: 10, marginBottom: gap },
     row: { flexDirection: "row" },
     col: { flexGrow: 1 },
     sidebar: { width: "32%", marginLeft: 20 },
     section: { marginBottom: gap },
     h2: {
-      fontSize: 8.5, fontFamily: "Helvetica-Bold", textTransform: "uppercase",
-      letterSpacing: 0.6, color: "#404040", borderBottomWidth: 0.5, borderBottomColor: "#d4d4d4",
+      fontSize: 8.5, fontFamily: "Helvetica-Bold",
+      textTransform: template.uppercaseHeadings ? "uppercase" : "none",
+      letterSpacing: 0.6,
+      color: template.headingStyle === "underline" ? "#404040" : accent,
+      borderBottomWidth: template.headingStyle === "underline" ? 0.5 : 0,
+      borderBottomColor: accent,
       paddingBottom: 2, marginBottom: 4,
     },
     itemHeadRow: { flexDirection: "row", justifyContent: "space-between" },
@@ -58,7 +64,7 @@ export function CvPdfDocument({
   template: CvTemplateConfig;
   watermark?: boolean;
 }) {
-  const s = styles(template.spacing);
+  const s = styles(template);
   const order = template.sectionOrder.filter((k) => k !== "personalInfo");
   const sidebar = template.columns === 2 ? order.filter((k) => SIDEBAR_KEYS.has(k)) : [];
   const main = template.columns === 2 ? order.filter((k) => !SIDEBAR_KEYS.has(k)) : order;

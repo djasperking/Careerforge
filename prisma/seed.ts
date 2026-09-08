@@ -125,37 +125,60 @@ async function seedUsers() {
 }
 
 export async function seedCvTemplates() {
+  const DEFAULT_ORDER = [
+    "personalInfo", "professionalSummary", "careerObjective", "experience", "education",
+    "skills", "projects", "certifications", "achievements", "languages",
+    "volunteerExperience", "references", "additionalInformation",
+  ];
+  const TECH_ORDER = [
+    "personalInfo", "professionalSummary", "skills", "projects", "experience",
+    "education", "certifications", "achievements", "languages",
+    "volunteerExperience", "references", "additionalInformation",
+  ];
+  const ACADEMIC_ORDER = [
+    "personalInfo", "professionalSummary", "careerObjective", "education", "experience",
+    "achievements", "projects", "certifications", "skills", "languages",
+    "volunteerExperience", "references", "additionalInformation",
+  ];
+
   const templates = [
-    ["classic", "Classic", "Timeless single-column layout.", false],
-    ["professional", "Professional", "Balanced two-column, recruiter-friendly.", false],
-    ["modern", "Modern", "Clean type, subtle accent colour.", false],
-    ["executive", "Executive", "Senior-level emphasis on impact.", true],
-    ["minimal", "Minimal", "Maximum content, minimum decoration. ATS-safe.", false],
-    ["creative", "Creative", "For design and marketing roles.", true],
-    ["technical", "Technical", "Projects and stack front and centre.", false],
-    ["academic", "Academic", "Publications, research and teaching.", true],
+    ["classic", "Classic", "Timeless single-column layout.", false,
+      { columns: 1, font: "Source Serif", spacing: "comfortable", sectionOrder: DEFAULT_ORDER,
+        accent: "#404040", headerAlign: "center", headingStyle: "underline", uppercaseHeadings: true }],
+    ["professional", "Professional", "Balanced two-column, recruiter-friendly.", false,
+      { columns: 2, font: "Inter", spacing: "comfortable", sectionOrder: DEFAULT_ORDER,
+        accent: "#1d4ed8", headerAlign: "left", headingStyle: "underline", uppercaseHeadings: true }],
+    ["modern", "Modern", "Clean type, subtle accent colour.", false,
+      { columns: 1, font: "Inter", spacing: "spacious", sectionOrder: DEFAULT_ORDER,
+        accent: "#0f766e", headerAlign: "left", headingStyle: "bar", uppercaseHeadings: false }],
+    ["executive", "Executive", "Senior-level emphasis on impact.", true,
+      { columns: 1, font: "Source Serif", spacing: "spacious", sectionOrder: DEFAULT_ORDER,
+        accent: "#7c2d12", headerAlign: "center", headingStyle: "plain", uppercaseHeadings: true }],
+    ["minimal", "Minimal", "Maximum content, minimum decoration. ATS-safe.", false,
+      { columns: 1, font: "Inter", spacing: "compact", sectionOrder: DEFAULT_ORDER,
+        accent: "#404040", headerAlign: "left", headingStyle: "plain", uppercaseHeadings: true }],
+    ["creative", "Creative", "For design and marketing roles.", true,
+      { columns: 2, font: "Inter", spacing: "spacious", sectionOrder: DEFAULT_ORDER,
+        accent: "#be185d", headerAlign: "left", headingStyle: "bar", uppercaseHeadings: false }],
+    ["technical", "Technical", "Projects and stack front and centre.", false,
+      { columns: 2, font: "Inter", spacing: "comfortable", sectionOrder: TECH_ORDER,
+        accent: "#4338ca", headerAlign: "left", headingStyle: "bar", uppercaseHeadings: true }],
+    ["academic", "Academic", "Publications, research and teaching.", true,
+      { columns: 1, font: "Source Serif", spacing: "comfortable", sectionOrder: ACADEMIC_ORDER,
+        accent: "#404040", headerAlign: "center", headingStyle: "underline", uppercaseHeadings: true }],
   ] as const;
 
-  for (const [key, name, description, isPremium] of templates) {
+  for (const [key, name, description, isPremium, config] of templates) {
     await db.cVTemplate.upsert({
       where: { key },
-      update: { name, description, isPremium },
+      update: { name, description, isPremium, config },
       create: {
         key,
         name,
         description,
         isPremium,
         category: isPremium ? "premium" : "standard",
-        config: {
-          columns: key === "professional" || key === "creative" ? 2 : 1,
-          font: key === "modern" ? "Inter" : "Source Serif",
-          spacing: "comfortable",
-          sectionOrder: [
-            "personalInfo", "professionalSummary", "careerObjective", "experience", "education",
-            "skills", "projects", "certifications", "achievements", "languages",
-            "volunteerExperience", "references", "additionalInformation",
-          ],
-        },
+        config,
       },
     });
   }

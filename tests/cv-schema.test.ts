@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { emptyCvContent, parseCvContent, scoreCvCompleteness, parseTemplateConfig } from "@/lib/cv/schema";
+import {
+  emptyCvContent, parseCvContent, scoreCvCompleteness, parseTemplateConfig,
+  normalizeSkills, coerceCvContent,
+} from "@/lib/cv/schema";
 
 describe("cv schema", () => {
   it("produces a fully-defaulted empty document", () => {
@@ -32,6 +35,42 @@ describe("cv schema", () => {
     const cfg = parseTemplateConfig(undefined);
     expect(cfg.columns).toBe(1);
     expect(cfg.sectionOrder.length).toBeGreaterThan(0);
+    expect(cfg.accent).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(cfg.headerAlign).toBe("center");
+    expect(cfg.headingStyle).toBe("underline");
     expect(parseTemplateConfig({ columns: 2 }).columns).toBe(2);
+  });
+
+  it("keeps a valid custom template style and rejects a bad accent", () => {
+    const cfg = parseTemplateConfig({ accent: "#be185d", headerAlign: "left", headingStyle: "bar", uppercaseHeadings: false });
+    expect(cfg.accent).toBe("#be185d");
+    expect(cfg.headerAlign).toBe("left");
+    expect(cfg.headingStyle).toBe("bar");
+    expect(cfg.uppercaseHeadings).toBe(false);
+    expect(parseTemplateConfig({ accent: "red" }).accent).toBe("#404040");
+  });
+});
+
+describe("normalizeSkills", () => {
+  it("splits, trims and de-duplicates a messy blob", () => {
+    const out = normalizeSkills("SQL, Python; Python •  Power BI | data-viz\nSQL");
+    expect(out).toEqual(["SQL", "Python", "Power BI", "data-viz"]);
+  });
+
+  it("drops sentence-length noise and caps the list", () => {
+    const out = normalizeSkills([
+      "Excellent communicator who thrives in fast paced cross functional teams delivering value",
+      "Java", "Go", "Rust", "C++", "Kotlin", "Scala", "Elixir", "Haskell", "Perl", "Ruby",
+      "PHP", "Swift", "Dart", "Zig", "Nim",
+    ]);
+    expect(out).not.toContain(
+      "Excellent communicator who thrives in fast paced cross functional teams delivering value",
+    );
+    expect(out.length).toBeLessThanOrEqual(14);
+  });
+
+  it("is applied by coerceCvContent", () => {
+    const c = coerceCvContent({ skills: ["A", "a", " A ", "B,C"] });
+    expect(c.skills).toEqual(["A", "B", "C"]);
   });
 });

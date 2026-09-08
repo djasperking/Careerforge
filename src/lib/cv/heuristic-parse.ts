@@ -1,4 +1,4 @@
-import type { CVContent } from "./schema";
+import { normalizeSkills, type CVContent } from "./schema";
 
 /**
  * Best-effort, AI-free CV parser. Used as a fallback when the AI import
@@ -119,7 +119,7 @@ export function heuristicParseCv(rawText: string): Record<string, unknown> {
   if (sections.careerObjective) out.careerObjective = sections.careerObjective.replace(/\n+/g, " ").slice(0, 900);
   if (sections.additionalInformation) out.additionalInformation = sections.additionalInformation.replace(/\n+/g, " ").slice(0, 900);
 
-  if (sections.skills) out.skills = splitList(sections.skills);
+  if (sections.skills) out.skills = normalizeSkills(sections.skills);
   if (sections.achievements) {
     out.achievements = sections.achievements
       .split("\n")

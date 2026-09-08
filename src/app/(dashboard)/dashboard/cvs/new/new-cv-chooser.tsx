@@ -101,6 +101,24 @@ function UploadPath() {
     <Card>
       <CardContent className="p-6">
         <form onSubmit={onSubmit} className="space-y-5">
+          <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <Label htmlFor="jobDescription" className="flex items-center gap-2 text-sm font-semibold">
+              <Sparkles className="size-4 text-primary" /> Target job — do this first
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Paste the job advert you&apos;re applying for. We use it to build a fresh CV aimed at that
+              role — reordering and rewording your real experience to match. Leave it blank to just import
+              your CV as-is. It never invents anything.
+            </p>
+            <textarea
+              id="jobDescription"
+              name="jobDescription"
+              rows={5}
+              className={`${TEXTAREA} bg-card`}
+              placeholder="e.g. paste the full 'Senior Data Analyst at Andela' advert — responsibilities, requirements, everything."
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="file">Your existing CV</Label>
             <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-3 text-sm hover:bg-muted">
@@ -127,17 +145,6 @@ function UploadPath() {
               placeholder="Paste the full text of your existing CV"
             />
           </details>
-
-          <div className="space-y-2">
-            <Label htmlFor="jobDescription">Tailored details (optional)</Label>
-            <textarea
-              id="jobDescription"
-              name="jobDescription"
-              rows={5}
-              className={TEXTAREA}
-              placeholder="Paste a job advert, or say what to aim for — e.g. 'Senior data analyst, emphasise SQL and leadership, drop the retail job'. The AI reorders and rewords your real experience to match. It never invents anything."
-            />
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="title">Name this CV (optional)</Label>

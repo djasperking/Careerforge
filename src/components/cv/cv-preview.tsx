@@ -1,6 +1,21 @@
+"use client";
+
+import { createContext, useContext } from "react";
 import type { CVContent } from "@/lib/cv/schema";
 import type { CvTemplateConfig } from "@/lib/cv/schema";
 import { cn } from "@/lib/utils";
+
+interface RenderCtx {
+  accent: string;
+  headingStyle: "underline" | "bar" | "plain";
+  uppercase: boolean;
+}
+
+const PreviewCtx = createContext<RenderCtx>({
+  accent: "#404040",
+  headingStyle: "underline",
+  uppercase: true,
+});
 
 /**
  * On-screen, print-ready CV preview. Deliberately simple/ATS-safe markup
@@ -28,27 +43,34 @@ export function CvPreview({
   const main = template.columns === 2 ? order.filter((k) => !sidebarKeys.has(k)) : order;
 
   const spacingClass = { compact: "space-y-3", comfortable: "space-y-5", spacious: "space-y-7" }[template.spacing];
+  const ctx: RenderCtx = {
+    accent: template.accent,
+    headingStyle: template.headingStyle,
+    uppercase: template.uppercaseHeadings,
+  };
 
   return (
     <div
       className="relative mx-auto flex w-[794px] min-h-[1123px] flex-col overflow-hidden bg-white px-[64px] py-[56px] text-[13px] leading-relaxed text-neutral-900 shadow-lg ring-1 ring-black/5 print:shadow-none print:ring-0"
       style={{ fontFamily: template.font === "Inter" ? "var(--font-sans)" : "Georgia, 'Times New Roman', serif" }}
     >
-      <Header content={content} />
-      <div className={cn("mt-6", template.columns === 2 ? "grid grid-cols-3 gap-8" : "")}>
-        <div className={cn(spacingClass, template.columns === 2 ? "col-span-2" : "")}>
-          {main.map((key) => (
-            <Section key={key} sectionKey={key} content={content} />
-          ))}
-        </div>
-        {template.columns === 2 ? (
-          <div className={cn(spacingClass)}>
-            {sidebar.map((key) => (
+      <PreviewCtx.Provider value={ctx}>
+        <Header content={content} align={template.headerAlign} accent={template.accent} />
+        <div className={cn("mt-6", template.columns === 2 ? "grid grid-cols-3 gap-8" : "")}>
+          <div className={cn(spacingClass, template.columns === 2 ? "col-span-2" : "")}>
+            {main.map((key) => (
               <Section key={key} sectionKey={key} content={content} />
             ))}
           </div>
-        ) : null}
-      </div>
+          {template.columns === 2 ? (
+            <div className={cn(spacingClass)}>
+              {sidebar.map((key) => (
+                <Section key={key} sectionKey={key} content={content} />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </PreviewCtx.Provider>
       {watermark ? <PreviewWatermark /> : null}
     </div>
   );
@@ -67,12 +89,16 @@ function PreviewWatermark() {
   );
 }
 
-function Header({ content }: { content: CVContent }) {
+function Header({
+  content, align, accent,
+}: { content: CVContent; align: "left" | "center"; accent: string }) {
   const p = content.personalInfo;
   const contact = [p.email, p.phone, p.location, p.website, p.linkedin].filter(Boolean).join("  ·  ");
   return (
-    <header className="border-b pb-4 text-center">
-      <h1 className="text-2xl font-bold tracking-tight">{p.fullName || "Your Name"}</h1>
+    <header className={cn("border-b pb-4", align === "center" ? "text-center" : "text-left")}>
+      <h1 className="text-2xl font-bold tracking-tight" style={{ color: accent }}>
+        {p.fullName || "Your Name"}
+      </h1>
       {p.headline ? <p className="mt-0.5 text-sm text-neutral-600">{p.headline}</p> : null}
       {contact ? <p className="mt-2 text-xs text-neutral-500">{contact}</p> : null}
     </header>
@@ -80,9 +106,22 @@ function Header({ content }: { content: CVContent }) {
 }
 
 function H2({ children }: { children: React.ReactNode }) {
+  const { accent, headingStyle, uppercase } = useContext(PreviewCtx);
   return (
-    <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-neutral-700 border-b border-neutral-200 pb-1">
-      {children}
+    <h2
+      className={cn(
+        "mb-1.5 flex items-center gap-2 text-[11px] font-bold tracking-wider text-neutral-700",
+        uppercase ? "uppercase" : "normal-case tracking-wide",
+        headingStyle === "underline" && "border-b border-neutral-200 pb-1",
+      )}
+      style={headingStyle === "underline" ? { borderColor: accent } : undefined}
+    >
+      {headingStyle === "bar" ? (
+        <span className="inline-block h-3 w-1 shrink-0 rounded-sm" style={{ backgroundColor: accent }} />
+      ) : null}
+      <span style={headingStyle === "plain" || headingStyle === "bar" ? { color: accent } : undefined}>
+        {children}
+      </span>
     </h2>
   );
 }
@@ -147,17 +186,7 @@ const RENDERERS: Record<string, (c: CVContent) => React.ReactNode> = {
         </div>
       </section>
     ) : null,
-  skills: (c) =>
-    c.skills.length ? (
-      <section>
-        <H2>Skills</H2>
-        <div className="flex flex-wrap gap-1.5">
-          {c.skills.map((s) => (
-            <span key={s} className="rounded border border-neutral-200 px-1.5 py-0.5 text-xs">{s}</span>
-          ))}
-        </div>
-      </section>
-    ) : null,
+  skills: (c) => (c.skills.length ? <SkillsSection skills={c.skills} /> : null),
   certifications: (c) =>
     c.certifications.length ? (
       <section>
@@ -245,6 +274,26 @@ const RENDERERS: Record<string, (c: CVContent) => React.ReactNode> = {
       </section>
     ) : null,
 };
+
+function SkillsSection({ skills }: { skills: string[] }) {
+  const { accent } = useContext(PreviewCtx);
+  return (
+    <section>
+      <H2>Skills</H2>
+      <div className="flex flex-wrap gap-1.5">
+        {skills.map((s) => (
+          <span
+            key={s}
+            className="rounded border px-1.5 py-0.5 text-xs"
+            style={{ borderColor: accent, color: accent }}
+          >
+            {s}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function Section({ sectionKey, content }: { sectionKey: string; content: CVContent }) {
   return <>{RENDERERS[sectionKey]?.(content) ?? null}</>;

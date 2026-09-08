@@ -123,6 +123,43 @@ export const SECTION_LABELS: Record<(typeof CV_SECTIONS)[number], string> = {
   additionalInformation: "Additional information",
 };
 
+/**
+ * Turn a messy skills blob (AI output, a pasted CV line, a comma soup) into a
+ * short, clean, de-duplicated list. Splits on common delimiters, trims noise,
+ * drops sentence-length entries, collapses case-insensitive duplicates, and
+ * caps the list so a CV never shows "a row of gibberish".
+ */
+export function normalizeSkills(input: unknown, cap = 14): string[] {
+  const raw: string[] = Array.isArray(input)
+    ? input.map((s) => String(s ?? ""))
+    : [String(input ?? "")];
+
+  const pieces = raw
+    .flatMap((s) => s.split(/[,;•·|•‣◦\n\r\t]+|\s{2,}|\s+[/–—-]\s+/))
+    .map((s) =>
+      s
+        .replace(/^[\s\-*•·–—]+/, "")
+        .replace(/[\s.;:]+$/, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean);
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const p of pieces) {
+    if (p.length < 1 || p.length > 40) continue; // not a skill — empty or a sentence
+    if (/^[^a-z0-9]+$/i.test(p)) continue; // punctuation only
+    if ((p.match(/\s/g)?.length ?? 0) > 4) continue; // more than 5 words = prose
+    const key = p.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
 export function emptyCvContent(): CVContent {
   return cvContentSchema.parse({});
 }
@@ -153,6 +190,7 @@ export function coerceCvContent(raw: unknown): CVContent {
         }));
     }
   }
+  if ("skills" in obj) obj.skills = normalizeSkills(obj.skills);
   return parseCvContent(obj);
 }
 
@@ -161,7 +199,17 @@ export interface CvTemplateConfig {
   font: string;
   spacing: "compact" | "comfortable" | "spacious";
   sectionOrder: string[];
+  /** Accent colour for the name, section rules and skill chips. */
+  accent: string;
+  /** Alignment of the name / headline / contact block. */
+  headerAlign: "left" | "center";
+  /** How section headings are drawn. */
+  headingStyle: "underline" | "bar" | "plain";
+  /** Upper-case section headings (classic ATS look) vs. title case. */
+  uppercaseHeadings: boolean;
 }
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
 /** Legacy / shorthand section keys used in older template configs. */
 const SECTION_ALIASES: Record<string, (typeof CV_SECTIONS)[number]> = {
@@ -196,6 +244,11 @@ export function parseTemplateConfig(raw: unknown): CvTemplateConfig {
     font: c.font ?? "Helvetica",
     spacing: c.spacing ?? "comfortable",
     sectionOrder: normalised,
+    accent: typeof c.accent === "string" && HEX_RE.test(c.accent) ? c.accent : "#404040",
+    headerAlign: c.headerAlign === "left" ? "left" : "center",
+    headingStyle:
+      c.headingStyle === "bar" || c.headingStyle === "plain" ? c.headingStyle : "underline",
+    uppercaseHeadings: c.uppercaseHeadings === false ? false : true,
   };
 }
 
