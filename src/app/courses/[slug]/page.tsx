@@ -17,6 +17,21 @@ import { EnrollButton } from "./enroll-button";
 import { CohortList } from "./cohort-list";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const course = await db.course.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    select: { title: true, description: true },
+  });
+  if (!course) return { title: "Course" };
+  return {
+    title: course.title,
+    description: course.description.slice(0, 300),
+    alternates: { canonical: `/courses/${slug}` },
+    openGraph: { title: course.title, description: course.description.slice(0, 200), type: "article" },
+  };
+}
+
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { notice } = await checkMaintenance("courses");

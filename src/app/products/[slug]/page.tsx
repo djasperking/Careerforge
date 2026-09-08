@@ -13,6 +13,21 @@ import { SharePanel } from "@/components/ui/share-panel";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 import { BuyProductButton } from "./buy-button";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await db.digitalProduct.findFirst({
+    where: { slug, status: "PUBLISHED", reviewStatus: "APPROVED" },
+    select: { title: true, description: true },
+  });
+  if (!product) return { title: "Product" };
+  return {
+    title: product.title,
+    description: product.description.slice(0, 300),
+    alternates: { canonical: `/products/${slug}` },
+    openGraph: { title: product.title, description: product.description.slice(0, 200), type: "article" },
+  };
+}
+
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { notice } = await checkMaintenance("products");

@@ -9,6 +9,21 @@ import { formatCurrency } from "@/lib/utils";
 import { BookForm } from "./book-form";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const offer = await db.coachingOffer.findFirst({
+    where: { slug, status: "PUBLISHED", reviewStatus: "APPROVED" },
+    select: { title: true, description: true },
+  });
+  if (!offer) return { title: "Coaching" };
+  return {
+    title: offer.title,
+    description: offer.description.slice(0, 300),
+    alternates: { canonical: `/coaching/${slug}` },
+    openGraph: { title: offer.title, description: offer.description.slice(0, 200), type: "article" },
+  };
+}
+
 export default async function CoachingDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { notice } = await checkMaintenance("coaching");
