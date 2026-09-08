@@ -8,6 +8,7 @@ import { issueToken } from "@/lib/tokens";
 import { sendEmail, appUrl } from "@/lib/email";
 import { audit } from "@/lib/audit";
 import { ROLES } from "@/lib/rbac";
+import { findUserBySameInbox } from "@/lib/email-identity";
 
 export const POST = handler(async (req: NextRequest) => {
   const ip = clientIp(req.headers);
@@ -30,6 +31,12 @@ export const POST = handler(async (req: NextRequest) => {
   const existing = await db.user.findUnique({ where: { email: body.email } });
   if (existing) {
     // Do not reveal whether an account exists.
+    return ok({ registered: true });
+  }
+
+  // Block a second account from the same real inbox (e.g. "+tag" aliases,
+  // Gmail dot variants). Same silent response as an exact match.
+  if (await findUserBySameInbox(body.email)) {
     return ok({ registered: true });
   }
 

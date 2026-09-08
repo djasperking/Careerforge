@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { ROLES } from "@/lib/rbac";
+import { findUserBySameInbox } from "@/lib/email-identity";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -26,10 +27,15 @@ export async function findOrCreateGuestUser(
   const email = normalizeEmail(rawEmail);
   const name = rawName.trim().slice(0, 120) || null;
 
-  const existing = await db.user.findUnique({
-    where: { email },
-    select: { id: true, passwordHash: true },
-  });
+  const existing =
+    (await db.user.findUnique({ where: { email }, select: { id: true, passwordHash: true } })) ??
+    // Reuse an account from the same real inbox rather than creating a near-duplicate.
+    (await (async () => {
+      const same = await findUserBySameInbox(rawEmail);
+      return same
+        ? db.user.findUnique({ where: { id: same.id }, select: { id: true, passwordHash: true } })
+        : null;
+    })());
   if (existing) {
     return { userId: existing.id, isNew: false, hasPassword: Boolean(existing.passwordHash) };
   }
