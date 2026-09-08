@@ -11,6 +11,7 @@ import {
 } from "@/lib/cv/schema";
 import { assertCanCreateCv, assertTemplateAllowed, nextCvVersionNumber } from "@/lib/cv/service";
 import { extractCvText } from "@/lib/cv/extract";
+import { heuristicParseCv } from "@/lib/cv/heuristic-parse";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -186,12 +187,25 @@ export async function importCvFromUpload(
     // utility on every plan and does not count against the AI quota. Only
     // tailoring to a job description goes through the metered path.
     const ctx = { userId: user.id, feature: "cv.import" };
-    const result = jobDescription
-      ? await withAIUsage(ctx, (provider) => provider.importCV({ rawText, targetJobDescription: jobDescription }, ctx))
-      : await getAIProvider().importCV({ rawText }, ctx);
 
-    const content = coerceCvContent(result.data.content);
-    const notes = (result.data.tailoringNotes ?? []).map((n) => String(n)).filter(Boolean).slice(0, 12);
+    let content: CVContent;
+    let notes: string[];
+    try {
+      const result = jobDescription
+        ? await withAIUsage(ctx, (provider) => provider.importCV({ rawText, targetJobDescription: jobDescription }, ctx))
+        : await getAIProvider().importCV({ rawText }, ctx);
+      content = coerceCvContent(result.data.content);
+      notes = (result.data.tailoringNotes ?? []).map((n) => String(n)).filter(Boolean).slice(0, 12);
+    } catch (aiErr) {
+      // Never hard-fail an import — if the AI is unavailable, fall back to a
+      // local best-effort parse so the user still gets an editable draft.
+      console.error("cv import: AI parse failed, using heuristic fallback", aiErr);
+      content = coerceCvContent(heuristicParseCv(rawText));
+      notes = [
+        "The smart importer was busy, so we did a quick automatic pass. Please check every field — names, dates, bullet points and skills — before using this CV.",
+        ...(jobDescription ? ["Your tailored details weren't applied. Open the editor and use “Analyze against this job” once things are quieter."] : []),
+      ];
+    }
 
     const cv = await db.cV.create({
       data: {
