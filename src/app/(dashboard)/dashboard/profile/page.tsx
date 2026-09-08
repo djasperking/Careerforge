@@ -24,6 +24,7 @@ export default async function ProfilePage() {
           <ProfileForm
             initial={{
               name: dbUser?.name ?? "",
+              image: dbUser?.image ?? "",
               headline: profile?.headline ?? "",
               bio: profile?.bio ?? "",
               phone: profile?.phone ?? "",

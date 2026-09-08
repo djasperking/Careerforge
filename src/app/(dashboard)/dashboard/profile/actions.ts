@@ -8,6 +8,7 @@ import { audit } from "@/lib/audit";
 
 const profileSchema = z.object({
   name: z.string().min(2).max(120).trim(),
+  image: z.string().url().max(600).optional().or(z.literal("")),
   headline: z.string().max(160).trim().optional().or(z.literal("")),
   bio: z.string().max(2000).trim().optional().or(z.literal("")),
   phone: z.string().max(40).trim().optional().or(z.literal("")),
@@ -69,7 +70,7 @@ export async function updateProfile(
   };
 
   await db.$transaction([
-    db.user.update({ where: { id: user.id }, data: { name: d.name } }),
+    db.user.update({ where: { id: user.id }, data: { name: d.name, image: d.image || null } }),
     db.profile.upsert({
       where: { userId: user.id },
       create: {

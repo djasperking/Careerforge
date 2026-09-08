@@ -32,6 +32,7 @@ export default async function AdminUsersPage({
   await requirePermissionPage("users:read");
   const me = await requireUser();
   const canManage = hasPermission(me.permissions, "users:suspend");
+  const canDelete = hasPermission(me.permissions, "users:delete");
 
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
@@ -115,7 +116,13 @@ export default async function AdminUsersPage({
                     </TableCell>
                     <TableCell>{formatDate(u.createdAt)}</TableCell>
                     <TableCell>
-                      <UserRowActions userId={u.id} status={u.status} canManage={canManage} />
+                      <UserRowActions
+                        userId={u.id}
+                        status={u.status}
+                        emailVerified={Boolean(u.emailVerifiedAt)}
+                        canManage={canManage}
+                        canDelete={canDelete}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
