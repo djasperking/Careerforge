@@ -123,23 +123,26 @@ function UploadPath() {
             <Label htmlFor="file">Your existing CV</Label>
             <label
               className={cn(
-                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition",
+                "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center transition",
                 fileName
-                  ? "border-primary bg-primary/5"
-                  : "border-primary/50 bg-primary/[0.03] hover:border-primary hover:bg-primary/10",
+                  ? "border-primary bg-primary/10"
+                  : "border-primary bg-primary/5 hover:bg-primary/15",
               )}
             >
-              <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                {fileName ? <FileText className="size-5" /> : <Upload className="size-5" />}
+              <span className="flex size-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+                {fileName ? <FileText className="size-6" /> : <Upload className="size-6" />}
               </span>
               {fileName ? (
                 <>
-                  <span className="text-sm font-medium">{fileName}</span>
-                  <span className="text-xs text-primary">Click to choose a different file</span>
+                  <span className="text-base font-semibold">{fileName}</span>
+                  <span className="text-sm text-primary underline">Choose a different file</span>
                 </>
               ) : (
                 <>
-                  <span className="text-sm font-semibold text-primary">Click here to upload your CV</span>
+                  <span className="text-base font-bold text-foreground">Click to upload your CV</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm">
+                    <Upload className="size-4" /> Choose file
+                  </span>
                   <span className="text-xs text-muted-foreground">PDF, Word (.docx) or text file — up to 5 MB</span>
                 </>
               )}

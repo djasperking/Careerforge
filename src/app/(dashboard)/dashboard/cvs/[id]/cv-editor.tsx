@@ -203,14 +203,18 @@ export function CvEditor({
         </Alert>
       ) : null}
 
-      <details className="group mb-6 rounded-lg border bg-card">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4">
+      <details className="group mb-6 rounded-lg border border-primary/40 bg-card shadow-[0_0_14px_-3px_hsl(var(--cf-primary)/0.35)] transition hover:shadow-[0_0_20px_-2px_hsl(var(--cf-primary)/0.5)]">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4 hover:bg-primary/5">
           <span className="flex items-center gap-2">
             <Sparkles className="size-4 text-primary" />
             <span className="font-display text-base font-semibold">AI Career Tools</span>
-            <span className="text-xs text-muted-foreground">— tailor this CV to a specific job</span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">— tailor this CV to a specific job</span>
           </span>
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+            <span className="group-open:hidden">Open</span>
+            <span className="hidden group-open:inline">Close</span>
+            <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
+          </span>
         </summary>
         <div className="border-t p-4">
           <LabeledTextarea
