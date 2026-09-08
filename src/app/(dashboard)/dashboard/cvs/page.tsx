@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Upload } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
@@ -10,40 +10,44 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { scoreCvCompleteness, parseCvContent } from "@/lib/cv/schema";
 import { formatDate } from "@/lib/utils";
 import { AdSlot } from "@/components/ads/ad-slot";
-import { NewCvControl } from "./new-cv-control";
 
 export const metadata = { title: "CV Builder" };
 
 export default async function CVsPage() {
   const user = await requireUser();
-  const [cvs, templates] = await Promise.all([
-    db.cV.findMany({
-      where: { userId: user.id, deletedAt: null },
-      include: { template: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    db.cVTemplate.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
-  ]);
+  const cvs = await db.cV.findMany({
+    where: { userId: user.id, deletedAt: null },
+    include: { template: true },
+    orderBy: { updatedAt: "desc" },
+  });
 
   return (
     <div>
       <PageHeader
         title="My CVs"
-        description="Create, edit and export AI-assisted CVs."
+        description="Every CV on your account. Open one to edit and export it, or start a new one."
         action={
-          <div className="flex flex-col items-end gap-2">
-            <NewCvControl templates={templates.map((t) => ({ id: t.id, name: t.name, isPremium: t.isPremium }))} />
-            <Button asChild variant="outline" size="sm">
-              <Link href="/dashboard/cvs/import">
-                <Upload className="size-4" /> Import &amp; tailor a CV
-              </Link>
-            </Button>
-          </div>
+          <Button asChild>
+            <Link href="/dashboard/cvs/new">
+              <Plus className="size-4" /> New CV
+            </Link>
+          </Button>
         }
       />
 
       {cvs.length === 0 ? (
-        <EmptyState icon={FileText} title="No CVs yet" description="Create your first CV to get started." />
+        <EmptyState
+          icon={FileText}
+          title="No CVs yet"
+          description="Upload an existing CV or start from a template."
+          action={
+            <Button asChild>
+              <Link href="/dashboard/cvs/new">
+                <Plus className="size-4" /> New CV
+              </Link>
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cvs.map((cv) => {

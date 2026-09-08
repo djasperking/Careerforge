@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Download, Copy, Trash2, Save, Sparkles, Loader2, ArrowLeft, ChevronRight,
+  Download, Copy, Trash2, Save, Sparkles, Loader2, ArrowLeft, ChevronRight, Lock,
 } from "lucide-react";
 import {
   CV_SECTIONS, SECTION_LABELS, parseTemplateConfig, type CVContent,
@@ -170,11 +170,18 @@ export function CvEditor({
           <Button variant="outline" size="sm" onClick={handleDuplicate} disabled={busyAction === "duplicate"}>
             <Copy className="size-4" /> Duplicate
           </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href={`/api/cv/${cvId}/pdf`} target="_blank" rel="noreferrer">
-              <Download className="size-4" /> Download PDF
-            </a>
-          </Button>
+          {cleanExport ? (
+            <Button asChild variant="outline" size="sm">
+              <a href={`/api/cv/${cvId}/pdf`} target="_blank" rel="noreferrer">
+                <Download className="size-4" /> Download PDF
+              </a>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={handleUnlock} disabled={unlocking}>
+              {unlocking ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
+              Download PDF — {unlockPriceLabel}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleDelete} disabled={busyAction === "delete"} className="text-destructive hover:text-destructive">
             <Trash2 className="size-4" /> Delete
           </Button>
@@ -318,9 +325,9 @@ export function CvEditor({
             </div>
             {!cleanExport ? (
               <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
-                <p className="font-medium">Unlock this CV — {unlockPriceLabel}</p>
+                <p className="font-medium">Unlock to download — {unlockPriceLabel}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  One-time payment. Removes the watermark from this CV&apos;s preview and PDF. No subscription.
+                  One-time payment for this CV. Removes the watermark and enables the PDF download. No subscription.
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Button size="sm" onClick={handleUnlock} disabled={unlocking}>

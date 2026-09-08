@@ -41,19 +41,20 @@ export async function cvHasCleanExport(
   return plan.key !== "FREE";
 }
 
+/** Hard ceiling to stop runaway/abuse creation — not a plan gate. */
+const CV_MAX_PER_USER = 50;
+
 export async function assertCanCreateCv(userId: string) {
   if (await hasUnlimitedTools(userId)) return;
-  const plan = await resolveActivePlan(userId);
-  const limits = (plan?.limits ?? {}) as Record<string, unknown>;
-  const limit = typeof limits["cv:count"] === "number" ? (limits["cv:count"] as number) : null;
-  if (limit == null || limit < 0) return; // unlimited
-
+  // CV count is intentionally NOT limited by plan — monetisation is the export
+  // watermark (cvHasCleanExport) and the one-time per-CV unlock. Everyone can
+  // build as many CVs as they like; only clean export costs.
   const count = await db.cV.count({ where: { userId, deletedAt: null } });
-  if (count >= limit) {
+  if (count >= CV_MAX_PER_USER) {
     throw new ApiError(
-      403,
-      "CV_LIMIT_REACHED",
-      `Your ${plan?.name ?? "Free"} plan allows up to ${limit} CV${limit === 1 ? "" : "s"}. Upgrade to create more.`,
+      429,
+      "TOO_MANY_CVS",
+      `You've reached the ${CV_MAX_PER_USER}-CV maximum. Delete some CVs to make room.`,
     );
   }
 }

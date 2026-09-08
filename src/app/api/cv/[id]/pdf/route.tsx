@@ -17,12 +17,18 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
   });
   if (!cv) throw new ApiError(404, "NOT_FOUND", "CV not found.");
 
+  const clean = await cvHasCleanExport(user.id, cv);
+  if (!clean) {
+    throw new ApiError(
+      402,
+      "PAYMENT_REQUIRED",
+      "Unlock this CV to download it — a one-time payment, or subscribe for all your CVs.",
+    );
+  }
+
   const content = parseCvContent(cv.content);
   const template = parseTemplateConfig(cv.template?.config);
-  const clean = await cvHasCleanExport(user.id, cv);
-  const buffer = await renderToBuffer(
-    <CvPdfDocument content={content} template={template} watermark={!clean} />,
-  );
+  const buffer = await renderToBuffer(<CvPdfDocument content={content} template={template} watermark={false} />);
 
   const filename = `${slugify(cv.title || "cv") || "cv"}.pdf`;
   return new Response(new Uint8Array(buffer), {
