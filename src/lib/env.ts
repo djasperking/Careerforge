@@ -9,6 +9,8 @@ const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_APP_NAME: z.string().default("Career Forge"),
+  // Google Search Console HTML-tag verification token (the `content` value).
+  NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION: z.string().optional(),
 
   DATABASE_URL: z.string().min(1),
   AUTH_SECRET: z.string().min(16, "AUTH_SECRET must be at least 16 chars"),
