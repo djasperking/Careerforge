@@ -175,12 +175,12 @@ export function renderEmail(
     <tr><td align="center">
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:480px;max-width:100%;background:#ffffff;border-radius:12px;padding:32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <tr><td>
-          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
             <tr>
-              <td style="padding-right:10px;vertical-align:middle;">
-                <img src="${esc(logoUrl)}" width="28" height="28" alt="${esc(brand)}" style="display:block;border:0;border-radius:6px;" />
+              <td style="padding-right:12px;vertical-align:middle;">
+                <img src="${esc(logoUrl)}" width="44" height="44" alt="${esc(brand)}" style="display:block;border:0;border-radius:10px;width:44px;height:44px;" />
               </td>
-              <td style="vertical-align:middle;font-size:18px;font-weight:700;color:#18181b;">${esc(brand)}</td>
+              <td style="vertical-align:middle;font-size:22px;font-weight:700;letter-spacing:-0.01em;color:#18181b;">${esc(brand)}</td>
             </tr>
           </table>
           <h1 style="margin:0 0 16px;font-size:20px;line-height:1.4;color:#18181b;">${esc(b.heading)}</h1>

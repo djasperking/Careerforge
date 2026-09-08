@@ -3,6 +3,31 @@ import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
 import { isAdminRole, type PermissionKey } from "@/lib/rbac";
 
+function Avatar({ name, image, size = 36 }: { name?: string | null; image?: string | null; size?: number }) {
+  const initial = (name ?? "").trim().charAt(0).toUpperCase() || "?";
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={image}
+        alt=""
+        width={size}
+        height={size}
+        style={{ width: size, height: size }}
+        className="shrink-0 rounded-full border object-cover"
+      />
+    );
+  }
+  return (
+    <span
+      style={{ width: size, height: size }}
+      className="grid shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+    >
+      {initial}
+    </span>
+  );
+}
+
 /**
  * Shared authenticated layout for both the customer dashboard and the admin
  * console. Only serializable data crosses into the client SidebarNav.
@@ -13,7 +38,7 @@ export function AppShell({
   badges,
   children,
 }: {
-  user: { name?: string | null; email: string; roles: string[]; permissions: PermissionKey[] | "*" };
+  user: { name?: string | null; email: string; image?: string | null; roles: string[]; permissions: PermissionKey[] | "*" };
   area: "Dashboard" | "Admin" | "Instructor";
   badges?: Record<string, number>;
   children: React.ReactNode;
@@ -32,8 +57,13 @@ export function AppShell({
           <SidebarNav area={area} permissions={user.permissions} badges={badges} showAdminLink={showAdminLink} />
         </div>
         <div className="mt-4 border-t pt-3">
-          <p className="truncate px-3 text-sm font-medium">{user.name ?? "Account"}</p>
-          <p className="truncate px-3 text-xs text-muted-foreground">{user.email}</p>
+          <div className="flex items-center gap-2 px-1">
+            <Avatar name={user.name} image={user.image} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{user.name ?? "Account"}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
           <div className="mt-2">
             <SignOutButton />
           </div>
@@ -43,7 +73,10 @@ export function AppShell({
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b bg-card px-4 py-3 md:hidden">
           <Brand href={area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard"} />
-          <SignOutButton />
+          <div className="flex items-center gap-2">
+            <Avatar name={user.name} image={user.image} size={28} />
+            <SignOutButton />
+          </div>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
