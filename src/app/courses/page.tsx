@@ -11,10 +11,14 @@ import { Stars } from "@/components/ui/star-rating";
 import { ratingSummaries } from "@/lib/review/service";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/session";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export const metadata = { title: "Explore courses" };
 
 export default async function PublicCoursesPage() {
+  const { notice, banner } = await checkMaintenance("courses");
+  if (notice) return notice;
+
   const [courses, user] = await Promise.all([
     db.course.findMany({
       where: { status: "PUBLISHED" },
@@ -28,6 +32,7 @@ export default async function PublicCoursesPage() {
 
   return (
     <div className="min-h-screen">
+      {banner}
       <MarketingHeader loggedIn={Boolean(user)} />
 
       <main className="container py-10">

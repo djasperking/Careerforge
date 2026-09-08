@@ -12,6 +12,7 @@ import { getPlatformStats } from "@/lib/site";
 import { listPublicJobs } from "@/lib/jobs/service";
 import { listPublishedPosts } from "@/lib/blog/service";
 import { formatDate } from "@/lib/utils";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 const pillars = [
   { icon: Sparkles, title: "AI CV Builder", body: "Draft, analyse and tailor your CV to any job with a live ATS match score and honest AI edits.", href: "/register", accent: "from-primary/15 to-primary/5 text-primary" },
@@ -34,6 +35,9 @@ const steps = [
 ];
 
 export default async function HomePage() {
+  const { notice } = await checkMaintenance("site");
+  if (notice) return notice;
+
   const [user, stats, latestJobs, latestPosts] = await Promise.all([
     getCurrentUser(),
     getPlatformStats(),

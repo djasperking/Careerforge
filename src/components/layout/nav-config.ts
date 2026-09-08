@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
   ScrollText, Bell, Sparkles, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
-  Wallet, Banknote, Briefcase, Mail, Gift, MessageSquare,
+  Wallet, Banknote, Briefcase, Mail, Gift, MessageSquare, Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@/lib/rbac";
@@ -71,4 +71,5 @@ export const adminNav: NavItem[] = [
   { group: "People & system", label: "Support", href: "/admin/support", icon: LifeBuoy, permission: "support:handle" },
   { group: "People & system", label: "Audit Logs", href: "/admin/audit", icon: ScrollText, permission: "audit:read" },
   { group: "People & system", label: "Settings", href: "/admin/settings", icon: Settings, permission: "settings:write" },
+  { group: "People & system", label: "Maintenance mode", href: "/admin/maintenance", icon: Wrench, permission: "settings:write" },
 ];

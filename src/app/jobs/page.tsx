@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate } from "@/lib/utils";
 import { listPublicJobs, listJobCategories, JOB_TYPE_LABELS, JOB_LOCATION_LABELS } from "@/lib/jobs/service";
 import { cn } from "@/lib/utils";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export const metadata = {
   title: "Jobs",
@@ -21,6 +22,9 @@ export default async function JobsPage({
   searchParams: Promise<{ category?: string; type?: string; q?: string }>;
 }) {
   const sp = await searchParams;
+  const { notice, banner } = await checkMaintenance("jobs");
+  if (notice) return notice;
+
   const [user, jobs, categories] = await Promise.all([
     getCurrentUser(),
     listPublicJobs({ category: sp.category, type: sp.type, q: sp.q?.trim() }),
@@ -29,6 +33,7 @@ export default async function JobsPage({
 
   return (
     <div className="min-h-screen">
+      {banner}
       <MarketingHeader loggedIn={Boolean(user)} />
       <main className="container py-10">
         <h1 className="font-display text-3xl font-semibold">Jobs</h1>

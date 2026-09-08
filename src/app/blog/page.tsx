@@ -8,6 +8,7 @@ import { FileText } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
 import { listPublishedPosts, listBlogCategories, authorNames } from "@/lib/blog/service";
 import { SubscribeForm } from "@/components/newsletter/subscribe-form";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export const metadata = {
   title: "Blog",
@@ -16,6 +17,9 @@ export const metadata = {
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const sp = await searchParams;
+  const { notice, banner } = await checkMaintenance("blog");
+  if (notice) return notice;
+
   const [user, posts, categories] = await Promise.all([
     getCurrentUser(),
     listPublishedPosts({ category: sp.category }),
@@ -25,6 +29,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
 
   return (
     <div className="min-h-screen">
+      {banner}
       <MarketingHeader loggedIn={Boolean(user)} />
       <main className="container max-w-4xl py-10">
         <h1 className="font-display text-3xl font-semibold">Blog & resources</h1>

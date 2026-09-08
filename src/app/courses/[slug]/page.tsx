@@ -15,9 +15,12 @@ import { courseRatingSummary, listCourseReviews } from "@/lib/review/service";
 import { Stars } from "@/components/ui/star-rating";
 import { EnrollButton } from "./enroll-button";
 import { CohortList } from "./cohort-list";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const { notice } = await checkMaintenance("courses");
+  if (notice) return notice;
   const [course, user] = await Promise.all([
     db.course.findFirst({
       where: { slug, status: "PUBLISHED" },

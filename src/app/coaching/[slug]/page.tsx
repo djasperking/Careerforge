@@ -7,9 +7,12 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { BookForm } from "./book-form";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export default async function CoachingDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const { notice } = await checkMaintenance("coaching");
+  if (notice) return notice;
   const [offer, user] = await Promise.all([
     db.coachingOffer.findFirst({
       where: { slug, status: "PUBLISHED", reviewStatus: "APPROVED" },

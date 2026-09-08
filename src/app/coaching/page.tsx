@@ -7,10 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/session";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export const metadata = { title: "Coaching" };
 
 export default async function PublicCoachingPage() {
+  const { notice, banner } = await checkMaintenance("coaching");
+  if (notice) return notice;
+
   const [offers, user] = await Promise.all([
     db.coachingOffer.findMany({
       where: { status: "PUBLISHED", reviewStatus: "APPROVED" },
@@ -23,6 +27,7 @@ export default async function PublicCoachingPage() {
 
   return (
     <div className="min-h-screen">
+      {banner}
       <MarketingHeader loggedIn={Boolean(user)} />
 
       <main className="container py-10">

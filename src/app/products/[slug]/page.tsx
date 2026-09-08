@@ -10,10 +10,13 @@ import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service"
 import { userOwnsDigitalProduct } from "@/lib/marketplace/digital";
 import { appUrl } from "@/lib/email";
 import { SharePanel } from "@/components/ui/share-panel";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 import { BuyProductButton } from "./buy-button";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const { notice } = await checkMaintenance("products");
+  if (notice) return notice;
   const [product, user] = await Promise.all([
     db.digitalProduct.findFirst({
       where: { slug, status: "PUBLISHED", reviewStatus: "APPROVED" },

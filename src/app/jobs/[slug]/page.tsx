@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { JOB_TYPE_LABELS, JOB_LOCATION_LABELS } from "@/lib/jobs/service";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -18,6 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function JobDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const { notice } = await checkMaintenance("jobs");
+  if (notice) return notice;
   const [job, user] = await Promise.all([
     db.jobPost.findFirst({ where: { slug, status: "PUBLISHED" } }),
     getCurrentUser(),

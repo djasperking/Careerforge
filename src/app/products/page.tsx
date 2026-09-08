@@ -8,10 +8,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/session";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export const metadata = { title: "Digital products" };
 
 export default async function PublicProductsPage() {
+  const { notice, banner } = await checkMaintenance("products");
+  if (notice) return notice;
+
   const [products, user] = await Promise.all([
     db.digitalProduct.findMany({
       where: { status: "PUBLISHED", reviewStatus: "APPROVED" },
@@ -24,6 +28,7 @@ export default async function PublicProductsPage() {
 
   return (
     <div className="min-h-screen">
+      {banner}
       <MarketingHeader loggedIn={Boolean(user)} />
 
       <main className="container py-10">

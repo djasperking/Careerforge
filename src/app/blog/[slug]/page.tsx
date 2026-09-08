@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { formatDate } from "@/lib/utils";
 import { renderMarkdown } from "@/lib/markdown";
 import { getPublishedPost, authorNames } from "@/lib/blog/service";
+import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -18,6 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const { notice } = await checkMaintenance("blog");
+  if (notice) return notice;
   const [post, user] = await Promise.all([getPublishedPost(slug), getCurrentUser()]);
   if (!post) notFound();
   const authors = await authorNames([post.authorId]);
