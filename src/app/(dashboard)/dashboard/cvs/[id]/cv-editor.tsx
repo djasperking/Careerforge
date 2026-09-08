@@ -77,6 +77,7 @@ export function CvEditor({
   const [aiError, setAiError] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const activeTemplate = templates.find((t) => t.id === templateId) ?? null;
   const templateConfig = useMemo(() => parseTemplateConfig(activeTemplate?.config), [activeTemplate]);
@@ -105,11 +106,14 @@ export function CvEditor({
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this CV? This cannot be undone.")) return;
     setBusyAction("delete");
     const res = await deleteCv(cvId);
     setBusyAction(null);
     if (res.ok) router.push("/dashboard/cvs");
+    else {
+      setConfirmDelete(false);
+      setSaveMsg({ type: "error", text: res.error });
+    }
   }
 
   async function handleGenerateSummary() {
@@ -184,7 +188,7 @@ export function CvEditor({
               Download PDF — {unlockPriceLabel}
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={handleDelete} disabled={busyAction === "delete"} className="text-destructive hover:text-destructive">
+          <Button variant="outline" size="sm" onClick={() => setConfirmDelete(true)} disabled={busyAction === "delete"} className="text-destructive hover:text-destructive">
             <Trash2 className="size-4" /> Delete
           </Button>
           <Button size="sm" onClick={() => handleSave()} disabled={saving}>
@@ -362,11 +366,20 @@ export function CvEditor({
                 }
               }}
               title="Click to enlarge"
-              className="cursor-zoom-in overflow-hidden rounded outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary"
+              className={cn(
+                "group relative cursor-zoom-in overflow-hidden rounded-lg outline-none transition",
+                "ring-2 ring-primary/40 ring-offset-2 ring-offset-muted/40",
+                "shadow-[0_0_18px_-2px_hsl(var(--cf-primary)/0.45)]",
+                "hover:ring-primary hover:shadow-[0_0_28px_0_hsl(var(--cf-primary)/0.6)]",
+                "focus-visible:ring-primary",
+              )}
             >
               <div style={{ zoom: PREVIEW_SCALE }}>
                 <CvPreview content={content} template={templateConfig} watermark={!cleanExport} />
               </div>
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-gradient-to-t from-black/60 to-transparent py-2 text-xs font-medium text-white opacity-90 transition group-hover:opacity-100">
+                <Maximize2 className="size-3.5" /> Click to enlarge
+              </span>
             </div>
           </div>
         </div>
@@ -377,6 +390,48 @@ export function CvEditor({
           <Maximize2 className="size-3.5" /> Preview CV
         </Button>
       </div>
+
+      {confirmDelete ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          onClick={() => busyAction !== "delete" && setConfirmDelete(false)}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-cv-title"
+            className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <Trash2 className="size-5" />
+            </div>
+            <h2 id="delete-cv-title" className="font-display text-lg font-semibold">Delete this CV?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              &ldquo;{title || "Untitled CV"}&rdquo; will be permanently removed. This can&apos;t be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDelete(false)}
+                disabled={busyAction === "delete"}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleDelete}
+                disabled={busyAction === "delete"}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {busyAction === "delete" ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+                Delete CV
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {previewOpen ? (
         <div

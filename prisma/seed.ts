@@ -163,9 +163,9 @@ export async function seedCvTemplates() {
     ["technical", "Technical", "Projects and stack front and centre.", false,
       { columns: 2, font: "Inter", spacing: "comfortable", sectionOrder: TECH_ORDER,
         accent: "#4338ca", headerAlign: "left", headingStyle: "bar", uppercaseHeadings: true }],
-    ["academic", "Academic", "Publications, research and teaching.", true,
-      { columns: 1, font: "Source Serif", spacing: "comfortable", sectionOrder: ACADEMIC_ORDER,
-        accent: "#404040", headerAlign: "center", headingStyle: "underline", uppercaseHeadings: true }],
+    ["academic", "Academic", "Publications, research and teaching. Education-first.", true,
+      { columns: 1, font: "Source Serif", spacing: "spacious", sectionOrder: ACADEMIC_ORDER,
+        accent: "#155e75", headerAlign: "center", headingStyle: "bar", uppercaseHeadings: true }],
   ] as const;
 
   for (const [key, name, description, isPremium, config] of templates) {

@@ -121,9 +121,28 @@ function UploadPath() {
 
           <div className="space-y-2">
             <Label htmlFor="file">Your existing CV</Label>
-            <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed p-3 text-sm hover:bg-muted">
-              <FileText className="size-4" />
-              {fileName ?? "Choose a PDF, Word (.docx) or text file — up to 5 MB"}
+            <label
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition",
+                fileName
+                  ? "border-primary bg-primary/5"
+                  : "border-primary/50 bg-primary/[0.03] hover:border-primary hover:bg-primary/10",
+              )}
+            >
+              <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                {fileName ? <FileText className="size-5" /> : <Upload className="size-5" />}
+              </span>
+              {fileName ? (
+                <>
+                  <span className="text-sm font-medium">{fileName}</span>
+                  <span className="text-xs text-primary">Click to choose a different file</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-semibold text-primary">Click here to upload your CV</span>
+                  <span className="text-xs text-muted-foreground">PDF, Word (.docx) or text file — up to 5 MB</span>
+                </>
+              )}
               <input
                 id="file"
                 name="file"
