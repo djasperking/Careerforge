@@ -75,6 +75,28 @@ export interface GeneratedQuestion {
   topic: string;
 }
 
+export interface CourseImportInput {
+  /** Raw text of a syllabus, outline or full course document. */
+  rawText: string;
+}
+
+export interface CourseImportLesson {
+  title: string;
+  type: "TEXT" | "VIDEO" | "QUIZ" | "ASSIGNMENT";
+  /** Lesson body in Markdown — only when the source document actually contained it. */
+  content: string;
+}
+
+export interface CourseImportOutput {
+  title: string;
+  description: string;
+  level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+  objectives: string[];
+  modules: { title: string; lessons: CourseImportLesson[] }[];
+  /** What the AI could and couldn't pull from the document. */
+  notes: string[];
+}
+
 export interface AIProvider {
   name: string;
   generateCV(input: CVGenerationInput, ctx: AIContext): Promise<AIResult<Record<string, unknown>>>;
@@ -92,6 +114,10 @@ export interface AIProvider {
     input: { title: string; audience?: string; goals?: string[] },
     ctx: AIContext,
   ): Promise<AIResult<{ modules: { title: string; lessons: string[] }[] }>>;
+  importCourseFromText(
+    input: CourseImportInput,
+    ctx: AIContext,
+  ): Promise<AIResult<CourseImportOutput>>;
   generateQuestions(input: QuestionGenInput, ctx: AIContext): Promise<AIResult<GeneratedQuestion[]>>;
   gradeAnswer(
     input: { question: string; rubric?: string; answer: string; maxPoints: number },

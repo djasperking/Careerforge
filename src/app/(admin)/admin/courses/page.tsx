@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { NewCourseControl } from "./new-course-control";
+import { ImportCourseControl } from "./import-course-control";
 
 export const metadata = { title: "Courses" };
 
@@ -28,6 +29,7 @@ export default async function AdminCoursesPage() {
   return (
     <div>
       <PageHeader title="Courses" description={`${courses.length} course${courses.length === 1 ? "" : "s"}`} action={<NewCourseControl />} />
+      <ImportCourseControl />
       {courses.length === 0 ? (
         <EmptyState title="No courses yet" description="Create your first course to get started." />
       ) : (

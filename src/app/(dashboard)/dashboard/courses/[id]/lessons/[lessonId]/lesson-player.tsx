@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuizRunner, type LearnerQuiz } from "./quiz-runner";
 import { AssignmentPanel, type AssignmentData } from "./assignment-panel";
+import { renderMarkdown } from "@/lib/markdown";
 
 interface Props {
   courseId: string;
@@ -98,9 +99,14 @@ export function LessonPlayer({
       ) : null}
 
       {type === "TEXT" ? (
-        <div className="prose prose-neutral max-w-none whitespace-pre-wrap rounded-lg border bg-card p-6 text-sm leading-relaxed">
-          {content || "No content yet."}
-        </div>
+        content ? (
+          <div
+            className="prose prose-neutral max-w-none rounded-lg border bg-card p-6 text-sm leading-relaxed dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+          />
+        ) : (
+          <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">No content yet.</div>
+        )
       ) : null}
 
       {type === "PDF" ? (

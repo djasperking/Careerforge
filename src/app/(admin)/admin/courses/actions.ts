@@ -8,6 +8,10 @@ import { ApiError } from "@/lib/api";
 import { courseFormSchema, moduleFormSchema, lessonFormSchema, linesToList } from "@/lib/course/schema";
 import { uniqueCourseSlug, assertCanEditCourse } from "@/lib/course/service";
 import { saveLessonQuiz, deleteLessonQuiz, getLessonQuizForEditor } from "@/lib/course/quiz";
+import { withAIUsage } from "@/lib/ai";
+import { extractDocumentText } from "@/lib/text-extract";
+import { coerceCourseImport } from "@/lib/course/import";
+import { heuristicCourseParse } from "@/lib/course/parse-document";
 
 /** Re-render whichever course editor the caller is using. */
 function revalidateCourse(courseId: string) {
@@ -51,6 +55,88 @@ export async function createCourse(raw: unknown): Promise<Result<{ id: string }>
     await audit({ actorId: admin.id, action: "COURSE_CREATED", entity: "Course", entityId: course.id });
     revalidatePath("/admin/courses");
     return { ok: true, data: { id: course.id } };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+export async function importCourseFromDocument(
+  formData: FormData,
+): Promise<Result<{ id: string; notes: string[]; modules: number; lessons: number }>> {
+  try {
+    const admin = await requirePermissionApi("courses:write");
+
+    const file = formData.get("file");
+    const pasted = String(formData.get("text") ?? "").trim();
+    let rawText = pasted;
+    if (file instanceof File && file.size > 0) {
+      rawText = await extractDocumentText(file, { maxChars: 60_000, noun: "course document" });
+    }
+    if (rawText.length < 120) {
+      throw new ApiError(422, "NO_DOC", "Upload a syllabus/outline file, or paste at least a few paragraphs.");
+    }
+
+    const ctx = { userId: admin.id, feature: "course.import" };
+    let outline;
+    let aiNotes: string[] = [];
+    try {
+      const result = await withAIUsage(ctx, (provider) => provider.importCourseFromText({ rawText }, ctx));
+      outline = coerceCourseImport(result.data);
+      aiNotes = outline.notes;
+    } catch (aiErr) {
+      console.error("course import: AI failed, using heuristic fallback", aiErr);
+      outline = coerceCourseImport(heuristicCourseParse(rawText));
+      aiNotes = [
+        "The smart importer was busy, so we did a quick automatic pass. Check every module and lesson title.",
+        ...outline.notes.slice(1),
+      ];
+    }
+
+    const slug = await uniqueCourseSlug(outline.title);
+    const course = await db.course.create({
+      data: {
+        slug,
+        title: outline.title,
+        description: outline.description,
+        level: outline.level,
+        durationMinutes: 0,
+        priceCents: 0,
+        currency: "NGN",
+        objectives: outline.objectives.slice(0, 40),
+        requirements: [],
+        instructorId: admin.id,
+        status: "DRAFT",
+        reviewStatus: "APPROVED",
+        reviewedAt: new Date(),
+        reviewedById: admin.id,
+        modules: {
+          create: outline.modules.map((m, mi) => ({
+            title: m.title,
+            position: mi + 1,
+            lessons: {
+              create: m.lessons.map((l, li) => ({
+                title: l.title,
+                type: l.type,
+                content: l.content ? l.content.slice(0, 18_000) : null,
+                position: li + 1,
+              })),
+            },
+          })),
+        },
+      },
+    });
+
+    await audit({
+      actorId: admin.id,
+      action: "COURSE_CREATED",
+      entity: "Course",
+      entityId: course.id,
+      metadata: { via: "import", modules: outline.modules.length },
+    });
+    revalidatePath("/admin/courses");
+
+    const lessons = outline.modules.reduce((n, m) => n + m.lessons.length, 0);
+    return { ok: true, data: { id: course.id, notes: aiNotes, modules: outline.modules.length, lessons } };
   } catch (err) {
     return fail(err);
   }

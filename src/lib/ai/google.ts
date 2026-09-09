@@ -179,4 +179,19 @@ export const googleAIProvider: AIProvider = {
       `[{ prompt:string, options:[{text:string,isCorrect:boolean}], correctAnswerText?:string, explanation:string, difficulty:string, topic:string }]`,
     );
   },
+
+  async importCourseFromText(input, ctx) {
+    if (!API_KEY) return mockAIProvider.importCourseFromText(input, ctx);
+    return jsonCall(
+      ctx,
+      "Turn the document into a course outline. Use ONLY what the document contains — never invent modules, lessons, learning outcomes or facts. " +
+        "Split it into modules, each with an ordered list of lessons. Set lesson.type to QUIZ / ASSIGNMENT / VIDEO when the heading clearly implies it, else TEXT. " +
+        "Fill lesson.content (Markdown) ONLY when the document actually includes that lesson's written material — otherwise leave it an empty string. " +
+        "Keep the author's wording. Put anything you were unsure about, or that is missing (videos, images, exercises), into notes.",
+      `Course document:\n${input.rawText}`,
+      `{ title:string, description:string, level:"BEGINNER"|"INTERMEDIATE"|"ADVANCED", objectives:string[], ` +
+        `modules:[{ title:string, lessons:[{ title:string, type:"TEXT"|"VIDEO"|"QUIZ"|"ASSIGNMENT", content:string }] }], notes:string[] }`,
+      { maxTokens: 8192 },
+    );
+  },
 };
