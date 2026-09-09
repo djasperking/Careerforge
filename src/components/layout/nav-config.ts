@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FileText, GraduationCap, ClipboardCheck, CreditCard, User,
   Bot, BadgeCheck, Users, BookOpen, Megaphone, LifeBuoy, BarChart3, Settings,
-  ScrollText, Bell, Sparkles, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
+  ScrollText, Bell, ClipboardList, Presentation, Package, CalendarClock, ShoppingBag,
   Wallet, Banknote, Briefcase, Mail, Gift, MessageSquare, Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -19,7 +19,6 @@ export interface NavItem {
 export const customerNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "CV Builder", href: "/dashboard/cvs", icon: FileText },
-  { label: "AI Career Tools", href: "/dashboard/ai", icon: Sparkles },
   { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "My Learning", href: "/dashboard/courses", icon: GraduationCap },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },

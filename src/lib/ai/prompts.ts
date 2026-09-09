@@ -9,10 +9,7 @@ export const AI_FEATURE_KEYS = [
   "cv.generate",
   "cv.import",
   "cv.analyze",
-  "cv.cover_letter",
-  "career.assistant",
-  "interview.coach",
-  "course.recommend",
+  "course.import",
   "exam.generate_questions",
   "exam.grade",
 ] as const;
@@ -22,10 +19,7 @@ export const AI_FEATURE_LABELS: Record<AIFeatureKey, string> = {
   "cv.generate": "CV generator",
   "cv.import": "CV import & tailoring",
   "cv.analyze": "CV analyzer",
-  "cv.cover_letter": "Cover letter generator",
-  "career.assistant": "Career assistant",
-  "interview.coach": "Interview coach",
-  "course.recommend": "Course recommendation engine",
+  "course.import": "Course outline from a document",
   "exam.generate_questions": "Exam question generator",
   "exam.grade": "Exam explanation / grading",
 };

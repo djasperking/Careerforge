@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight, Sparkles, GraduationCap, BadgeCheck, Briefcase,
-  CalendarClock, BarChart3, MapPin,
+  CalendarClock, ShoppingBag, MapPin,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -20,7 +20,7 @@ const pillars = [
   { icon: BadgeCheck, title: "Verifiable Certificates", body: "Pass and earn a certificate with a public verification page you can put on LinkedIn.", href: "/verify", accent: "from-success/15 to-success/5 text-success" },
   { icon: Briefcase, title: "Jobs Board", body: "A weekly feed of real openings at other companies, with how-to-apply notes. We point you to them — you apply.", href: "/jobs", accent: "from-accent/15 to-accent/5 text-accent" },
   { icon: CalendarClock, title: "1-on-1 Coaching", body: "Book a vetted instructor for portfolio review, interview prep or a career plan.", href: "/coaching", accent: "from-warning/15 to-warning/5 text-warning" },
-  { icon: BarChart3, title: "Career Guidance", body: "An AI assistant for planning, cover letters, skill-gap analysis and interview practice.", href: "/register", accent: "from-primary/15 to-accent/5 text-primary" },
+  { icon: ShoppingBag, title: "Digital Products", body: "Ebooks, templates and video guides from instructors and creators — buy once, keep forever.", href: "/products", accent: "from-primary/15 to-accent/5 text-primary" },
 ];
 
 const marqueeItems = [
