@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { PasteJobPanel } from "./paste-job";
 
 export const metadata = { title: "Jobs" };
 
@@ -27,8 +28,10 @@ export default async function AdminJobsPage() {
       <PageHeader
         title="Jobs board"
         description="Curated roles for the community. Apply links may be your referral URLs — the public page discloses that."
-        action={<Button asChild><Link href="/admin/jobs/new">New job</Link></Button>}
+        action={<Button asChild variant="outline"><Link href="/admin/jobs/new">Fill the form manually</Link></Button>}
       />
+
+      <PasteJobPanel />
 
       <Card>
         <CardContent className="p-0">

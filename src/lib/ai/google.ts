@@ -194,4 +194,19 @@ export const googleAIProvider: AIProvider = {
       { maxTokens: 8192 },
     );
   },
+
+  async importJobPosting(input, ctx) {
+    if (!API_KEY) return mockAIProvider.importJobPosting(input, ctx);
+    return jsonCall(
+      ctx,
+      "Extract a job posting from the pasted text. Use ONLY what's in the text — never invent a salary, company or requirement. " +
+        "locationType: REMOTE / HYBRID / ONSITE. type: FULL_TIME / PART_TIME / CONTRACT / FREELANCE / INTERNSHIP (default FULL_TIME). " +
+        "category: a short field label like 'Data annotation' or 'Customer support' if obvious, else empty. " +
+        "description: the full posting body tidied into clean Markdown (## headings, - bullet lists) — keep all responsibilities, requirements and benefits; drop site navigation, cookie notices and 'apply now' boilerplate. Leave any field you can't find as an empty string.",
+      `Job posting:\n${input.rawText}`,
+      `{ title:string, company:string, location:string, locationType:"REMOTE"|"HYBRID"|"ONSITE", ` +
+        `type:"FULL_TIME"|"PART_TIME"|"CONTRACT"|"FREELANCE"|"INTERNSHIP", category:string, salaryText:string, description:string }`,
+      { maxTokens: 6144 },
+    );
+  },
 };

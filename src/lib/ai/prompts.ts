@@ -10,6 +10,7 @@ export const AI_FEATURE_KEYS = [
   "cv.import",
   "cv.analyze",
   "course.import",
+  "job.import",
   "exam.generate_questions",
   "exam.grade",
 ] as const;
@@ -20,6 +21,7 @@ export const AI_FEATURE_LABELS: Record<AIFeatureKey, string> = {
   "cv.import": "CV import & tailoring",
   "cv.analyze": "CV analyzer",
   "course.import": "Course outline from a document",
+  "job.import": "Job posting parser",
   "exam.generate_questions": "Exam question generator",
   "exam.grade": "Exam explanation / grading",
 };

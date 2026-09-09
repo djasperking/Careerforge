@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { JOB_TYPE_LABELS, JOB_LOCATION_LABELS } from "@/lib/jobs/service";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
+import { renderMarkdown } from "@/lib/markdown";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -52,12 +53,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
           <span>Posted {formatDate(job.postedAt ?? job.createdAt)}</span>
         </div>
 
-        <div className="prose prose-sm mt-8 max-w-none whitespace-pre-wrap text-foreground">{job.description}</div>
+        <div
+          className="prose prose-sm mt-8 max-w-none text-foreground dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(job.description) }}
+        />
 
         {job.howToApply ? (
           <div className="mt-8">
             <h2 className="font-display text-lg font-semibold">How to apply</h2>
-            <div className="prose prose-sm mt-2 max-w-none whitespace-pre-wrap text-foreground">{job.howToApply}</div>
+            <div
+              className="prose prose-sm mt-2 max-w-none text-foreground dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(job.howToApply) }}
+            />
           </div>
         ) : null}
 

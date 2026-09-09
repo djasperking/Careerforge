@@ -6,6 +6,7 @@ import type {
   QuestionGenInput,
 } from "./types";
 import { heuristicCourseParse } from "@/lib/course/parse-document";
+import { heuristicParseJob } from "@/lib/jobs/parse-posting";
 
 function wrap<T>(data: T): AIResult<T> {
   return {
@@ -104,6 +105,10 @@ export const mockAIProvider: AIProvider = {
 
   async importCourseFromText(input) {
     return wrap(heuristicCourseParse(input.rawText));
+  },
+
+  async importJobPosting(input) {
+    return wrap(heuristicParseJob(input.rawText));
   },
 
   async generateQuestions(input: QuestionGenInput) {

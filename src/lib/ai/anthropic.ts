@@ -152,4 +152,18 @@ export const anthropicAIProvider: AIProvider = {
         `modules:[{ title:string, lessons:[{ title:string, type:"TEXT"|"VIDEO"|"QUIZ"|"ASSIGNMENT", content:string }] }], notes:string[] }`,
     );
   },
+
+  async importJobPosting(input, ctx) {
+    if (!client) return mockAIProvider.importJobPosting(input, ctx);
+    return jsonCall(
+      ctx,
+      "Extract a job posting from the pasted text. Use ONLY what's in the text — never invent a salary, company or requirement. " +
+        "locationType: REMOTE / HYBRID / ONSITE. type: FULL_TIME / PART_TIME / CONTRACT / FREELANCE / INTERNSHIP (default FULL_TIME). " +
+        "category: a short field label if obvious, else empty. " +
+        "description: the full posting body tidied into clean Markdown, keeping all responsibilities/requirements/benefits and dropping nav, cookie notices and apply boilerplate.",
+      `Job posting:\n${input.rawText}`,
+      `{ title:string, company:string, location:string, locationType:"REMOTE"|"HYBRID"|"ONSITE", ` +
+        `type:"FULL_TIME"|"PART_TIME"|"CONTRACT"|"FREELANCE"|"INTERNSHIP", category:string, salaryText:string, description:string }`,
+    );
+  },
 };

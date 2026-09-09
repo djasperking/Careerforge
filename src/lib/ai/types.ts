@@ -97,6 +97,18 @@ export interface CourseImportOutput {
   notes: string[];
 }
 
+export interface JobImportOutput {
+  title: string;
+  company: string;
+  location: string;
+  locationType: "REMOTE" | "HYBRID" | "ONSITE";
+  type: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "FREELANCE" | "INTERNSHIP";
+  category: string;
+  salaryText: string;
+  /** The full posting body, tidied into Markdown. */
+  description: string;
+}
+
 export interface AIProvider {
   name: string;
   generateCV(input: CVGenerationInput, ctx: AIContext): Promise<AIResult<Record<string, unknown>>>;
@@ -118,6 +130,10 @@ export interface AIProvider {
     input: CourseImportInput,
     ctx: AIContext,
   ): Promise<AIResult<CourseImportOutput>>;
+  importJobPosting(
+    input: { rawText: string },
+    ctx: AIContext,
+  ): Promise<AIResult<JobImportOutput>>;
   generateQuestions(input: QuestionGenInput, ctx: AIContext): Promise<AIResult<GeneratedQuestion[]>>;
   gradeAnswer(
     input: { question: string; rubric?: string; answer: string; maxPoints: number },
