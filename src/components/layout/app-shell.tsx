@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Brand } from "./brand";
 import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
+import { MobileNav } from "./mobile-nav";
 import { isAdminRole, type PermissionKey } from "@/lib/rbac";
 
 function Avatar({ name, image, size = 36 }: { name?: string | null; image?: string | null; size?: number }) {
@@ -76,13 +77,19 @@ export function AppShell({
 
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b bg-card px-4 py-3 md:hidden">
-          <Brand href={area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard"} />
           <div className="flex items-center gap-2">
-            <Link href="/dashboard/profile" aria-label="View profile">
-              <Avatar name={user.name} image={user.image} size={28} />
-            </Link>
-            <SignOutButton />
+            <MobileNav
+              area={area}
+              permissions={user.permissions}
+              badges={badges}
+              showAdminLink={showAdminLink}
+              user={{ name: user.name, email: user.email, image: user.image }}
+            />
+            <Brand href={area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard"} />
           </div>
+          <Link href="/dashboard/profile" aria-label="View profile">
+            <Avatar name={user.name} image={user.image} size={28} />
+          </Link>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>

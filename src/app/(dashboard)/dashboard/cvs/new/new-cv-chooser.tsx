@@ -20,7 +20,7 @@ export function NewCvChooser({ templates }: { templates: Template[] }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <button
           type="button"
           onClick={() => setMode("upload")}

@@ -185,7 +185,7 @@ export function CvEditor({
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="h-9 w-56 font-display text-base font-semibold"
+            className="h-9 w-full min-w-0 flex-1 font-display text-base font-semibold sm:w-56 sm:flex-none"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">

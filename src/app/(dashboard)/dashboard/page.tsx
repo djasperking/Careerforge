@@ -56,10 +56,10 @@ export default async function DashboardHome() {
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Profile complete" value={`${profile?.completionPercent ?? 0}%`} icon={FileText} />
-        <StatCard label="My CVs" value={cvCount} icon={FileText} />
-        <StatCard label="Active courses" value={activeCourses} icon={GraduationCap} />
-        <StatCard label="Certificates" value={certificates} icon={BadgeCheck} />
+        <StatCard label="Profile complete" value={`${profile?.completionPercent ?? 0}%`} icon={FileText} href="/dashboard/profile" />
+        <StatCard label="My CVs" value={cvCount} icon={FileText} href="/dashboard/cvs" />
+        <StatCard label="Active courses" value={activeCourses} icon={GraduationCap} href="/dashboard/courses" />
+        <StatCard label="Certificates" value={certificates} icon={BadgeCheck} href="/dashboard/certificates" />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
