@@ -42,6 +42,21 @@ export async function assertCanSell(user: { id: string; permissions: PermissionK
   return { profile, isStaff };
 }
 
+/**
+ * Digital products (ebooks, templates, downloadable/video resources) are open
+ * to ANY signed-in customer — no instructor application. Every product still
+ * goes through the admin review queue before it can be published; staff-
+ * authored products skip the queue as before.
+ */
+export async function assertCanSellDigitalProducts(user: {
+  id: string;
+  permissions: PermissionKey[] | "*";
+}) {
+  const profile = await getInstructorProfile(user.id);
+  const isStaff = hasPermission(user.permissions, "courses:write");
+  return { profile, isStaff };
+}
+
 /** Load a course that the caller owns (as its instructor), or throw 404. */
 export async function requireOwnedCourse(userId: string, courseId: string) {
   const course = await db.course.findFirst({ where: { id: courseId, instructorId: userId } });

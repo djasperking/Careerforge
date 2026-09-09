@@ -36,8 +36,23 @@ export default async function InstructorHome() {
             <AlertDescription>{profile.reviewNote || "You can revise and re-apply below."}</AlertDescription>
           </Alert>
         ) : null}
+
+        <Card className="mb-6 border-primary/40 bg-primary/5">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-display text-base font-semibold">Just want to sell a resource?</p>
+              <p className="text-sm text-muted-foreground">
+                Sell an ebook, template or video — no instructor application needed. Products are reviewed before they go live.
+              </p>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link href="/instructor/products/new">Sell a digital product</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
-          <CardHeader><CardTitle>Instructor application</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Instructor application (for courses &amp; coaching)</CardTitle></CardHeader>
           <CardContent>
             <ApplyForm
               initial={profile ? { headline: profile.headline, bio: profile.bio, expertise: profile.expertise, linkedinUrl: profile.linkedinUrl, portfolioUrl: profile.portfolioUrl } : undefined}

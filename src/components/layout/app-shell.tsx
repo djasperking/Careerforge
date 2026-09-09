@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Brand } from "./brand";
 import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
@@ -57,13 +58,16 @@ export function AppShell({
           <SidebarNav area={area} permissions={user.permissions} badges={badges} showAdminLink={showAdminLink} />
         </div>
         <div className="mt-4 border-t pt-3">
-          <div className="flex items-center gap-2 px-1">
+          <Link
+            href="/dashboard/profile"
+            className="flex items-center gap-2 rounded-md px-1 py-1.5 transition-colors hover:bg-muted"
+          >
             <Avatar name={user.name} image={user.image} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{user.name ?? "Account"}</p>
-              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              <p className="truncate text-xs text-muted-foreground">View profile</p>
             </div>
-          </div>
+          </Link>
           <div className="mt-2">
             <SignOutButton />
           </div>
@@ -74,7 +78,9 @@ export function AppShell({
         <header className="flex items-center justify-between border-b bg-card px-4 py-3 md:hidden">
           <Brand href={area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard"} />
           <div className="flex items-center gap-2">
-            <Avatar name={user.name} image={user.image} size={28} />
+            <Link href="/dashboard/profile" aria-label="View profile">
+              <Avatar name={user.name} image={user.image} size={28} />
+            </Link>
             <SignOutButton />
           </div>
         </header>

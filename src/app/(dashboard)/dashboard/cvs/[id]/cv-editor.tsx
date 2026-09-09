@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Download, Copy, Trash2, Save, Sparkles, Loader2, ArrowLeft, ChevronRight, Lock,
+  Download, Copy, Trash2, Save, Loader2, ArrowLeft, ChevronRight, Lock,
   Maximize2, X, FileText, CreditCard,
 } from "lucide-react";
 import {
@@ -14,16 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { CvPreview } from "@/components/cv/cv-preview";
 import { LabeledTextarea, TagListEditor } from "@/components/cv/field-inputs";
 import {
   PersonalInfoEditor, ExperienceEditor, EducationEditor, CertificationsEditor,
   ProjectsEditor, LanguagesEditor, VolunteerEditor, ReferencesEditor,
 } from "@/components/cv/section-editors";
-import {
-  analyzeCvAgainstJob, deleteCv, duplicateCv, generateCvSummaryWithAI, saveCv,
-} from "../actions";
+import { deleteCv, duplicateCv, saveCv } from "../actions";
 import { startCvUnlockCheckout } from "../../payments/actions";
 import { cn } from "@/lib/utils";
 
@@ -35,16 +32,6 @@ interface TemplateOption {
   name: string;
   isPremium: boolean;
   config: unknown;
-}
-
-interface AnalysisResult {
-  matchScore: number;
-  missingKeywords: string[];
-  missingSkills: string[];
-  weakSections: string[];
-  suggestions: { section: string; suggestion: string; requiresVerification: boolean }[];
-  atsRecommendations: string[];
-  improvedSummary: string;
 }
 
 export function CvEditor({
@@ -69,12 +56,6 @@ export function CvEditor({
   const [saveMsg, setSaveMsg] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [busyAction, setBusyAction] = useState<"duplicate" | "delete" | null>(null);
 
-  const [jobDescription, setJobDescription] = useState("");
-  const [generating, setGenerating] = useState(false);
-  const [summarySuggestion, setSummarySuggestion] = useState<string | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [aiError, setAiError] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -136,26 +117,6 @@ export function CvEditor({
       setConfirmDelete(false);
       setSaveMsg({ type: "error", text: res.error });
     }
-  }
-
-  async function handleGenerateSummary() {
-    setGenerating(true);
-    setAiError(null);
-    setSummarySuggestion(null);
-    const res = await generateCvSummaryWithAI({ cvId, content, targetJobDescription: jobDescription || undefined });
-    setGenerating(false);
-    if (!res.ok) setAiError(res.error);
-    else setSummarySuggestion(res.data.professionalSummary);
-  }
-
-  async function handleAnalyze() {
-    setAnalyzing(true);
-    setAiError(null);
-    setAnalysis(null);
-    const res = await analyzeCvAgainstJob({ cvId, content, jobDescription });
-    setAnalyzing(false);
-    if (!res.ok) setAiError(res.error);
-    else setAnalysis(res.data);
   }
 
   async function handleUnlock() {
@@ -313,113 +274,6 @@ export function CvEditor({
           <AlertDescription>{saveMsg.text}</AlertDescription>
         </Alert>
       ) : null}
-
-      <details className="group mb-6 rounded-lg border border-primary/40 bg-card shadow-[0_0_14px_-3px_hsl(var(--cf-primary)/0.35)] transition hover:shadow-[0_0_20px_-2px_hsl(var(--cf-primary)/0.5)]">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4 hover:bg-primary/5">
-          <span className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" />
-            <span className="font-display text-base font-semibold">AI Career Tools</span>
-            <span className="hidden text-xs text-muted-foreground sm:inline">— tailor this CV to a specific job</span>
-          </span>
-          <span className="flex shrink-0 items-center gap-1 rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-            <span className="group-open:hidden">Open</span>
-            <span className="hidden group-open:inline">Close</span>
-            <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
-          </span>
-        </summary>
-        <div className="border-t p-4">
-          <LabeledTextarea
-            label="Target job description"
-            value={jobDescription}
-            onChange={setJobDescription}
-            rows={5}
-            placeholder="Paste the full job advert here. The AI uses it to rewrite your summary and score how well this CV matches."
-          />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline" onClick={handleGenerateSummary} disabled={generating}>
-              {generating ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Suggest a professional summary
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={handleAnalyze} disabled={analyzing}>
-              {analyzing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Analyze against this job
-            </Button>
-          </div>
-
-          {aiError ? (
-            <Alert variant="destructive" className="mt-3">
-              <AlertDescription>{aiError}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          {summarySuggestion ? (
-            <div className="mt-3 rounded-md border border-primary/30 bg-primary/5 p-3">
-              <Badge className="mb-2">AI-generated — review before use</Badge>
-              <p className="text-sm">{summarySuggestion}</p>
-              <div className="mt-2 flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    update("professionalSummary", summarySuggestion);
-                    setSummarySuggestion(null);
-                    handleSave("ai: summary suggestion accepted");
-                  }}
-                >
-                  Use this
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setSummarySuggestion(null)}>Discard</Button>
-              </div>
-            </div>
-          ) : null}
-
-          {analysis ? (
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="font-display text-2xl font-semibold">{analysis.matchScore}%</span>
-                <span className="text-muted-foreground">match to this job</span>
-              </div>
-              {analysis.missingKeywords.length ? (
-                <p><span className="font-medium">Missing keywords:</span> {analysis.missingKeywords.join(", ")}</p>
-              ) : null}
-              {analysis.missingSkills.length ? (
-                <p><span className="font-medium">Missing skills:</span> {analysis.missingSkills.join(", ")}</p>
-              ) : null}
-              {analysis.weakSections.length ? (
-                <p><span className="font-medium">Weak sections:</span> {analysis.weakSections.join(", ")}</p>
-              ) : null}
-              {analysis.suggestions.length ? (
-                <ul className="list-inside list-disc space-y-1">
-                  {analysis.suggestions.map((s, i) => (
-                    <li key={i}>
-                      <span className="font-medium">{s.section}:</span> {s.suggestion}
-                      {s.requiresVerification ? <Badge variant="warning" className="ml-1">verify</Badge> : null}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              {analysis.atsRecommendations.length ? (
-                <p><span className="font-medium">ATS tips:</span> {analysis.atsRecommendations.join(", ")}</p>
-              ) : null}
-              {analysis.improvedSummary ? (
-                <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
-                  <Badge className="mb-2">AI-generated — review before use</Badge>
-                  <p>{analysis.improvedSummary}</p>
-                  <Button
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => {
-                      update("professionalSummary", analysis.improvedSummary);
-                      handleSave("ai: improved summary accepted");
-                    }}
-                  >
-                    Use this summary
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      </details>
 
       <div className="grid gap-6 lg:grid-cols-[190px_1fr_440px]">
         <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">

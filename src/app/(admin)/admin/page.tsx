@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { getAdminOverview } from "@/lib/admin/metrics";
+import { AdminPanels } from "./admin-panels";
 
 export const metadata = { title: "Admin" };
 
@@ -165,63 +166,77 @@ export default async function AdminDashboard() {
         <Kpi label="AI requests (30d)" value={String(kpis.ai.last30)} delta={kpis.ai.delta} hint={`${kpis.activeUsers} active users`} icon={Bot} />
       </section>
 
-      <section className="space-y-5">
-        <h2 className="text-sm font-medium text-muted-foreground">Jump to a task</h2>
-        {hubGroups.map((g) => (
-          <div key={g.title}>
-            <h3 className="mb-2.5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
-              {g.title}
-              <span className="h-px flex-1 bg-border" />
-            </h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {g.tiles.map((t) => {
-                const badge = tileBadges[t.href] ?? 0;
-                return (
-                  <Link
-                    key={`${t.group}-${t.label}`}
-                    href={t.href}
-                    className="group flex flex-col gap-1.5 rounded-xl border bg-card p-4 transition-colors hover:border-primary"
-                  >
-                    <span className="mb-0.5 flex w-fit items-center justify-center rounded-lg bg-primary/10 p-2 text-primary">
-                      <t.icon className="size-4" />
-                    </span>
-                    <span className="flex items-center gap-2 text-sm font-semibold">
-                      {t.label}
-                      {badge > 0 ? (
-                        <span className="rounded-full bg-destructive/10 px-1.5 text-xs font-bold text-destructive">{badge}</span>
-                      ) : null}
-                    </span>
-                    <span className="text-xs leading-snug text-muted-foreground">{t.desc}</span>
-                  </Link>
-                );
-              })}
-            </div>
+      <AdminPanels
+        hub={
+          <div className="space-y-6">
+            {hubGroups.map((g) => (
+              <div key={g.title}>
+                <h3 className="mb-3 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                  {g.title}
+                  <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+                </h3>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {g.tiles.map((t) => {
+                    const badge = tileBadges[t.href] ?? 0;
+                    return (
+                      <Link
+                        key={`${t.group}-${t.label}`}
+                        href={t.href}
+                        className={cn(
+                          "group relative flex flex-col gap-2 overflow-hidden rounded-xl border border-primary/15 bg-card p-4",
+                          "shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-150",
+                          "hover:-translate-y-0.5 hover:border-primary hover:shadow-[0_8px_24px_-6px_hsl(var(--cf-primary)/0.35)]",
+                        )}
+                      >
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute -right-6 -top-6 size-16 rounded-full bg-primary/10 blur-xl transition-opacity group-hover:bg-primary/25"
+                        />
+                        <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                          <t.icon className="size-4" />
+                        </span>
+                        <span className="flex items-center gap-2 text-sm font-semibold">
+                          {t.label}
+                          {badge > 0 ? (
+                            <span className="rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
+                              {badge}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="text-xs leading-snug text-muted-foreground">{t.desc}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </section>
-
-      <Card>
-        <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>
-        <CardContent>
-          {recentAudit.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">No audit records yet.</p>
-          ) : (
-            <ul className="divide-y">
-              {recentAudit.map((a) => (
-                <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-medium">{a.action}</p>
-                    <p className="truncate text-muted-foreground">
-                      {a.entity}{a.entityId ? ` · ${a.entityId.slice(0, 8)}` : ""} · {a.actor?.email ?? "system"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-muted-foreground">{formatDate(a.createdAt)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+        }
+        recent={
+          <Card>
+            <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>
+            <CardContent>
+              {recentAudit.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">No audit records yet.</p>
+              ) : (
+                <ul className="divide-y">
+                  {recentAudit.map((a) => (
+                    <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-medium">{a.action}</p>
+                        <p className="truncate text-muted-foreground">
+                          {a.entity}{a.entityId ? ` · ${a.entityId.slice(0, 8)}` : ""} · {a.actor?.email ?? "system"}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-muted-foreground">{formatDate(a.createdAt)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        }
+      />
     </div>
   );
 }

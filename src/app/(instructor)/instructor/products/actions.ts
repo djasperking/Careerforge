@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { requireUserApi } from "@/lib/session";
 import { ApiError } from "@/lib/api";
 import { audit } from "@/lib/audit";
-import { assertCanSell } from "@/lib/instructor/service";
+import { assertCanSellDigitalProducts as assertCanSell } from "@/lib/instructor/service";
 import { uniqueDigitalProductSlug, requireOwnedDigitalProduct } from "@/lib/marketplace/digital";
 import { parseVideoUrl } from "@/lib/marketplace/video";
 

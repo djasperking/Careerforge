@@ -72,4 +72,5 @@ export const adminNav: NavItem[] = [
   { group: "People & system", label: "Audit Logs", href: "/admin/audit", icon: ScrollText, permission: "audit:read" },
   { group: "People & system", label: "Settings", href: "/admin/settings", icon: Settings, permission: "settings:write" },
   { group: "People & system", label: "Maintenance mode", href: "/admin/maintenance", icon: Wrench, permission: "settings:write" },
+  { group: "People & system", label: "My profile", href: "/dashboard/profile", icon: User },
 ];
