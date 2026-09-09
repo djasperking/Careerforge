@@ -1,10 +1,9 @@
-import { renderToBuffer } from "@react-pdf/renderer";
 import { db } from "@/lib/db";
 import { handler, ApiError } from "@/lib/api";
 import { requireUserApi } from "@/lib/session";
 import { parseCvContent, parseTemplateConfig } from "@/lib/cv/schema";
 import { cvHasCleanExport } from "@/lib/cv/service";
-import { CvPdfDocument } from "@/lib/cv/pdf";
+import { renderCvPdf } from "@/lib/cv/render";
 import { slugify } from "@/lib/utils";
 
 export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
@@ -28,7 +27,14 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
 
   const content = parseCvContent(cv.content);
   const template = parseTemplateConfig(cv.template?.config);
-  const buffer = await renderToBuffer(<CvPdfDocument content={content} template={template} watermark={false} />);
+  const lengthTarget = (content.lengthTarget ?? 0) as 0 | 1 | 2;
+
+  const { buffer, pages, trimmed, stillOver } = await renderCvPdf({
+    content,
+    template,
+    watermark: false,
+    lengthTarget,
+  });
 
   const filename = `${slugify(cv.title || "cv") || "cv"}.pdf`;
   return new Response(new Uint8Array(buffer), {
@@ -36,6 +42,9 @@ export const GET = handler(async (_req: Request, ctx: { params: Promise<{ id: st
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,
       "Cache-Control": "no-store",
+      "X-CV-Pages": String(pages),
+      "X-CV-Trimmed": encodeURIComponent(JSON.stringify(trimmed)),
+      "X-CV-Still-Over": stillOver ? "1" : "0",
     },
   });
 });

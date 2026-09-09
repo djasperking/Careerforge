@@ -9,30 +9,70 @@ import { Label } from "@/components/ui/label";
 import { minorToMajor, majorToMinor } from "@/lib/utils";
 import { updatePlan } from "./actions";
 
+function num(v: unknown, fallback: number) {
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+
 export function PlanEditor({
-  planId, initial,
+  planId, planKey, initial,
 }: {
   planId: string;
-  initial: { name: string; priceCents: number; billingPeriod: string; features: string; isActive: boolean };
+  planKey: string;
+  initial: {
+    name: string;
+    priceCents: number;
+    billingPeriod: string;
+    features: string;
+    isActive: boolean;
+    limits: Record<string, unknown>;
+  };
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [form, setForm] = useState({
+    name: initial.name,
+    priceCents: initial.priceCents,
+    billingPeriod: initial.billingPeriod,
+    features: initial.features,
+    isActive: initial.isActive,
+    // -1 means unlimited; we surface it as an empty field + "Unlimited" toggle.
+    cvCount: num(initial.limits["cv:count"], planKey === "FREE" ? 1 : -1),
+    aiPerMonth: num(initial.limits["ai:requestsPerMonth"], 15),
+    premiumTemplates: initial.limits["cv:premiumTemplates"] === true,
+  });
+
   if (!editing) {
     return (
-      <Button size="sm" variant="outline" className="mt-3 w-full" onClick={() => setEditing(true)}>
-        <Pencil className="size-3.5" /> Edit
-      </Button>
+      <div className="mt-3 space-y-1">
+        <p className="text-xs text-muted-foreground">
+          {form.cvCount === -1 ? "Unlimited" : form.cvCount} CV{form.cvCount === 1 ? "" : "s"} ·{" "}
+          {form.aiPerMonth} AI/mo · {form.premiumTemplates ? "premium templates" : "standard templates"}
+        </p>
+        <Button size="sm" variant="outline" className="w-full" onClick={() => setEditing(true)}>
+          <Pencil className="size-3.5" /> Edit
+        </Button>
+      </div>
     );
   }
 
   async function handleSave() {
     setSaving(true);
     setError(null);
-    const res = await updatePlan(planId, form);
+    const res = await updatePlan(planId, {
+      name: form.name,
+      priceCents: form.priceCents,
+      billingPeriod: form.billingPeriod,
+      features: form.features,
+      isActive: form.isActive,
+      limits: {
+        "cv:count": form.cvCount,
+        "ai:requestsPerMonth": Math.max(0, form.aiPerMonth),
+        "cv:premiumTemplates": form.premiumTemplates,
+      },
+    });
     setSaving(false);
     if (!res.ok) setError(res.error);
     else {
@@ -62,6 +102,53 @@ export function PlanEditor({
           </select>
         </div>
       </div>
+
+      <div className="rounded-md border bg-card p-2">
+        <p className="mb-1.5 text-xs font-medium">Usage limits</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label className="text-xs">CVs allowed</Label>
+            <Input
+              type="number"
+              min={0}
+              value={form.cvCount === -1 ? "" : form.cvCount}
+              placeholder="Unlimited"
+              disabled={form.cvCount === -1}
+              onChange={(e) => setForm((f) => ({ ...f, cvCount: Math.max(0, Number(e.target.value) || 0) }))}
+              className="h-8"
+            />
+          </div>
+          <label className="flex items-end gap-2 pb-1.5 text-xs">
+            <input
+              type="checkbox"
+              checked={form.cvCount === -1}
+              onChange={(e) => setForm((f) => ({ ...f, cvCount: e.target.checked ? -1 : 5 }))}
+              className="size-3.5"
+            />
+            Unlimited CVs
+          </label>
+          <div className="space-y-1">
+            <Label className="text-xs">AI requests / month</Label>
+            <Input
+              type="number"
+              min={0}
+              value={form.aiPerMonth}
+              onChange={(e) => setForm((f) => ({ ...f, aiPerMonth: Math.max(0, Number(e.target.value) || 0) }))}
+              className="h-8"
+            />
+          </div>
+          <label className="flex items-end gap-2 pb-1.5 text-xs">
+            <input
+              type="checkbox"
+              checked={form.premiumTemplates}
+              onChange={(e) => setForm((f) => ({ ...f, premiumTemplates: e.target.checked }))}
+              className="size-3.5"
+            />
+            Premium templates
+          </label>
+        </div>
+      </div>
+
       <div className="space-y-1">
         <Label className="text-xs">Features (one per line)</Label>
         <textarea

@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Download, Copy, Trash2, Save, Sparkles, Loader2, ArrowLeft, ChevronRight, Lock,
-  Maximize2, X,
+  Maximize2, X, FileText, CreditCard,
 } from "lucide-react";
 import {
   CV_SECTIONS, SECTION_LABELS, parseTemplateConfig, type CVContent,
@@ -78,6 +78,12 @@ export function CvEditor({
   const [unlocking, setUnlocking] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadMenu, setDownloadMenu] = useState(false);
+  const [pageEstimate, setPageEstimate] = useState(1);
+  const previewMeasureRef = useRef<HTMLDivElement>(null);
+
+  const lengthTarget = (content.lengthTarget ?? 0) as 0 | 1 | 2;
 
   const activeTemplate = templates.find((t) => t.id === templateId) ?? null;
   const templateConfig = useMemo(() => parseTemplateConfig(activeTemplate?.config), [activeTemplate]);
@@ -85,6 +91,22 @@ export function CvEditor({
   function update<K extends keyof CVContent>(key: K, value: CVContent[K]) {
     setContent((c) => ({ ...c, [key]: value }));
   }
+
+  const measurePreview = useCallback(() => {
+    const el = previewMeasureRef.current;
+    if (!el) return;
+    const h = el.getBoundingClientRect().height / PREVIEW_SCALE;
+    setPageEstimate(Math.max(1, Math.ceil((h - 24) / 1123)));
+  }, []);
+
+  useEffect(() => {
+    measurePreview();
+    const el = previewMeasureRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measurePreview);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [content, templateConfig, measurePreview]);
 
   function handleSave(reason?: string) {
     setSaveMsg(null);
@@ -147,6 +169,51 @@ export function CvEditor({
     }
   }
 
+  async function handleDownload() {
+    setDownloadMenu(false);
+    setDownloading(true);
+    setSaveMsg(null);
+    try {
+      // Persist first so the export reflects the latest edits + length target.
+      await saveCv({ cvId, title, templateId, content, reason: "pre-download save" });
+      const res = await fetch(`/api/cv/${cvId}/pdf`);
+      if (res.status === 402) {
+        setDownloadMenu(true);
+        return;
+      }
+      if (!res.ok) {
+        setSaveMsg({ type: "error", text: "Couldn't build the PDF just now. Please try again." });
+        return;
+      }
+      let trimmed: string[] = [];
+      try {
+        trimmed = JSON.parse(decodeURIComponent(res.headers.get("X-CV-Trimmed") || "[]"));
+      } catch {
+        trimmed = [];
+      }
+      const pages = res.headers.get("X-CV-Pages") ?? "?";
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(title || "cv").replace(/[^\w.-]+/g, "-").toLowerCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      if (trimmed.length) {
+        setSaveMsg({
+          type: "ok",
+          text: `Downloaded as ${pages} page${pages === "1" ? "" : "s"}. To fit, the PDF ${trimmed.join(", ")} — your saved CV is untouched.`,
+        });
+      } else {
+        setSaveMsg({ type: "ok", text: `Downloaded (${pages} page${pages === "1" ? "" : "s"}).` });
+      }
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -173,21 +240,65 @@ export function CvEditor({
               </option>
             ))}
           </select>
+          <select
+            value={lengthTarget}
+            onChange={(e) => update("lengthTarget", Number(e.target.value) as 0 | 1 | 2)}
+            className="h-9 rounded-md border border-input bg-card px-2 text-sm"
+            title="Maximum length of the downloaded PDF"
+          >
+            <option value={0}>Length: fits content</option>
+            <option value={1}>Length: 1 page</option>
+            <option value={2}>Length: 2 pages</option>
+          </select>
           <Button variant="outline" size="sm" onClick={handleDuplicate} disabled={busyAction === "duplicate"}>
             <Copy className="size-4" /> Duplicate
           </Button>
-          {cleanExport ? (
-            <Button asChild variant="outline" size="sm">
-              <a href={`/api/cv/${cvId}/pdf`} target="_blank" rel="noreferrer">
-                <Download className="size-4" /> Download PDF
-              </a>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => (cleanExport ? handleDownload() : setDownloadMenu((v) => !v))}
+              disabled={downloading || unlocking}
+            >
+              {downloading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : cleanExport ? (
+                <Download className="size-4" />
+              ) : (
+                <Lock className="size-4" />
+              )}
+              Download PDF
             </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={handleUnlock} disabled={unlocking}>
-              {unlocking ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
-              Download PDF — {unlockPriceLabel}
-            </Button>
-          )}
+            {!cleanExport && downloadMenu ? (
+              <div className="absolute right-0 z-20 mt-1 w-64 rounded-lg border bg-card p-1.5 shadow-lg">
+                <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                  Free CVs preview with a watermark. To download a clean PDF:
+                </p>
+                <Link
+                  href="/dashboard/payments"
+                  className="flex items-start gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted"
+                >
+                  <CreditCard className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>
+                    <span className="font-medium">Subscribe</span>
+                    <span className="block text-xs text-muted-foreground">Every CV downloads clean, no watermark.</span>
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleUnlock}
+                  disabled={unlocking}
+                  className="flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-muted"
+                >
+                  {unlocking ? <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin" /> : <FileText className="mt-0.5 size-4 shrink-0 text-primary" />}
+                  <span>
+                    <span className="font-medium">Download just this one — {unlockPriceLabel}</span>
+                    <span className="block text-xs text-muted-foreground">One-time payment, no subscription.</span>
+                  </span>
+                </button>
+              </div>
+            ) : null}
+          </div>
           <Button variant="outline" size="sm" onClick={() => setConfirmDelete(true)} disabled={busyAction === "delete"} className="text-destructive hover:text-destructive">
             <Trash2 className="size-4" /> Delete
           </Button>
@@ -336,11 +447,29 @@ export function CvEditor({
 
         <div className="hidden lg:block">
           <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto rounded-lg border bg-muted/40 p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Live preview · A4</p>
               <Button variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
                 <Maximize2 className="size-3.5" /> Enlarge
               </Button>
+            </div>
+            <div
+              className={cn(
+                "mb-3 flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs",
+                lengthTarget !== 0 && pageEstimate > lengthTarget
+                  ? "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                  : "border-border bg-card text-muted-foreground",
+              )}
+            >
+              <FileText className="size-3.5 shrink-0" />
+              <span>
+                ≈ {pageEstimate} page{pageEstimate === 1 ? "" : "s"}
+                {lengthTarget !== 0
+                  ? pageEstimate > lengthTarget
+                    ? ` — over your ${lengthTarget}-page target. The PDF will be condensed to fit.`
+                    : ` — within your ${lengthTarget}-page target.`
+                  : ""}
+              </span>
             </div>
             {!cleanExport ? (
               <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
@@ -379,7 +508,20 @@ export function CvEditor({
               )}
             >
               <div style={{ zoom: PREVIEW_SCALE }}>
-                <CvPreview content={content} template={templateConfig} watermark={!cleanExport} />
+                <div ref={previewMeasureRef} className="relative">
+                  <CvPreview content={content} template={templateConfig} watermark={!cleanExport} />
+                  {Array.from({ length: Math.max(0, pageEstimate - 1) }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="pointer-events-none absolute inset-x-0 border-t-2 border-dashed border-primary/50"
+                      style={{ top: (i + 1) * 1123 }}
+                    >
+                      <span className="absolute right-0 -translate-y-full rounded-t bg-primary/70 px-2 py-0.5 text-[11px] font-medium text-white">
+                        Page {i + 2}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-gradient-to-t from-black/60 to-transparent py-2 text-xs font-medium text-white opacity-90 transition group-hover:opacity-100">
                 <Maximize2 className="size-3.5" /> Click to enlarge
@@ -446,16 +588,20 @@ export function CvEditor({
             <p className="text-sm font-medium">Live preview — {title || "Untitled CV"}</p>
             <div className="flex items-center gap-2">
               {cleanExport ? (
-                <Button asChild variant="secondary" size="sm">
-                  <a href={`/api/cv/${cvId}/pdf`} target="_blank" rel="noreferrer">
-                    <Download className="size-4" /> Download PDF
-                  </a>
+                <Button variant="secondary" size="sm" onClick={handleDownload} disabled={downloading}>
+                  {downloading ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+                  Download PDF
                 </Button>
               ) : (
-                <Button variant="secondary" size="sm" onClick={handleUnlock} disabled={unlocking}>
-                  {unlocking ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
-                  Download PDF — {unlockPriceLabel}
-                </Button>
+                <>
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href="/dashboard/payments"><CreditCard className="size-4" /> Subscribe</Link>
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={handleUnlock} disabled={unlocking}>
+                    {unlocking ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
+                    Download — {unlockPriceLabel}
+                  </Button>
+                </>
               )}
               <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={() => setPreviewOpen(false)}>
                 <X className="size-5" />

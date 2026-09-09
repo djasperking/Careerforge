@@ -11,15 +11,22 @@ Font.registerHyphenationCallback((word) => [word]);
 
 const SPACING = { compact: 6, comfortable: 10, spacious: 14 } as const;
 
-function styles(template: CvTemplateConfig) {
-  const gap = SPACING[template.spacing];
+interface CondenseHint {
+  fontScale?: number;
+  forceCompact?: boolean;
+}
+
+function styles(template: CvTemplateConfig, condense: CondenseHint = {}) {
+  const scale = condense.fontScale ?? 1;
+  const spacingKey = condense.forceCompact ? "compact" : template.spacing;
+  const gap = SPACING[spacingKey] * scale;
   const accent = template.accent || "#404040";
   const align = template.headerAlign === "left" ? "left" : "center";
   return StyleSheet.create({
-    page: { padding: 36, fontSize: 9.5, fontFamily: "Helvetica", color: "#171717", lineHeight: 1.4 },
-    name: { fontSize: 19, fontFamily: "Helvetica-Bold", textAlign: align, color: accent },
-    headline: { fontSize: 10, color: "#525252", marginTop: 2, textAlign: align },
-    contact: { fontSize: 8.5, color: "#737373", marginTop: 6, textAlign: align },
+    page: { padding: condense.forceCompact ? 28 : 36, fontSize: 9.5 * scale, fontFamily: "Helvetica", color: "#171717", lineHeight: condense.forceCompact ? 1.3 : 1.4 },
+    name: { fontSize: 19 * scale, fontFamily: "Helvetica-Bold", textAlign: align, color: accent },
+    headline: { fontSize: 10 * scale, color: "#525252", marginTop: 2, textAlign: align },
+    contact: { fontSize: 8.5 * scale, color: "#737373", marginTop: 6, textAlign: align },
     hr: { borderBottomWidth: 1, borderBottomColor: "#e5e5e5", marginTop: 10, marginBottom: gap },
     row: { flexDirection: "row" },
     col: { flexGrow: 1 },
@@ -59,12 +66,14 @@ export function CvPdfDocument({
   content,
   template,
   watermark = false,
+  condense = {},
 }: {
   content: CVContent;
   template: CvTemplateConfig;
   watermark?: boolean;
+  condense?: CondenseHint;
 }) {
-  const s = styles(template);
+  const s = styles(template, condense);
   const order = template.sectionOrder.filter((k) => k !== "personalInfo");
   const sidebar = template.columns === 2 ? order.filter((k) => SIDEBAR_KEYS.has(k)) : [];
   const main = template.columns === 2 ? order.filter((k) => !SIDEBAR_KEYS.has(k)) : order;

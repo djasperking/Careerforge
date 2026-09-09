@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { requireUserApi } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { ApiError } from "@/lib/api";
-import { withAIUsage, getAIProvider } from "@/lib/ai";
+import { withAIUsage, getCvAIProvider } from "@/lib/ai";
 import {
   cvContentSchema, coerceCvContent, emptyCvContent, parseCvContent, scoreCvCompleteness, type CVContent,
 } from "@/lib/cv/schema";
@@ -188,12 +188,14 @@ export async function importCvFromUpload(
     // tailoring to a job description goes through the metered path.
     const ctx = { userId: user.id, feature: "cv.import" };
 
+    const provider = await getCvAIProvider(user.id);
+
     let content: CVContent;
     let notes: string[];
     try {
       const result = jobDescription
-        ? await withAIUsage(ctx, (provider) => provider.importCV({ rawText, targetJobDescription: jobDescription }, ctx))
-        : await getAIProvider().importCV({ rawText }, ctx);
+        ? await withAIUsage(ctx, (p) => p.importCV({ rawText, targetJobDescription: jobDescription }, ctx), { provider })
+        : await provider.importCV({ rawText }, ctx);
       content = coerceCvContent(result.data.content);
       notes = (result.data.tailoringNotes ?? []).map((n) => String(n)).filter(Boolean).slice(0, 12);
     } catch (aiErr) {
@@ -242,11 +244,14 @@ export async function generateCvSummaryWithAI(input: {
     const user = await requireUserApi();
     await loadOwnedCv(user.id, input.cvId);
 
-    const result = await withAIUsage({ userId: user.id, feature: "cv.generate" }, (provider) =>
-      provider.generateCV(
-        { rawProfile: input.content as never, targetJobDescription: input.targetJobDescription },
-        { userId: user.id, feature: "cv.generate" },
-      ),
+    const result = await withAIUsage(
+      { userId: user.id, feature: "cv.generate" },
+      (provider) =>
+        provider.generateCV(
+          { rawProfile: input.content as never, targetJobDescription: input.targetJobDescription },
+          { userId: user.id, feature: "cv.generate" },
+        ),
+      { provider: await getCvAIProvider(user.id) },
     );
     const summary = String((result.data as Record<string, unknown>).professionalSummary ?? "");
     return { ok: true, data: { professionalSummary: summary } };
@@ -275,11 +280,14 @@ export async function analyzeCvAgainstJob(input: {
       throw new ApiError(422, "JD_TOO_SHORT", "Paste a fuller job description (at least a few sentences).");
     }
 
-    const result = await withAIUsage({ userId: user.id, feature: "cv.analyze" }, (provider) =>
-      provider.analyzeCV(
-        { cv: input.content as never, jobDescription: input.jobDescription },
-        { userId: user.id, feature: "cv.analyze" },
-      ),
+    const result = await withAIUsage(
+      { userId: user.id, feature: "cv.analyze" },
+      (provider) =>
+        provider.analyzeCV(
+          { cv: input.content as never, jobDescription: input.jobDescription },
+          { userId: user.id, feature: "cv.analyze" },
+        ),
+      { provider: await getCvAIProvider(user.id) },
     );
 
     await db.cVAnalysis.create({

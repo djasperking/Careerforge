@@ -2,11 +2,12 @@ import Link from "next/link";
 import {
   Users, CreditCard, GraduationCap, Bot, ArrowRight, ArrowUpRight, ArrowDownRight,
   UserPlus, ClipboardList, LifeBuoy, RefreshCcw, Banknote, CalendarClock,
-  Plus, FilePlus2, Settings as SettingsIcon,
+  BookOpen, ClipboardCheck, BadgeCheck, FileText, ScrollText, Mail, Package,
+  Megaphone, BarChart3, Briefcase, Settings as SettingsIcon, Wrench,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
 import { db } from "@/lib/db";
-import { hasPermission } from "@/lib/rbac";
+import { hasPermission, type PermissionKey } from "@/lib/rbac";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
@@ -46,6 +47,58 @@ function Kpi({
   );
 }
 
+interface HubTile {
+  group: string;
+  label: string;
+  href: string;
+  desc: string;
+  icon: React.ElementType;
+  permission?: PermissionKey;
+}
+
+const HUB_GROUPS: { title: string; tiles: HubTile[] }[] = [
+  {
+    title: "Learning & content",
+    tiles: [
+      { group: "learning", label: "Courses", href: "/admin/courses", desc: "Publish, review and manage cohorts", icon: BookOpen, permission: "courses:read" },
+      { group: "learning", label: "Exams", href: "/admin/exams", desc: "Question banks & exam-prep products", icon: ClipboardCheck, permission: "exams:read" },
+      { group: "learning", label: "Certificates", href: "/admin/certificates", desc: "Issued certificates & templates", icon: BadgeCheck, permission: "courses:read" },
+      { group: "learning", label: "CV Templates", href: "/admin/cv-templates", desc: "Layouts, accents & premium flags", icon: FileText, permission: "cv:templates" },
+      { group: "learning", label: "AI configuration", href: "/admin/ai", desc: "Provider, models & usage limits", icon: Bot, permission: "ai:config" },
+      { group: "learning", label: "Blog", href: "/admin/content", desc: "Posts, drafts & SEO", icon: ScrollText, permission: "content:write" },
+      { group: "learning", label: "Digital products", href: "/instructor/products", desc: "Instructor-sold downloads", icon: Package, permission: "courses:write" },
+      { group: "learning", label: "Review queue", href: "/admin/review", desc: "Instructor & submission approvals", icon: ClipboardList, permission: "instructors:review" },
+    ],
+  },
+  {
+    title: "Money",
+    tiles: [
+      { group: "money", label: "Payments", href: "/admin/payments", desc: "Transactions & reconciliation", icon: CreditCard, permission: "payments:read" },
+      { group: "money", label: "Payouts", href: "/admin/payouts", desc: "Instructor withdrawal requests", icon: Banknote, permission: "payouts:manage" },
+      { group: "money", label: "Subscriptions", href: "/admin/subscriptions", desc: "Plans, pricing, CV & AI limits", icon: CreditCard, permission: "subscriptions:write" },
+    ],
+  },
+  {
+    title: "Growth",
+    tiles: [
+      { group: "growth", label: "Analytics", href: "/admin/analytics", desc: "Funnels, revenue & retention", icon: BarChart3, permission: "analytics:read" },
+      { group: "growth", label: "Jobs board", href: "/admin/jobs", desc: "Listings & applications", icon: Briefcase, permission: "jobs:write" },
+      { group: "growth", label: "Advertisements", href: "/admin/ads", desc: "Placements & campaigns", icon: Megaphone, permission: "ads:write" },
+      { group: "growth", label: "Newsletter", href: "/admin/newsletter", desc: "Broadcasts & subscribers", icon: Mail, permission: "content:write" },
+    ],
+  },
+  {
+    title: "People & system",
+    tiles: [
+      { group: "system", label: "Users", href: "/admin/users", desc: "Accounts, roles, verification", icon: Users, permission: "users:read" },
+      { group: "system", label: "Support", href: "/admin/support", desc: "Tickets & conversations", icon: LifeBuoy, permission: "support:handle" },
+      { group: "system", label: "Audit logs", href: "/admin/audit", desc: "Every staff action, searchable", icon: ScrollText, permission: "audit:read" },
+      { group: "system", label: "Settings", href: "/admin/settings", desc: "Branding, pricing, integrations", icon: SettingsIcon, permission: "settings:write" },
+      { group: "system", label: "Maintenance mode", href: "/admin/maintenance", desc: "Per-section maintenance toggles", icon: Wrench, permission: "settings:write" },
+    ],
+  },
+];
+
 export default async function AdminDashboard() {
   const admin = await requireAdmin();
   const can = (p: Parameters<typeof hasPermission>[1]) => hasPermission(admin.permissions, p);
@@ -64,15 +117,20 @@ export default async function AdminDashboard() {
     { label: "Classes starting soon", count: attention.cohortsSoon, href: "/admin/courses", icon: CalendarClock, show: can("courses:read") },
   ].filter((x) => x.show);
 
-  const quickActions = [
-    { label: "New course", href: "/admin/courses", icon: Plus, show: can("courses:write") },
-    { label: "New exam", href: "/admin/exams/new", icon: FilePlus2, show: can("exams:write") },
-    { label: "Review queue", href: "/admin/review", icon: ClipboardList, show: can("instructors:review") },
-    { label: "Analytics", href: "/admin/analytics", icon: ArrowUpRight, show: can("analytics:read") },
-    { label: "Settings", href: "/admin/settings", icon: SettingsIcon, show: can("settings:write") },
-  ].filter((x) => x.show);
-
   const openAttention = attentionItems.filter((a) => a.count > 0);
+
+  // Badge counts to overlay on the hub tiles.
+  const tileBadges: Record<string, number> = {
+    "/admin/review": attention.pendingInstructors + attention.coursesInReview,
+    "/admin/payouts": attention.payoutRequests,
+    "/admin/support": attention.openTickets,
+    "/admin/payments": attention.failedTx,
+  };
+
+  const hubGroups = HUB_GROUPS.map((g) => ({
+    title: g.title,
+    tiles: g.tiles.filter((t) => !t.permission || can(t.permission)),
+  })).filter((g) => g.tiles.length > 0);
 
   return (
     <div className="space-y-6">
@@ -107,15 +165,40 @@ export default async function AdminDashboard() {
         <Kpi label="AI requests (30d)" value={String(kpis.ai.last30)} delta={kpis.ai.delta} hint={`${kpis.activeUsers} active users`} icon={Bot} />
       </section>
 
-      {quickActions.length > 0 ? (
-        <section className="flex flex-wrap gap-2">
-          {quickActions.map((q) => (
-            <Link key={q.label} href={q.href} className="inline-flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm font-medium hover:bg-muted">
-              <q.icon className="size-4 text-muted-foreground" /> {q.label}
-            </Link>
-          ))}
-        </section>
-      ) : null}
+      <section className="space-y-5">
+        <h2 className="text-sm font-medium text-muted-foreground">Jump to a task</h2>
+        {hubGroups.map((g) => (
+          <div key={g.title}>
+            <h3 className="mb-2.5 flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
+              {g.title}
+              <span className="h-px flex-1 bg-border" />
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {g.tiles.map((t) => {
+                const badge = tileBadges[t.href] ?? 0;
+                return (
+                  <Link
+                    key={`${t.group}-${t.label}`}
+                    href={t.href}
+                    className="group flex flex-col gap-1.5 rounded-xl border bg-card p-4 transition-colors hover:border-primary"
+                  >
+                    <span className="mb-0.5 flex w-fit items-center justify-center rounded-lg bg-primary/10 p-2 text-primary">
+                      <t.icon className="size-4" />
+                    </span>
+                    <span className="flex items-center gap-2 text-sm font-semibold">
+                      {t.label}
+                      {badge > 0 ? (
+                        <span className="rounded-full bg-destructive/10 px-1.5 text-xs font-bold text-destructive">{badge}</span>
+                      ) : null}
+                    </span>
+                    <span className="text-xs leading-snug text-muted-foreground">{t.desc}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </section>
 
       <Card>
         <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>

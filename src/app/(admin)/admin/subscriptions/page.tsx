@@ -43,12 +43,14 @@ export default async function AdminSubscriptionsPage() {
                 </ul>
                 <PlanEditor
                   planId={p.id}
+                  planKey={p.key}
                   initial={{
                     name: p.name,
                     priceCents: p.priceCents,
                     billingPeriod: p.billingPeriod,
                     features: p.features.join("\n"),
                     isActive: p.isActive,
+                    limits: (p.limits ?? {}) as Record<string, unknown>,
                   }}
                 />
               </CardContent>

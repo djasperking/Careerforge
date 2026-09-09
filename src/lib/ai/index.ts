@@ -2,6 +2,7 @@ import { env } from "@/lib/env";
 import { db } from "@/lib/db";
 import { ApiError } from "@/lib/api";
 import { hasUnlimitedTools } from "@/lib/entitlements";
+import { resolveActivePlan } from "@/lib/cv/service";
 import type { AIContext, AIProvider, AIResult } from "./types";
 import { mockAIProvider } from "./mock";
 import { anthropicAIProvider } from "./anthropic";
@@ -20,6 +21,24 @@ export function getAIProvider(): AIProvider {
   }
 }
 
+/**
+ * Provider for the CV tools. Premium/staff get the configured provider (which
+ * may be Anthropic); everyone else is pinned to Gemini so free usage can never
+ * spend Anthropic credit. Falls back to mock only when no provider is set.
+ */
+export async function getCvAIProvider(userId: string | undefined): Promise<AIProvider> {
+  if (userId) {
+    const [staff, plan] = await Promise.all([
+      hasUnlimitedTools(userId),
+      resolveActivePlan(userId),
+    ]);
+    const isPaid = staff || (plan != null && plan.key !== "FREE");
+    if (isPaid) return getAIProvider();
+  }
+  // Non-paid: Gemini, or mock if Gemini isn't configured.
+  return env.AI_PROVIDER === "google" || env.GEMINI_API_KEY ? googleAIProvider : getAIProvider();
+}
+
 /** Current period key, e.g. "2026-09". */
 function period(d = new Date()) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -32,8 +51,9 @@ function period(d = new Date()) {
 export async function withAIUsage<T>(
   ctx: AIContext,
   run: (provider: AIProvider) => Promise<AIResult<T>>,
+  opts: { provider?: AIProvider } = {},
 ): Promise<AIResult<T>> {
-  const provider = getAIProvider();
+  const provider = opts.provider ?? getAIProvider();
 
   if (ctx.userId && !(await hasUnlimitedTools(ctx.userId))) {
     const limit = await resolveFeatureLimit(ctx.userId, ctx.feature);

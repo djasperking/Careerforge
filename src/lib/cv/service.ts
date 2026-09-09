@@ -41,21 +41,37 @@ export async function cvHasCleanExport(
   return plan.key !== "FREE";
 }
 
-/** Hard ceiling to stop runaway/abuse creation — not a plan gate. */
+/** Hard ceiling to stop runaway/abuse creation, on top of any plan limit. */
 const CV_MAX_PER_USER = 50;
+
+/**
+ * The number of CVs this user may keep. Driven by the plan's `cv:count` limit
+ * (data, set per plan in Admin → Subscriptions): -1 or missing = unlimited
+ * (capped at the abuse ceiling), otherwise that many. Free defaults to 1 so
+ * casual users can't burn through AI credit spinning up CV after CV.
+ */
+export async function cvCountLimit(userId: string): Promise<number> {
+  if (await hasUnlimitedTools(userId)) return CV_MAX_PER_USER;
+  const plan = await resolveActivePlan(userId);
+  const limits = (plan?.limits ?? {}) as Record<string, unknown>;
+  const raw = limits["cv:count"];
+  if (raw === -1 || raw == null) return CV_MAX_PER_USER;
+  if (typeof raw === "number" && raw >= 0) return Math.min(raw, CV_MAX_PER_USER);
+  return CV_MAX_PER_USER;
+}
 
 export async function assertCanCreateCv(userId: string) {
   if (await hasUnlimitedTools(userId)) return;
-  // CV count is intentionally NOT limited by plan — monetisation is the export
-  // watermark (cvHasCleanExport) and the one-time per-CV unlock. Everyone can
-  // build as many CVs as they like; only clean export costs.
-  const count = await db.cV.count({ where: { userId, deletedAt: null } });
-  if (count >= CV_MAX_PER_USER) {
-    throw new ApiError(
-      429,
-      "TOO_MANY_CVS",
-      `You've reached the ${CV_MAX_PER_USER}-CV maximum. Delete some CVs to make room.`,
-    );
+  const [count, limit] = await Promise.all([
+    db.cV.count({ where: { userId, deletedAt: null } }),
+    cvCountLimit(userId),
+  ]);
+  if (count >= limit) {
+    const msg =
+      limit <= 1
+        ? "Your free plan includes one CV. Subscribe to build more, or delete this one to start over."
+        : `You've reached your plan's limit of ${limit} CVs. Upgrade or delete one to make room.`;
+    throw new ApiError(429, "TOO_MANY_CVS", msg);
   }
 }
 

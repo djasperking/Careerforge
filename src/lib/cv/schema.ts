@@ -90,6 +90,15 @@ export const cvContentSchema = z.object({
   volunteerExperience: z.array(volunteerItemSchema).max(20).default([]),
   references: z.array(referenceItemSchema).max(20).default([]),
   additionalInformation: z.string().max(1000).default(""),
+  /**
+   * Preferred maximum length for the exported PDF. 0 = no limit (let it flow).
+   * 1 or 2 = the download route condenses the CV to fit that many A4 pages,
+   * telling the user what it trimmed. It never changes what's saved here.
+   */
+  lengthTarget: z
+    .union([z.literal(0), z.literal(1), z.literal(2)])
+    .catch(0)
+    .default(0),
 });
 
 export type CVContent = z.infer<typeof cvContentSchema>;
