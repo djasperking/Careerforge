@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProfileForm } from "./profile-form";
+import { JobAlertsToggle } from "./job-alerts-toggle";
 
 export const metadata = { title: "Profile" };
 
@@ -35,6 +36,13 @@ export default async function ProfilePage() {
               isPublic: profile?.isPublic ?? false,
             }}
           />
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardContent className="p-6">
+          <h2 className="mb-4 font-display text-base font-semibold">Email preferences</h2>
+          <JobAlertsToggle initialEnabled={!dbUser?.jobAlertsOptOut} />
         </CardContent>
       </Card>
     </div>

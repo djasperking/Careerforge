@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requirePermissionApi } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { sendWeeklyDigest } from "@/lib/newsletter/service";
+import { sendJobMatchAlerts } from "@/lib/jobs/alerts";
 
 export async function sendDigestNow(): Promise<{ ok: true; sent: number; skipped: string } | { ok: false; error: string }> {
   try {
@@ -11,6 +12,20 @@ export async function sendDigestNow(): Promise<{ ok: true; sent: number; skipped
     const result = await sendWeeklyDigest({ force: true });
     await audit({ actorId: admin.id, action: "NEWSLETTER_SENT", entity: "NewsletterSubscriber", metadata: { sent: result.sent } });
     revalidatePath("/admin/newsletter");
+    return { ok: true, ...result };
+  } catch (err) {
+    console.error(err);
+    return { ok: false, error: "Send failed. Check the logs." };
+  }
+}
+
+export async function sendJobAlertsNow(): Promise<
+  { ok: true; scanned: number; sent: number; skipped: string } | { ok: false; error: string }
+> {
+  try {
+    const admin = await requirePermissionApi("content:write");
+    const result = await sendJobMatchAlerts();
+    await audit({ actorId: admin.id, action: "JOB_ALERTS_SENT", entity: "User", metadata: { sent: result.sent, scanned: result.scanned } });
     return { ok: true, ...result };
   } catch (err) {
     console.error(err);

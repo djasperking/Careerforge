@@ -86,6 +86,20 @@ function block(template: EmailTemplate, data: Record<string, unknown>): Block {
         ],
         cta: { label: "Visit Career Forge", url: appUrl("/") },
       };
+    case "job-matches":
+      return {
+        heading:
+          Number(data.count) === 1 ? "A new job matches your CV" : `${esc(data.count)} new jobs match your CV`,
+        lines: [
+          `Hi ${name},`,
+          "Based on the skills and experience in your CV, these roles were posted this week:",
+          String(data.jobsHtml ?? ""),
+          `<span style="font-size:12px;color:#a1a1aa;">You're getting this because you have a CV on Career Forge. <a href="${esc(
+            data.unsubscribeUrl,
+          )}" style="color:#a1a1aa;">Turn off job alerts</a>.</span>`,
+        ],
+        cta: { label: "See all jobs this week", url: String(data.browseUrl) },
+      };
     case "course-enrollment":
       return {
         heading: "You're enrolled",

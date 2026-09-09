@@ -16,6 +16,7 @@ export type EmailTemplate =
   | "payment-confirmation"
   | "digital-product-ready"
   | "newsletter-digest"
+  | "job-matches"
   | "course-enrollment"
   | "course-completion"
   | "exam-result"

@@ -90,3 +90,14 @@ export async function updateProfile(
   revalidatePath("/dashboard");
   return { ok: true };
 }
+
+/** Toggle the weekly "jobs that match your CV" email. */
+export async function setJobAlerts(enabled: boolean): Promise<{ ok: boolean }> {
+  const user = await requireUser();
+  await db.user.update({
+    where: { id: user.id },
+    data: { jobAlertsOptOut: !enabled },
+  });
+  revalidatePath("/dashboard/profile");
+  return { ok: true };
+}

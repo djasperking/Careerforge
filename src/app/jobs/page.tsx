@@ -41,6 +41,12 @@ export default async function JobsPage({
           Real openings at other companies, hand-picked for annotators, AI trainers and remote workers.
           Career Forge doesn&apos;t hire — we point you to the roles, and you apply.
         </p>
+        <Link
+          href="/jobs/today"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
+        >
+          📢 This week&apos;s jobs — a shareable list for WhatsApp &amp; Telegram →
+        </Link>
 
         <form className="mt-6 flex flex-wrap gap-2" action="/jobs">
           <input

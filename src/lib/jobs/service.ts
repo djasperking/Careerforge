@@ -51,6 +51,36 @@ export async function listPublicJobs(opts: { category?: string; type?: string; l
   });
 }
 
+/**
+ * Jobs for the shareable "Jobs today" page: everything published in the last
+ * `days` days (default 7). Falls back to the newest `min` jobs if that window
+ * is empty, so the page is never bare.
+ */
+export async function listRecentJobs(opts: { days?: number; min?: number } = {}) {
+  const days = opts.days ?? 7;
+  const min = opts.min ?? 8;
+  const now = new Date();
+  const since = new Date(now.getTime() - days * 86_400_000);
+
+  const base = {
+    status: "PUBLISHED" as const,
+    OR: [{ expiresAt: null }, { expiresAt: { gte: now } }],
+  };
+
+  const recent = await db.jobPost.findMany({
+    where: { ...base, postedAt: { gte: since } },
+    orderBy: [{ featured: "desc" }, { postedAt: "desc" }],
+    take: 40,
+  });
+  if (recent.length >= 3) return recent;
+
+  return db.jobPost.findMany({
+    where: base,
+    orderBy: [{ featured: "desc" }, { postedAt: "desc" }, { createdAt: "desc" }],
+    take: min,
+  });
+}
+
 export async function listJobCategories() {
   const rows = await db.jobPost.findMany({
     where: { status: "PUBLISHED", category: { not: null } },

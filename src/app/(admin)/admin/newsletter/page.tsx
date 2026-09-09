@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { renderEmail } from "@/lib/email/templates";
 import { subscriberCounts, buildDigest } from "@/lib/newsletter/service";
 import { formatDate } from "@/lib/utils";
-import { SendDigestButton } from "./send-button";
+import { SendDigestButton, SendJobAlertsButton } from "./send-button";
 
 export const metadata = { title: "Newsletter" };
 
@@ -54,6 +54,13 @@ export default async function AdminNewsletterPage() {
             <p className="text-sm text-muted-foreground">Nothing new this week &mdash; the scheduled send will skip. You can still force a send below.</p>
           ) : null}
           <div className="mt-2"><SendDigestButton subscribers={counts.subscribed} /></div>
+          <div className="mt-4 border-t pt-4">
+            <p className="mb-2 text-sm font-medium">Job-match alerts</p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Emails each opted-in user the new jobs that match their CV. Runs automatically Mon &amp; Thu (needs CRON_SECRET).
+            </p>
+            <SendJobAlertsButton />
+          </div>
         </CardContent>
       </Card>
 

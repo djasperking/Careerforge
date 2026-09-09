@@ -41,6 +41,11 @@ model User {
   referredById      String?
   creditCents       Int           @default(0) // account credit, e.g. from referrals
 
+  // Weekly "jobs that match your CV" email
+  jobAlertsOptOut     Boolean   @default(false)
+  jobAlertsLastSentAt DateTime?
+  jobAlertsToken      String?   @unique
+
   roles             UserRole[]
   profile           Profile?
   cvs               CV[]
