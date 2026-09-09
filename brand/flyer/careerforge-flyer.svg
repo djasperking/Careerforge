@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2000" viewBox="0 0 1600 2000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#161f5c"/><stop offset="0.5" stop-color="#2f40c4"/><stop offset="1" stop-color="#5b6ef0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.08" r="0.6">
+      <stop offset="0" stop-color="#8ea2ff" stop-opacity="0.5"/><stop offset="1" stop-color="#8ea2ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="2000" fill="url(#bg)"/>
+  <rect width="1600" height="2000" fill="url(#glow)"/>
+  <circle cx="1570" cy="1740" r="440" fill="#ffffff" fill-opacity="0.045"/>
+  <circle cx="70" cy="560" r="240" fill="#ffffff" fill-opacity="0.04"/>
+
+  <g transform="translate(110,118) scale(3.125)">
+    <path d="M16.3 8.3c.8 3.8 4.8 5.8 4.8 9.9a5.1 5.1 0 0 1-10.2 0c0-1.6.5-2.9 1.4-3.8.3 1.6 1.3 2.6 2.2 2.6-1.3-2.9 0-5.8 1.8-8.7Z" fill="#ffffff"/>
+    <path d="M16.1 15c1.3 1.6 2.1 2.9 2.1 4.3a2.2 2.2 0 0 1-4.4 0c0-1 .5-1.8 1.3-2.5-.3 1 .3 1.6.8 1.6-.8-1.6-.3-3.2.2-4.8Z" fill="#3446cb"/>
+  </g>
+  <text x="238" y="196" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="62" font-weight="800" fill="#ffffff">Career<tspan fill="#c9d2ff">Forge</tspan></text>
+
+  <text x="110" y="440" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="120" font-weight="800" fill="#ffffff">Forge your CV.</text>
+  <text x="110" y="575" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="120" font-weight="800" fill="#ffffff">Land the work.</text>
+
+  <text x="112" y="682" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="44" fill="#dfe4ff">Build a CV recruiters actually read, learn the skills</text>
+  <text x="112" y="740" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="44" fill="#dfe4ff">companies hire for, and find remote roles that pay</text>
+  <text x="112" y="798" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="44" fill="#dfe4ff">in dollars.</text>
+
+  <g transform="translate(140,940)">
+    <circle cx="0" cy="0" r="20" fill="#ffffff" fill-opacity="0.16"/>
+    <path d="M -8 0 L -2 7 L 10 -8" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="192" y="956" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="47" font-weight="600" fill="#ffffff">Free AI CV builder with an ATS match score</text>
+  <g transform="translate(140,1055)">
+    <circle cx="0" cy="0" r="20" fill="#ffffff" fill-opacity="0.16"/>
+    <path d="M -8 0 L -2 7 L 10 -8" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="192" y="1071" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="47" font-weight="600" fill="#ffffff">Courses, exams &amp; verifiable certificates</text>
+  <g transform="translate(140,1170)">
+    <circle cx="0" cy="0" r="20" fill="#ffffff" fill-opacity="0.16"/>
+    <path d="M -8 0 L -2 7 L 10 -8" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="192" y="1186" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="47" font-weight="600" fill="#ffffff">A weekly board of real remote jobs</text>
+  <g transform="translate(140,1285)">
+    <circle cx="0" cy="0" r="20" fill="#ffffff" fill-opacity="0.16"/>
+    <path d="M -8 0 L -2 7 L 10 -8" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="192" y="1301" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="47" font-weight="600" fill="#ffffff">1-on-1 coaching with vetted mentors</text>
+
+  <rect x="110" y="1440" width="1380" height="156" rx="30" fill="#ffffff"/>
+  <text x="800" y="1524" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="54" font-weight="800" fill="#1e2a78" text-anchor="middle">Start free &#8594; careerforge.com.ng</text>
+
+  <text x="110" y="1700" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="35" fill="#c9d2ff">Data annotation &#183; AI training &#183; Remote work &#183; No experience needed</text>
+
+  <rect x="0" y="1882" width="1600" height="118" fill="#0f1547"/>
+  <text x="110" y="1956" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="37" font-weight="700" fill="#ffffff">careerforge.com.ng</text>
+  <text x="1490" y="1956" font-family='Segoe UI, Helvetica, Arial, sans-serif' font-size="35" fill="#c9d2ff" text-anchor="end">@careerforge</text>
+</svg>

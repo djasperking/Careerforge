@@ -7,6 +7,7 @@ import type { AIContext, AIProvider, AIResult } from "./types";
 import { mockAIProvider } from "./mock";
 import { anthropicAIProvider } from "./anthropic";
 import { googleAIProvider } from "./google";
+import { openrouterAIProvider } from "./openrouter";
 
 export * from "./types";
 
@@ -14,6 +15,8 @@ export function getAIProvider(): AIProvider {
   switch (env.AI_PROVIDER) {
     case "anthropic":
       return anthropicAIProvider;
+    case "openrouter":
+      return openrouterAIProvider;
     case "google":
       return googleAIProvider;
     default:
@@ -22,9 +25,11 @@ export function getAIProvider(): AIProvider {
 }
 
 /**
- * Provider for the CV tools. Premium/staff get the configured provider (which
- * may be Anthropic); everyone else is pinned to Gemini so free usage can never
- * spend Anthropic credit. Falls back to mock only when no provider is set.
+ * Provider for the CV tools. Paid subscribers and staff get the configured
+ * provider (`AI_PROVIDER` — may be Anthropic or OpenRouter/Claude). Free users
+ * are always pinned to Gemini so free usage can never spend paid Claude credit;
+ * if no Gemini key is set they get the deterministic mock rather than the paid
+ * provider.
  */
 export async function getCvAIProvider(userId: string | undefined): Promise<AIProvider> {
   if (userId) {
@@ -35,8 +40,9 @@ export async function getCvAIProvider(userId: string | undefined): Promise<AIPro
     const isPaid = staff || (plan != null && plan.key !== "FREE");
     if (isPaid) return getAIProvider();
   }
-  // Non-paid: Gemini, or mock if Gemini isn't configured.
-  return env.AI_PROVIDER === "google" || env.GEMINI_API_KEY ? googleAIProvider : getAIProvider();
+  if (env.GEMINI_API_KEY) return googleAIProvider;
+  // No free-tier provider configured — never fall through to the paid one.
+  return env.AI_PROVIDER === "google" ? googleAIProvider : mockAIProvider;
 }
 
 /** Current period key, e.g. "2026-09". */
