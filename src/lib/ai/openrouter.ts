@@ -10,7 +10,7 @@ import { getActiveSystemPrompt, type AIFeatureKey } from "./prompts";
  * many other models). Use this when a direct Anthropic account isn't an option:
  * OpenRouter accepts more payment methods. Set OPENROUTER_API_KEY, optionally
  * OPENROUTER_MODEL (any slug from openrouter.ai/models, e.g.
- * "anthropic/claude-3.5-sonnet"), and AI_PROVIDER=openrouter.
+ * "anthropic/claude-sonnet-5"), and AI_PROVIDER=openrouter.
  */
 
 const API_KEY = env.OPENROUTER_API_KEY || "";
@@ -54,7 +54,8 @@ async function jsonCall<T>(
           { role: "system", content: system },
           { role: "user", content: userPrompt },
         ],
-        response_format: { type: "json_object" },
+        // No response_format: not every model on OpenRouter supports JSON mode.
+        // The system prompt forces JSON and we parse from the first brace.
         max_tokens: maxTokens,
         temperature: 0.4,
       }),

@@ -28,7 +28,7 @@ const schema = z.object({
   GEMINI_MODEL: z.string().default("gemini-3.6-flash"),
   // OpenRouter — Claude (and others) without a direct Anthropic account.
   OPENROUTER_API_KEY: z.string().optional(),
-  OPENROUTER_MODEL: z.string().default("anthropic/claude-3.5-sonnet"),
+  OPENROUTER_MODEL: z.string().default("anthropic/claude-sonnet-5"),
   AI_MODEL: z.string().default("claude-sonnet-5"),
   AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(4096),
 
