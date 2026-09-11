@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CopyLinkButton } from "@/components/ui/copy-link-button";
 import { importJobFromText } from "./actions";
 
 export function PasteJobPanel() {
@@ -17,7 +18,7 @@ export function PasteJobPanel() {
   const [featured, setFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ id: string; slug: string; usedAI: boolean; published: boolean } | null>(null);
+  const [done, setDone] = useState<{ id: string; slug: string; url: string; usedAI: boolean; published: boolean } | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,11 +65,14 @@ export function PasteJobPanel() {
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => router.push(`/admin/jobs/${done.id}`)}>Review / edit</Button>
               {done.published ? (
-                <Button variant="outline" asChild>
-                  <a href={`/jobs/${done.slug}`} target="_blank" rel="noreferrer">
-                    View live <ExternalLink className="size-3.5" />
-                  </a>
-                </Button>
+                <>
+                  <Button variant="outline" asChild>
+                    <a href={`/jobs/${done.slug}`} target="_blank" rel="noreferrer">
+                      View live <ExternalLink className="size-3.5" />
+                    </a>
+                  </Button>
+                  <CopyLinkButton url={done.url} label="Copy link to share" />
+                </>
               ) : null}
               <Button
                 variant="ghost"

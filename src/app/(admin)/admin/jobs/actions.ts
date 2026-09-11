@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api";
 import { requirePermissionApi } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { uniqueJobSlug } from "@/lib/jobs/service";
+import { appUrl } from "@/lib/email";
 import { withAIUsage } from "@/lib/ai";
 import { heuristicParseJob } from "@/lib/jobs/parse-posting";
 import type { JobImportOutput } from "@/lib/ai/types";
@@ -89,7 +90,7 @@ const importJobSchema = z.object({
 
 export async function importJobFromText(
   input: unknown,
-): Promise<Result<{ id: string; slug: string; usedAI: boolean; published: boolean }>> {
+): Promise<Result<{ id: string; slug: string; url: string; usedAI: boolean; published: boolean }>> {
   try {
     const admin = await requirePermissionApi("jobs:write");
     const { text, applyUrl, publish, featured } = importJobSchema.parse(input);
@@ -131,7 +132,7 @@ export async function importJobFromText(
     await audit({ actorId: admin.id, action: "JOB_CREATED", entity: "JobPost", entityId: job.id, metadata: { via: "paste", published: !!publish } });
     revalidatePath("/admin/jobs");
     revalidatePath("/jobs");
-    return { ok: true, data: { id: job.id, slug: job.slug, usedAI, published: !!publish } };
+    return { ok: true, data: { id: job.id, slug: job.slug, url: appUrl(`/jobs/${job.slug}`), usedAI, published: !!publish } };
   } catch (err) {
     return fail(err);
   }

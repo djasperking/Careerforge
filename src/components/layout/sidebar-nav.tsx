@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield } from "lucide-react";
 import { adminNav, customerNav, instructorNav, type NavItem } from "./nav-config";
 import { hasPermission, type PermissionKey } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
@@ -16,17 +15,14 @@ export function SidebarNav({
   area,
   permissions,
   badges,
-  showAdminLink = false,
 }: {
   area: "Dashboard" | "Admin" | "Instructor";
   permissions: PermissionKey[] | "*";
   badges?: Record<string, number>;
-  showAdminLink?: boolean;
 }) {
   const pathname = usePathname();
   const nav = area === "Admin" ? adminNav : area === "Instructor" ? instructorNav : customerNav;
   const items: NavItem[] = nav.filter((i) => !i.permission || hasPermission(permissions, i.permission));
-  if (showAdminLink) items.push({ label: "Admin console", href: "/admin", icon: Shield });
   const root = area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard";
 
   let lastGroup: string | undefined;

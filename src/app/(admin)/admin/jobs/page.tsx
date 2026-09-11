@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { appUrl } from "@/lib/email";
+import { CopyLinkButton } from "@/components/ui/copy-link-button";
 import { PasteJobPanel } from "./paste-job";
 
 export const metadata = { title: "Jobs" };
@@ -27,7 +29,7 @@ export default async function AdminJobsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Jobs board"
-        description="Curated roles for the community. Apply links may be your referral URLs — the public page discloses that."
+        description="Curated roles for the community. Copy a job's link straight from its row to share it and drive traffic."
         action={<Button asChild variant="outline"><Link href="/admin/jobs/new">Fill the form manually</Link></Button>}
       />
 
@@ -51,7 +53,10 @@ export default async function AdminJobsPage() {
                         {j.company} · {j._count.clicks} apply clicks · {formatDate(j.createdAt)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
+                      {j.status === "PUBLISHED" ? (
+                        <CopyLinkButton url={appUrl(`/jobs/${j.slug}`)} />
+                      ) : null}
                       {j.featured ? <Badge variant="secondary">Featured</Badge> : null}
                       <Badge variant={b.variant}>{b.label}</Badge>
                     </div>

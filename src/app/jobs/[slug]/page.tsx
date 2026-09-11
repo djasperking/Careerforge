@@ -79,7 +79,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
                 </a>
               </Button>
               <p className="mt-2 text-xs text-muted-foreground">
-                Opens the employer&apos;s application page. Career Forge may earn a referral fee when you apply through this link — it costs you nothing.
+                Opens the employer&apos;s application page in a new tab.
               </p>
             </>
           )}

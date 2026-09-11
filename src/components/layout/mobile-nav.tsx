@@ -16,15 +16,16 @@ import { cn } from "@/lib/utils";
  */
 export function MobileNav({
   area,
+  areaLabel,
   permissions,
   badges,
-  showAdminLink,
   user,
 }: {
   area: "Dashboard" | "Admin" | "Instructor";
+  /** Display label for the caption under the logo — defaults to `area`. */
+  areaLabel?: string;
   permissions: PermissionKey[] | "*";
   badges?: Record<string, number>;
-  showAdminLink?: boolean;
   user: { name?: string | null; email: string; image?: string | null };
 }) {
   const [open, setOpen] = useState(false);
@@ -83,8 +84,8 @@ export function MobileNav({
         >
           <div className="flex items-center justify-between border-b p-4">
             <div>
-              <Brand href={area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard"} />
-              <p className="mt-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{area}</p>
+              <Brand />
+              <p className="mt-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">{areaLabel ?? area}</p>
             </div>
             <button
               type="button"
@@ -97,7 +98,7 @@ export function MobileNav({
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <SidebarNav area={area} permissions={permissions} badges={badges} showAdminLink={showAdminLink} />
+            <SidebarNav area={area} permissions={permissions} badges={badges} />
           </div>
 
           <div className="border-t p-3">

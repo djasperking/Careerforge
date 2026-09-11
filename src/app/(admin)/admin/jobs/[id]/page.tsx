@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JobForm } from "../job-form";
 import { JobStatusControls } from "../job-status";
+import { SharePanel } from "@/components/ui/share-panel";
 
 export const metadata = { title: "Edit job" };
 
@@ -32,6 +33,18 @@ export default async function EditJobPage({ params }: { params: Promise<{ id: st
             ) : null}
           </div>
           <JobStatusControls jobId={job.id} status={job.status} />
+          {job.status === "PUBLISHED" ? (
+            <div className="rounded-md border bg-muted/30 p-3">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Share this job to bring traffic
+              </p>
+              <SharePanel
+                url={appUrl(`/jobs/${job.slug}`)}
+                intro="Copy the link or share it straight to WhatsApp/X/LinkedIn."
+                shareText={`${job.title} at ${job.company} — apply free on Career Forge:`}
+              />
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

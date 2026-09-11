@@ -6,8 +6,10 @@ import { appUrl } from "@/lib/email";
 
 /**
  * Records the click, then forwards the applicant to the employer's application
- * page. The destination may be a partner/referral link — this is disclosed to
- * the applicant on the job detail page.
+ * page. No referral links are in use as of 2026-09 (confirmed with the site
+ * owner) — the on-page disclosure was removed accordingly. If that changes,
+ * re-add a disclosure on the job detail page (and update
+ * src/lib/legal/content.ts, which still promises one).
  */
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
