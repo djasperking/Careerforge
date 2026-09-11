@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, GraduationCap, BadgeCheck, CreditCard, ArrowRight, Bell } from "lucide-react";
+import { FileText, GraduationCap, BadgeCheck, CreditCard, ArrowRight, Bell, Briefcase } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
@@ -12,11 +12,12 @@ import { CourseThumb } from "@/components/ui/course-thumb";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { formatDate } from "@/lib/utils";
+import { matchedJobsForUser } from "@/lib/jobs/matching";
 
 export default async function DashboardHome() {
   const user = await requireUser();
 
-  const [cvCount, enrollments, certificates, recentTx, notifications, profile] = await Promise.all([
+  const [cvCount, enrollments, certificates, recentTx, notifications, profile, matchedJobs] = await Promise.all([
     db.cV.count({ where: { userId: user.id, deletedAt: null } }),
     db.enrollment.findMany({
       where: { userId: user.id },
@@ -36,6 +37,7 @@ export default async function DashboardHome() {
       take: 5,
     }),
     db.profile.findUnique({ where: { userId: user.id } }),
+    matchedJobsForUser(user.id),
   ]);
 
   const activeCourses = enrollments.filter((e) => e.status === "ACTIVE").length;
@@ -124,6 +126,42 @@ export default async function DashboardHome() {
           </CardContent>
         </Card>
       </div>
+
+      {matchedJobs.length > 0 ? (
+        <Card className="mt-6">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Jobs suited to you</CardTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/jobs">
+                View all <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y">
+              {matchedJobs.map((j) => (
+                <li key={j.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <Link href={`/jobs/${j.slug}`} className="truncate font-medium hover:underline">{j.title}</Link>
+                    <p className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Briefcase className="size-3.5 shrink-0" /> {j.company}
+                      {j.salaryText ? <span> · {j.salaryText}</span> : null}
+                    </p>
+                  </div>
+                  <Button asChild size="sm" variant="outline" className="shrink-0">
+                    <Link href={`/jobs/${j.slug}`}>View</Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Matched to the skills and experience on your CV.{" "}
+              <Link href="/dashboard/profile" className="text-primary hover:underline">Turn off job alerts</Link> or{" "}
+              <Link href="/dashboard/cvs" className="text-primary hover:underline">update your CV</Link> to change these.
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="mt-6">
         <AdSlot placement="DASHBOARD" path="/dashboard" />

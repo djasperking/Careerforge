@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { parseCvContent } from "@/lib/cv/schema";
+import { listPublicJobs } from "./service";
 
 /**
  * Lightweight keyword matching between a job-seeker and job posts. No AI — we
@@ -78,4 +79,16 @@ export function rankMatches(keywords: Set<string>, jobs: JobRow[], min = 2): Job
     .map((j) => scoreJob(keywords, j))
     .filter((m) => m.score >= min)
     .sort((a, b) => b.score - a.score);
+}
+
+/**
+ * "Jobs suited to you" — the in-app counterpart to the email alert. Matches
+ * against every currently published job (not just recent ones), so it's
+ * useful the moment a user has a CV, not just after a fresh posting.
+ */
+export async function matchedJobsForUser(userId: string, limit = 5): Promise<JobMatch[]> {
+  const keywords = await userJobKeywords(userId);
+  if (keywords.size < 3) return [];
+  const jobs = await listPublicJobs();
+  return rankMatches(keywords, jobs).slice(0, limit);
 }

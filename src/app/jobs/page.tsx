@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate } from "@/lib/utils";
 import { listPublicJobs, listJobCategories, JOB_TYPE_LABELS, JOB_LOCATION_LABELS } from "@/lib/jobs/service";
+import { matchedJobsForUser } from "@/lib/jobs/matching";
 import { cn } from "@/lib/utils";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 
@@ -25,11 +26,13 @@ export default async function JobsPage({
   const { notice, banner } = await checkMaintenance("jobs");
   if (notice) return notice;
 
-  const [user, jobs, categories] = await Promise.all([
-    getCurrentUser(),
+  const user = await getCurrentUser();
+  const [jobs, categories, matchedJobs] = await Promise.all([
     listPublicJobs({ category: sp.category, type: sp.type, q: sp.q?.trim() }),
     listJobCategories(),
+    user ? matchedJobsForUser(user.id) : Promise.resolve([]),
   ]);
+  const matchedIds = new Set(matchedJobs.map((m) => m.id));
 
   return (
     <div className="min-h-screen">
@@ -47,6 +50,24 @@ export default async function JobsPage({
         >
           📢 This week&apos;s jobs — a shareable list for WhatsApp &amp; Telegram →
         </Link>
+
+        {matchedJobs.length > 0 ? (
+          <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
+            <p className="font-display text-base font-semibold">Suited to you</p>
+            <p className="mb-3 text-xs text-muted-foreground">Matched to the skills and experience on your CV.</p>
+            <div className="flex flex-wrap gap-2">
+              {matchedJobs.map((j) => (
+                <Link
+                  key={j.id}
+                  href={`/jobs/${j.slug}`}
+                  className="rounded-full border border-primary/40 bg-card px-3 py-1.5 text-sm font-medium hover:border-primary"
+                >
+                  {j.title} <span className="text-muted-foreground">· {j.company}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <form className="mt-6 flex flex-wrap gap-2" action="/jobs">
           <input
@@ -89,6 +110,7 @@ export default async function JobsPage({
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium">{j.title}</p>
                         {j.featured ? <Badge>Featured</Badge> : null}
+                        {matchedIds.has(j.id) ? <Badge variant="secondary">Suited to you</Badge> : null}
                       </div>
                       <p className="mt-0.5 text-sm text-muted-foreground">{j.company}</p>
                       <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
