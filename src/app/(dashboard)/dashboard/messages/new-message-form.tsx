@@ -9,7 +9,7 @@ import { searchMessageableAction, startConversationAction } from "./actions";
 
 type Person = { id: string; name: string; email: string };
 
-export function NewMessageForm() {
+export function NewMessageForm({ basePath = "/dashboard/messages" }: { basePath?: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Person[]>([]);
@@ -33,7 +33,7 @@ export function NewMessageForm() {
   async function send(body: string, attachment?: Attachment) {
     if (!to) return { ok: false, error: "Pick someone to message." };
     const res = await startConversationAction({ toUserId: to.id, body, attachment });
-    if (res.ok) router.push(`/dashboard/messages/${res.data.conversationId}`);
+    if (res.ok) router.push(`${basePath}/${res.data.conversationId}`);
     return res;
   }
 

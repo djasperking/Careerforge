@@ -38,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         "/admin/review": reviewQueue,
         "/admin/support": openTickets,
         "/admin/payouts": payoutRequests,
-        "/dashboard/messages": unreadMessages,
+        "/admin/messages": unreadMessages,
       }}
     >
       {children}

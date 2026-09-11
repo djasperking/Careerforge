@@ -3,7 +3,13 @@ import { Brand } from "./brand";
 import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
-import { isAdminRole, type PermissionKey } from "@/lib/rbac";
+import { isAdminRole, ADMIN_ROLES, ROLE_NAMES, type PermissionKey, type RoleKey } from "@/lib/rbac";
+
+/** Most senior admin role a user holds, for display — e.g. "Customer Care" instead of a generic "Admin". */
+function seniorRoleLabel(roles: string[]): string | null {
+  const held = ADMIN_ROLES.filter((r) => roles.includes(r));
+  return held.length ? ROLE_NAMES[held[0] as RoleKey] : null;
+}
 
 function Avatar({ name, image, size = 36 }: { name?: string | null; image?: string | null; size?: number }) {
   const initial = (name ?? "").trim().charAt(0).toUpperCase() || "?";
@@ -46,13 +52,14 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const showAdminLink = area !== "Admin" && isAdminRole(user.roles);
+  const areaLabel = area === "Admin" ? (seniorRoleLabel(user.roles) ?? area) : area;
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 shrink-0 flex-col border-r bg-card p-4 md:flex">
         <div className="px-2 py-2">
           <Brand href={area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard"} />
           <p className="mt-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {area}
+            {areaLabel}
           </p>
         </div>
         <div className="mt-4 flex-1 overflow-y-auto">

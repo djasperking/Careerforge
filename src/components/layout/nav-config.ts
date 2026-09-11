@@ -66,7 +66,7 @@ export const adminNav: NavItem[] = [
   { group: "Growth", label: "Newsletter", href: "/admin/newsletter", icon: Mail, permission: "content:write" },
 
   { group: "People & system", label: "Users", href: "/admin/users", icon: Users, permission: "users:read" },
-  { group: "People & system", label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
+  { group: "People & system", label: "Messages", href: "/admin/messages", icon: MessageSquare },
   { group: "People & system", label: "Support", href: "/admin/support", icon: LifeBuoy, permission: "support:handle" },
   { group: "People & system", label: "Audit Logs", href: "/admin/audit", icon: ScrollText, permission: "audit:read" },
   { group: "People & system", label: "Settings", href: "/admin/settings", icon: Settings, permission: "settings:write" },
