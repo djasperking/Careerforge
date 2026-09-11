@@ -188,7 +188,7 @@ export async function submitProductForReview(id: string): Promise<Result<null>> 
     await audit({ actorId: user.id, action: "DIGITAL_PRODUCT_SUBMITTED", entity: "DigitalProduct", entityId: id });
 
     const reviewers = await db.user.findMany({
-      where: { roles: { some: { role: { permissions: { some: { permission: { key: "instructors:review" } } } } } } },
+      where: { roles: { some: { role: { permissions: { some: { permission: { key: "submissions:review" } } } } } } },
       select: { id: true },
       take: 25,
     });

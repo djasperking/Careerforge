@@ -31,7 +31,8 @@ export const PERMISSIONS = {
   "courses:write": "Create / edit courses",
   "courses:publish": "Publish / unpublish courses",
   "courses:delete": "Delete courses",
-  "instructors:review": "Approve instructors & course submissions",
+  "instructors:review": "Approve instructor applications",
+  "submissions:review": "Approve course / digital product / coaching submissions",
   // exams
   "exams:read": "View exams & attempts",
   "exams:write": "Create / edit exams & questions",
@@ -69,7 +70,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
   SUPER_ADMIN: "*",
   ADMIN: [
     "users:read", "users:write", "users:suspend", "users:roles",
-    "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
+    "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review", "submissions:review",
     "exams:read", "exams:write", "exams:grade", "exams:security",
     "cv:templates", "payments:read", "payouts:manage", "subscriptions:write",
     "ai:config", "ai:prompts", "ads:write", "content:write", "jobs:write",
@@ -77,12 +78,14 @@ export const ROLE_PERMISSIONS: Record<RoleKey, PermissionKey[] | "*"> = {
     "tools:unlimited",
   ],
   COURSE_MANAGER: [
-    "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review",
+    "courses:read", "courses:write", "courses:publish", "courses:delete", "instructors:review", "submissions:review",
     "exams:read", "exams:write", "exams:grade", "analytics:read",
     "tools:unlimited",
   ],
   FINANCE_MANAGER: ["payments:read", "payments:refund", "payouts:manage", "subscriptions:write", "analytics:read", "tools:unlimited"],
-  SUPPORT_MANAGER: ["support:handle", "users:read", "analytics:read", "tools:unlimited"],
+  // Customer care: tickets, jobs board, course/product/coaching approvals —
+  // deliberately NOT instructor applications, payments, or settings.
+  SUPPORT_MANAGER: ["support:handle", "users:read", "analytics:read", "jobs:write", "submissions:review", "tools:unlimited"],
   CONTENT_MANAGER: ["content:write", "jobs:write", "ads:write", "cv:templates", "tools:unlimited"],
   INSTRUCTOR: ["courses:read", "courses:write", "exams:write"],
   CUSTOMER: [],
@@ -97,15 +100,29 @@ export const ADMIN_ROLES: RoleKey[] = [
   ROLES.CONTENT_MANAGER,
 ];
 
+/** Display names for roles — used by the seed and anywhere a role is shown in the UI. */
+export const ROLE_NAMES: Record<RoleKey, string> = {
+  SUPER_ADMIN: "Super Admin",
+  ADMIN: "Admin",
+  COURSE_MANAGER: "Course Manager",
+  FINANCE_MANAGER: "Finance Manager",
+  SUPPORT_MANAGER: "Customer Care",
+  CONTENT_MANAGER: "Content Manager",
+  INSTRUCTOR: "Instructor",
+  CUSTOMER: "Customer",
+};
+
 export function isAdminRole(roles: string[]) {
   return roles.some((r) => (ADMIN_ROLES as string[]).includes(r));
 }
 
+/** `required` as an array means "any of these" — used where a page/nav item is shared by two permissions. */
 export function hasPermission(
   userPermissions: string[] | "*" | undefined,
-  required: PermissionKey,
+  required: PermissionKey | PermissionKey[],
 ) {
   if (!userPermissions) return false;
   if (userPermissions === "*") return true;
+  if (Array.isArray(required)) return required.some((r) => userPermissions.includes(r));
   return userPermissions.includes(required);
 }

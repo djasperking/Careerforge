@@ -67,7 +67,7 @@ export async function decideCourseReview(
   rawNote?: unknown,
 ): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("instructors:review");
+    const admin = await requirePermissionApi("submissions:review");
     const note = noteSchema.parse(rawNote ?? "");
     const course = await db.course.findUnique({ where: { id: courseId } });
     if (!course) throw new ApiError(404, "NOT_FOUND", "Course not found.");
@@ -121,7 +121,7 @@ export async function decideCourseReview(
 /** Admin sets the instructor's revenue share for a specific course. */
 export async function setCourseRevenueShare(courseId: string, percent: number): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("instructors:review");
+    const admin = await requirePermissionApi("submissions:review");
     const p = z.coerce.number().int().min(0).max(100).parse(percent);
     await db.course.update({ where: { id: courseId }, data: { revenueSharePercent: p } });
     await audit({ actorId: admin.id, action: "COURSE_REVENUE_SHARE_SET", entity: "Course", entityId: courseId, metadata: { percent: p } });
@@ -140,7 +140,7 @@ export async function decideDigitalProductReview(
   rawNote?: unknown,
 ): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("instructors:review");
+    const admin = await requirePermissionApi("submissions:review");
     const note = noteSchema.parse(rawNote ?? "");
     const product = await db.digitalProduct.findUnique({ where: { id: productId } });
     if (!product) throw new ApiError(404, "NOT_FOUND", "Product not found.");
@@ -177,7 +177,7 @@ export async function decideDigitalProductReview(
 
 export async function setDigitalProductRevenueShare(productId: string, percent: number): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("instructors:review");
+    const admin = await requirePermissionApi("submissions:review");
     const p = z.coerce.number().int().min(0).max(100).parse(percent);
     await db.digitalProduct.update({ where: { id: productId }, data: { revenueSharePercent: p } });
     await audit({ actorId: admin.id, action: "DIGITAL_PRODUCT_REVENUE_SHARE_SET", entity: "DigitalProduct", entityId: productId, metadata: { percent: p } });
@@ -196,7 +196,7 @@ export async function decideCoachingOfferReview(
   rawNote?: unknown,
 ): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("instructors:review");
+    const admin = await requirePermissionApi("submissions:review");
     const note = noteSchema.parse(rawNote ?? "");
     const offer = await db.coachingOffer.findUnique({ where: { id: offerId } });
     if (!offer) throw new ApiError(404, "NOT_FOUND", "Offer not found.");
@@ -232,7 +232,7 @@ export async function decideCoachingOfferReview(
 
 export async function setCoachingOfferRevenueShare(offerId: string, percent: number): Promise<Result<null>> {
   try {
-    const admin = await requirePermissionApi("instructors:review");
+    const admin = await requirePermissionApi("submissions:review");
     const p = z.coerce.number().int().min(0).max(100).parse(percent);
     await db.coachingOffer.update({ where: { id: offerId }, data: { revenueSharePercent: p } });
     await audit({ actorId: admin.id, action: "COACHING_OFFER_REVENUE_SHARE_SET", entity: "CoachingOffer", entityId: offerId, metadata: { percent: p } });

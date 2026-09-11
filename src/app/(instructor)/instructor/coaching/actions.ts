@@ -95,7 +95,7 @@ export async function submitOfferForReview(id: string): Promise<Result<null>> {
     await db.coachingOffer.update({ where: { id }, data: { reviewStatus: "SUBMITTED", submittedAt: new Date(), reviewNote: null } });
     await audit({ actorId: user.id, action: "COACHING_OFFER_SUBMITTED", entity: "CoachingOffer", entityId: id });
     const reviewers = await db.user.findMany({
-      where: { roles: { some: { role: { permissions: { some: { permission: { key: "instructors:review" } } } } } } },
+      where: { roles: { some: { role: { permissions: { some: { permission: { key: "submissions:review" } } } } } } },
       select: { id: true },
       take: 25,
     });

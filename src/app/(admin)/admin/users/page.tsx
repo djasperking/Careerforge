@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requirePermissionPage, requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { hasPermission } from "@/lib/rbac";
+import { hasPermission, ADMIN_ROLES, type RoleKey } from "@/lib/rbac";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,8 @@ export default async function AdminUsersPage({
   const me = await requireUser();
   const canManage = hasPermission(me.permissions, "users:suspend");
   const canDelete = hasPermission(me.permissions, "users:delete");
+  const canAssignRoles = hasPermission(me.permissions, "users:roles");
+  const isSuperAdmin = me.permissions === "*";
 
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
@@ -122,6 +124,9 @@ export default async function AdminUsersPage({
                         emailVerified={Boolean(u.emailVerifiedAt)}
                         canManage={canManage}
                         canDelete={canDelete}
+                        canAssignRoles={canAssignRoles}
+                        isSuperAdmin={isSuperAdmin}
+                        currentStaffRole={(u.roles.map((r) => r.role.key).find((k) => (ADMIN_ROLES as string[]).includes(k)) as RoleKey) ?? null}
                       />
                     </TableCell>
                   </TableRow>

@@ -162,7 +162,7 @@ export async function submitCourseForReview(courseId: string): Promise<Result<nu
     await audit({ actorId: user.id, action: "COURSE_SUBMITTED", entity: "Course", entityId: courseId });
 
     const reviewers = await db.user.findMany({
-      where: { roles: { some: { role: { permissions: { some: { permission: { key: "instructors:review" } } } } } } },
+      where: { roles: { some: { role: { permissions: { some: { permission: { key: "submissions:review" } } } } } } },
       select: { id: true },
       take: 25,
     });

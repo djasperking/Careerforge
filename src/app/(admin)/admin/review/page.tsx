@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { requirePermissionPage } from "@/lib/session";
+import { requireUser } from "@/lib/session";
+import { redirect } from "next/navigation";
+import { hasPermission } from "@/lib/rbac";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,32 +13,43 @@ import { MarketplaceReviewRow } from "./marketplace-review-row";
 export const metadata = { title: "Review queue" };
 
 export default async function AdminReviewQueue() {
-  await requirePermissionPage("instructors:review");
+  const user = await requireUser();
+  const canInstructors = hasPermission(user.permissions, "instructors:review");
+  const canSubmissions = hasPermission(user.permissions, "submissions:review");
+  if (!canInstructors && !canSubmissions) redirect("/dashboard");
 
   const [applications, courses, products, coaching] = await Promise.all([
-    db.instructorProfile.findMany({
-      where: { status: "PENDING" },
-      include: { user: { select: { name: true, email: true } } },
-      orderBy: { appliedAt: "asc" },
-    }),
-    db.course.findMany({
-      where: { reviewStatus: "SUBMITTED" },
-      include: {
-        instructor: { select: { name: true, email: true } },
-        _count: { select: { modules: true } },
-      },
-      orderBy: { submittedAt: "asc" },
-    }),
-    db.digitalProduct.findMany({
-      where: { reviewStatus: "SUBMITTED" },
-      include: { seller: { select: { name: true, email: true } } },
-      orderBy: { submittedAt: "asc" },
-    }),
-    db.coachingOffer.findMany({
-      where: { reviewStatus: "SUBMITTED" },
-      include: { coach: { select: { name: true, email: true } } },
-      orderBy: { submittedAt: "asc" },
-    }),
+    canInstructors
+      ? db.instructorProfile.findMany({
+          where: { status: "PENDING" },
+          include: { user: { select: { name: true, email: true } } },
+          orderBy: { appliedAt: "asc" },
+        })
+      : Promise.resolve([]),
+    canSubmissions
+      ? db.course.findMany({
+          where: { reviewStatus: "SUBMITTED" },
+          include: {
+            instructor: { select: { name: true, email: true } },
+            _count: { select: { modules: true } },
+          },
+          orderBy: { submittedAt: "asc" },
+        })
+      : Promise.resolve([]),
+    canSubmissions
+      ? db.digitalProduct.findMany({
+          where: { reviewStatus: "SUBMITTED" },
+          include: { seller: { select: { name: true, email: true } } },
+          orderBy: { submittedAt: "asc" },
+        })
+      : Promise.resolve([]),
+    canSubmissions
+      ? db.coachingOffer.findMany({
+          where: { reviewStatus: "SUBMITTED" },
+          include: { coach: { select: { name: true, email: true } } },
+          orderBy: { submittedAt: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
 
   const courseIds = courses.map((c) => c.id);
@@ -63,6 +76,7 @@ export default async function AdminReviewQueue() {
         description="Approve new instructors and course submissions before they go live."
       />
 
+      {canInstructors ? (
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Instructor applications ({applications.length})</CardTitle>
@@ -91,7 +105,10 @@ export default async function AdminReviewQueue() {
           )}
         </CardContent>
       </Card>
+      ) : null}
 
+      {canSubmissions ? (
+      <>
       <Card>
         <CardHeader>
           <CardTitle>Courses awaiting review ({courses.length})</CardTitle>
@@ -188,11 +205,15 @@ export default async function AdminReviewQueue() {
           )}
         </CardContent>
       </Card>
+      </>
+      ) : null}
 
+      {canSubmissions ? (
       <p className="mt-6 text-sm text-muted-foreground">
         Full course content is on the{" "}
         <Link href="/admin/courses" className="text-primary hover:underline">course admin</Link> pages.
       </p>
+      ) : null}
     </div>
   );
 }

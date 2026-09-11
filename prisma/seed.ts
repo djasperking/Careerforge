@@ -11,23 +11,13 @@ import {
   PERMISSIONS,
   ROLES,
   ROLE_PERMISSIONS,
+  ROLE_NAMES,
   type PermissionKey,
   type RoleKey,
 } from "../src/lib/rbac";
 
 export const db = new PrismaClient();
 export const hash = (p: string) => bcrypt.hash(p, 12);
-
-const ROLE_NAMES: Record<RoleKey, string> = {
-  SUPER_ADMIN: "Super Admin",
-  ADMIN: "Admin",
-  COURSE_MANAGER: "Course Manager",
-  FINANCE_MANAGER: "Finance Manager",
-  SUPPORT_MANAGER: "Support Manager",
-  CONTENT_MANAGER: "Content Manager",
-  INSTRUCTOR: "Instructor",
-  CUSTOMER: "Customer",
-};
 
 export async function seedRbac() {
   const permissionRows = await Promise.all(

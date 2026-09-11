@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requirePermissionApi } from "@/lib/session";
 import { audit } from "@/lib/audit";
-import { ROLES } from "@/lib/rbac";
+import { ROLES, ADMIN_ROLES, ROLE_NAMES, type RoleKey } from "@/lib/rbac";
 import { issueToken } from "@/lib/tokens";
 import { sendEmail, appUrl } from "@/lib/email";
 
@@ -34,6 +34,51 @@ export async function setUserStatus(userId: string, status: "ACTIVE" | "SUSPENDE
     entityId: userId,
     metadata: { previous: target.status },
   });
+  revalidatePath("/admin/users");
+  return { ok: true };
+}
+
+/**
+ * Set a user's staff role. `roleKey: null` removes any staff role, leaving them
+ * a plain customer (their INSTRUCTOR status, if any, is untouched — that's a
+ * separate track). Only ADMIN_ROLES are ever assigned here.
+ */
+export async function setUserRole(userId: string, roleKey: RoleKey | null): Promise<Result> {
+  const admin = await requirePermissionApi("users:roles");
+
+  if (roleKey && !ADMIN_ROLES.includes(roleKey)) {
+    return { ok: false, error: "Not a valid staff role." };
+  }
+  if (roleKey === ROLES.SUPER_ADMIN && admin.permissions !== "*") {
+    return { ok: false, error: "Only a Super Admin can grant Super Admin." };
+  }
+  if (userId === admin.id) {
+    return { ok: false, error: "You can't change your own role here." };
+  }
+
+  const target = await db.user.findUnique({ where: { id: userId }, include: { roles: { include: { role: true } } } });
+  if (!target) return { ok: false, error: "User not found." };
+  if (target.roles.some((r) => r.role.key === ROLES.SUPER_ADMIN) && admin.permissions !== "*") {
+    return { ok: false, error: "Only a Super Admin can change a Super Admin's role." };
+  }
+
+  const adminRoleIds = target.roles.filter((r) => (ADMIN_ROLES as string[]).includes(r.role.key)).map((r) => r.roleId);
+
+  await db.$transaction(async (tx) => {
+    if (adminRoleIds.length) {
+      await tx.userRole.deleteMany({ where: { userId, roleId: { in: adminRoleIds } } });
+    }
+    if (roleKey) {
+      const role = await tx.role.upsert({
+        where: { key: roleKey },
+        update: {},
+        create: { key: roleKey, name: ROLE_NAMES[roleKey], isSystem: true },
+      });
+      await tx.userRole.create({ data: { userId, roleId: role.id } });
+    }
+  });
+
+  await audit({ actorId: admin.id, action: "USER_ROLE_SET", entity: "User", entityId: userId, metadata: { role: roleKey } });
   revalidatePath("/admin/users");
   return { ok: true };
 }

@@ -54,7 +54,7 @@ interface HubTile {
   href: string;
   desc: string;
   icon: React.ElementType;
-  permission?: PermissionKey;
+  permission?: PermissionKey | PermissionKey[];
 }
 
 const HUB_GROUPS: { title: string; tiles: HubTile[] }[] = [
@@ -68,7 +68,7 @@ const HUB_GROUPS: { title: string; tiles: HubTile[] }[] = [
       { group: "learning", label: "AI configuration", href: "/admin/ai", desc: "Provider, models & usage limits", icon: Bot, permission: "ai:config" },
       { group: "learning", label: "Blog", href: "/admin/content", desc: "Posts, drafts & SEO", icon: ScrollText, permission: "content:write" },
       { group: "learning", label: "Digital products", href: "/instructor/products", desc: "Instructor-sold downloads", icon: Package, permission: "courses:write" },
-      { group: "learning", label: "Review queue", href: "/admin/review", desc: "Instructor & submission approvals", icon: ClipboardList, permission: "instructors:review" },
+      { group: "learning", label: "Review queue", href: "/admin/review", desc: "Instructor & submission approvals", icon: ClipboardList, permission: ["instructors:review", "submissions:review"] },
     ],
   },
   {
@@ -111,7 +111,7 @@ export default async function AdminDashboard() {
 
   const attentionItems = [
     { label: "Instructor applications", count: attention.pendingInstructors, href: "/admin/review", icon: UserPlus, show: can("instructors:review") },
-    { label: "Submissions in review", count: attention.coursesInReview, href: "/admin/review", icon: ClipboardList, show: can("instructors:review") },
+    { label: "Submissions in review", count: attention.coursesInReview, href: "/admin/review", icon: ClipboardList, show: can("submissions:review") },
     { label: "Payout requests", count: attention.payoutRequests, href: "/admin/payouts", icon: Banknote, show: can("payouts:manage") },
     { label: "Open support tickets", count: attention.openTickets, href: "/admin/support", icon: LifeBuoy, show: can("support:handle") },
     { label: "Payments to reconcile", count: attention.failedTx, href: "/admin/payments", icon: RefreshCcw, show: can("payments:read") },
@@ -122,7 +122,7 @@ export default async function AdminDashboard() {
 
   // Badge counts to overlay on the hub tiles.
   const tileBadges: Record<string, number> = {
-    "/admin/review": attention.pendingInstructors + attention.coursesInReview,
+    "/admin/review": (can("instructors:review") ? attention.pendingInstructors : 0) + (can("submissions:review") ? attention.coursesInReview : 0),
     "/admin/payouts": attention.payoutRequests,
     "/admin/support": attention.openTickets,
     "/admin/payments": attention.failedTx,

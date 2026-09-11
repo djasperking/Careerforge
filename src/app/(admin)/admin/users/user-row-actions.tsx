@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { MailCheck, Trash2, Loader2 } from "lucide-react";
-import { setUserStatus, resendVerificationEmail, deleteUserAccount } from "./actions";
+import { setUserStatus, resendVerificationEmail, deleteUserAccount, setUserRole } from "./actions";
 import { Button } from "@/components/ui/button";
+import { ROLE_NAMES, ADMIN_ROLES, type RoleKey } from "@/lib/rbac";
 
 export function UserRowActions({
   userId,
@@ -11,17 +12,25 @@ export function UserRowActions({
   emailVerified,
   canManage,
   canDelete,
+  canAssignRoles,
+  isSuperAdmin,
+  currentStaffRole,
 }: {
   userId: string;
   status: string;
   emailVerified: boolean;
   canManage: boolean;
   canDelete: boolean;
+  canAssignRoles: boolean;
+  /** Whether the acting admin is a Super Admin — only they can grant/edit Super Admin. */
+  isSuperAdmin: boolean;
+  /** This user's current staff role, if any. */
+  currentStaffRole: RoleKey | null;
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  if (!canManage && !canDelete) return null;
+  if (!canManage && !canDelete && !canAssignRoles) return null;
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>, okText: string) {
     setMsg(null);
@@ -31,9 +40,29 @@ export function UserRowActions({
     });
   }
 
+  const roleOptions = ADMIN_ROLES.filter((r) => r !== "SUPER_ADMIN" || isSuperAdmin);
+  const canEditThisRole = currentStaffRole !== "SUPER_ADMIN" || isSuperAdmin;
+
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center justify-end gap-2">
+        {canAssignRoles && canEditThisRole ? (
+          <select
+            defaultValue={currentStaffRole ?? ""}
+            disabled={pending}
+            onChange={(e) => {
+              const value = (e.target.value || null) as RoleKey | null;
+              run(() => setUserRole(userId, value), value ? `Now ${ROLE_NAMES[value]}.` : "Staff role removed.");
+            }}
+            className="h-8 rounded-md border border-input bg-card px-2 text-xs"
+          >
+            <option value="">No staff role</option>
+            {roleOptions.map((r) => (
+              <option key={r} value={r}>{ROLE_NAMES[r]}</option>
+            ))}
+          </select>
+        ) : null}
+
         {canManage && !emailVerified && status !== "DELETED" ? (
           <Button
             size="sm"

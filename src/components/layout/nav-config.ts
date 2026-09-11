@@ -11,7 +11,7 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  permission?: PermissionKey;
+  permission?: PermissionKey | PermissionKey[];
   /** Section heading this item sits under (admin nav only). */
   group?: string;
 }
@@ -46,7 +46,7 @@ export const instructorNav: NavItem[] = [
 
 export const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Review queue", href: "/admin/review", icon: ClipboardList, permission: "instructors:review" },
+  { label: "Review queue", href: "/admin/review", icon: ClipboardList, permission: ["instructors:review", "submissions:review"] },
 
   { group: "Learning", label: "Courses", href: "/admin/courses", icon: BookOpen, permission: "courses:read" },
   { group: "Learning", label: "Exams", href: "/admin/exams", icon: ClipboardCheck, permission: "exams:read" },

@@ -9,14 +9,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const can = (p: Parameters<typeof hasPermission>[1]) => hasPermission(user.permissions, p);
 
   const [reviewQueue, openTickets, payoutRequests, unreadMessages] = await Promise.all([
-    can("instructors:review")
-      ? Promise.all([
-          db.instructorProfile.count({ where: { status: "PENDING" } }),
-          db.course.count({ where: { reviewStatus: "SUBMITTED" } }),
-          db.digitalProduct.count({ where: { reviewStatus: "SUBMITTED" } }),
-          db.coachingOffer.count({ where: { reviewStatus: "SUBMITTED" } }),
-        ]).then((n) => n.reduce((a, b) => a + b, 0))
-      : Promise.resolve(0),
+    Promise.all([
+      can("instructors:review")
+        ? db.instructorProfile.count({ where: { status: "PENDING" } })
+        : Promise.resolve(0),
+      can("submissions:review")
+        ? Promise.all([
+            db.course.count({ where: { reviewStatus: "SUBMITTED" } }),
+            db.digitalProduct.count({ where: { reviewStatus: "SUBMITTED" } }),
+            db.coachingOffer.count({ where: { reviewStatus: "SUBMITTED" } }),
+          ]).then((n) => n.reduce((a, b) => a + b, 0))
+        : Promise.resolve(0),
+    ]).then((n) => n.reduce((a, b) => a + b, 0)),
     can("support:handle")
       ? db.supportTicket.count({ where: { status: { in: ["OPEN", "PENDING"] } } })
       : Promise.resolve(0),
