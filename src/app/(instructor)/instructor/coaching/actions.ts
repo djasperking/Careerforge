@@ -8,6 +8,7 @@ import { ApiError } from "@/lib/api";
 import { audit } from "@/lib/audit";
 import { requireApprovedInstructor } from "@/lib/instructor/service";
 import { uniqueCoachingSlug, requireOwnedCoachingOffer } from "@/lib/marketplace/coaching";
+import { createDailyRoom } from "@/lib/video/daily";
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: string };
 function fail(err: unknown): Result<never> {
@@ -158,7 +159,7 @@ export async function reopenMyOffer(id: string): Promise<Result<null>> {
 
 const confirmSchema = z.object({
   scheduledAt: z.string().min(1, "Pick a date and time."),
-  meetingUrl: z.string().url("Enter a valid meeting link.").max(500),
+  meetingUrl: z.string().url("Enter a valid meeting link.").max(500).optional().or(z.literal("")),
   coachNote: z.string().max(1000).optional().or(z.literal("")),
 });
 
@@ -173,12 +174,24 @@ export async function confirmBooking(bookingId: string, raw: unknown): Promise<R
     if (!booking) throw new ApiError(404, "NOT_FOUND", "Booking not found.");
     if (booking.status !== "REQUESTED") throw new ApiError(409, "NOT_PENDING", "This booking can't be confirmed.");
 
+    const scheduledAt = new Date(input.scheduledAt);
+    // No link pasted in? Auto-generate one via Daily.co so there's always a
+    // video-call link, without forcing the coach to go find one.
+    const meetingUrl =
+      input.meetingUrl ||
+      (await createDailyRoom({
+        name: `cf-coaching-${booking.id}`,
+        expiresAt: new Date(scheduledAt.getTime() + (booking.offer.durationMinutes + 60) * 60_000),
+        maxParticipants: 2,
+      }));
+    if (!meetingUrl) throw new ApiError(422, "NO_MEETING_LINK", "Enter a meeting link — auto-generation isn't set up.");
+
     await db.coachingBooking.update({
       where: { id: bookingId },
       data: {
         status: "CONFIRMED",
-        scheduledAt: new Date(input.scheduledAt),
-        meetingUrl: input.meetingUrl,
+        scheduledAt,
+        meetingUrl,
         coachNote: input.coachNote || null,
       },
     });

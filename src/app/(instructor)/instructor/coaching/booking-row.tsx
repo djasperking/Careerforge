@@ -90,8 +90,8 @@ export function BookingRow({
                   <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} className="h-8" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Meeting link</Label>
-                  <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://meet.google.com/…" className="h-8" />
+                  <Label className="text-xs">Meeting link (optional)</Label>
+                  <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Leave blank to auto-generate a Daily.co link" className="h-8" />
                 </div>
               </div>
               <Input value={coachNote} onChange={(e) => setCoachNote(e.target.value)} placeholder="Optional note to the buyer" className="h-8" />

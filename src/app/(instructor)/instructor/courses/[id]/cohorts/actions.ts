@@ -9,6 +9,7 @@ import { audit } from "@/lib/audit";
 import { requireApprovedInstructor, requireOwnedCourse } from "@/lib/instructor/service";
 import { requireOwnedCohort } from "@/lib/cohort/service";
 import { majorToMinor } from "@/lib/utils";
+import { createDailyRoom } from "@/lib/video/daily";
 import type { CohortStatus } from "@prisma/client";
 
 type Result<T = null> = { ok: true; data: T } | { ok: false; error: string };
@@ -174,13 +175,24 @@ export async function addSession(cohortId: string, input: unknown): Promise<Resu
     const d = sessionSchema.parse(input);
     const startsAt = new Date(d.startsAt);
     if (Number.isNaN(+startsAt)) throw new ApiError(422, "BAD_DATE", "Enter a valid session time.");
+
+    // No link pasted in? Auto-generate one via Daily.co so there's always a
+    // video-call link, without forcing the instructor to go find one.
+    const meetingUrl =
+      d.meetingUrl ||
+      (await createDailyRoom({
+        name: `cf-${cohortId}`,
+        expiresAt: new Date(startsAt.getTime() + (d.durationMinutes + 60) * 60_000),
+        maxParticipants: cohort.capacity || undefined,
+      }));
+
     await db.cohortSession.create({
       data: {
         cohortId,
         title: d.title.trim(),
         startsAt,
         durationMinutes: d.durationMinutes,
-        meetingUrl: d.meetingUrl || null,
+        meetingUrl: meetingUrl || null,
         note: d.note?.trim() || null,
       },
     });

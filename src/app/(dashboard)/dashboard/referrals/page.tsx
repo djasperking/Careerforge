@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SharePanel } from "@/components/ui/share-panel";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { appUrl } from "@/lib/email";
-import { ensureReferralCode, referralSummary, referralRewardConfig } from "@/lib/referral/service";
+import { ensureReferralCode, referralSummary, referralRewardConfig, referralSignupBonusConfig } from "@/lib/referral/service";
 
 export const metadata = { title: "Refer & earn" };
 
@@ -19,10 +19,11 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export default async function ReferralsPage() {
   const user = await requireUser();
-  const [code, summary, reward] = await Promise.all([
+  const [code, summary, reward, signupBonus] = await Promise.all([
     ensureReferralCode(user.id),
     referralSummary(user.id),
     referralRewardConfig(),
+    referralSignupBonusConfig(),
   ]);
   const link = appUrl(`/r/${code}`);
 
@@ -30,7 +31,7 @@ export default async function ReferralsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Refer & earn"
-        description={`Share your link. When someone you refer makes their first purchase, you get ${formatCurrency(reward)} in account credit — used automatically at your next checkout.`}
+        description={`Share your link. They get ${formatCurrency(signupBonus)} in credit just for signing up, and when they make their first purchase you get ${formatCurrency(reward)} — both used automatically at checkout.`}
       />
 
       <div className="grid gap-4 sm:grid-cols-4">

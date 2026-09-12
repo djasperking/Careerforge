@@ -158,7 +158,7 @@ export function SessionManager({
           </div>
           <div className="space-y-1">
             <Label htmlFor="s-url">Meeting link (optional)</Label>
-            <Input id="s-url" type="url" value={f.meetingUrl} onChange={(e) => set("meetingUrl", e.target.value)} />
+            <Input id="s-url" type="url" value={f.meetingUrl} onChange={(e) => set("meetingUrl", e.target.value)} placeholder="Leave blank to auto-generate a Daily.co link" />
           </div>
         </div>
         {error ? <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert> : null}

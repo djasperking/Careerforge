@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 
 const DEFAULT_REWARD_CENTS = 50_000; // ₦500
+const DEFAULT_SIGNUP_BONUS_CENTS = 10_000; // ₦100
 
 async function numSetting(key: string, fallback: number) {
   const row = await db.systemSetting.findUnique({ where: { key } });
@@ -10,6 +11,13 @@ async function numSetting(key: string, fallback: number) {
 
 export function referralRewardConfig() {
   return numSetting("referral.rewardCents", DEFAULT_REWARD_CENTS);
+}
+
+/** Welcome credit given to a NEW user who registers via someone's referral
+ * link — separate from and in addition to the referrer's own reward, which
+ * only pays out on the referred user's first purchase (see below). */
+export function referralSignupBonusConfig() {
+  return numSetting("referral.signupBonusCents", DEFAULT_SIGNUP_BONUS_CENTS);
 }
 
 function code() {
@@ -32,15 +40,37 @@ export async function ensureReferralCode(userId: string): Promise<string> {
   throw new Error("Could not generate a referral code");
 }
 
-/** Attribute a newly-registered user to a referrer by code. No-op if invalid or self. */
+/**
+ * Attribute a newly-registered user to a referrer by code, and grant the new
+ * user a one-time welcome credit for signing up through the link. No-op if
+ * the code is invalid, self-referral, or the user is already attributed.
+ */
 export async function attributeReferral(newUserId: string, refCode: string | undefined) {
   if (!refCode) return;
   const referrer = await db.user.findUnique({ where: { referralCode: refCode }, select: { id: true } });
   if (!referrer || referrer.id === newUserId) return;
-  await db.user.updateMany({
+
+  const attributed = await db.user.updateMany({
     where: { id: newUserId, referredById: null },
     data: { referredById: referrer.id },
   });
+  if (attributed.count === 0) return; // already attributed to someone
+
+  const bonusCents = await referralSignupBonusConfig();
+  if (bonusCents <= 0) return;
+
+  await db.$transaction([
+    db.user.update({ where: { id: newUserId }, data: { creditCents: { increment: bonusCents } } }),
+    db.notification.create({
+      data: {
+        userId: newUserId,
+        type: "PAYMENT",
+        title: "Welcome credit",
+        body: "You signed up with a referral link — account credit has been added, visible on your profile.",
+        linkUrl: "/dashboard/profile",
+      },
+    }),
+  ]);
 }
 
 /**

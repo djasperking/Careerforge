@@ -93,6 +93,7 @@ model User {
   reviewedAssignments   AssignmentSubmission[]  @relation("AssignmentReviewer")
   notes             LessonNote[]
   bookmarks         LessonBookmark[]
+  socialFollowClaims SocialFollowClaim[]
 
   @@index([status])
   @@index([createdAt])
@@ -1430,6 +1431,28 @@ model ReferralReward {
   referredUser User @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
 
   @@index([earnerId])
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TWITTER
+  LINKEDIN
+}
+
+// Self-reported "I've followed" claim — not API-verified (see socialRewardsStatus).
+// One-time per user per platform; grants account credit once.
+model SocialFollowClaim {
+  id            String         @id @default(cuid())
+  userId        String
+  platform      SocialPlatform
+  creditedCents Int
+  claimedAt     DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
 }
 
 model NewsletterSubscriber {

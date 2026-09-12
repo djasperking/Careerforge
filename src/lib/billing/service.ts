@@ -140,8 +140,13 @@ export async function createCheckout(input: {
   const product = await resolveProduct(input.productType, input.productId, input.userId, input.cohortId);
   const reference = newPaymentReference(input.productType, input.userId);
 
-  // Account credit (e.g. referral rewards) reduces what the buyer pays.
-  const credit = await creditToApply(input.userId, product.amountCents).catch(() => 0);
+  // Account credit (referral rewards, social-follow and signup bonuses) can
+  // only be spent on courses and premium CV unlocks — not digital products,
+  // coaching, or subscriptions.
+  const CREDIT_ELIGIBLE: ProductType[] = ["COURSE", "CV_PREMIUM"];
+  const credit = CREDIT_ELIGIBLE.includes(input.productType)
+    ? await creditToApply(input.userId, product.amountCents).catch(() => 0)
+    : 0;
   const payable = product.amountCents - credit;
 
   await db.transaction.create({

@@ -60,6 +60,10 @@ const schema = z.object({
 
   // Shared secret for scheduled jobs (Vercel Cron sends it as a bearer token).
   CRON_SECRET: z.string().optional(),
+
+  // Daily.co — auto-generated video-call rooms for cohort sessions and
+  // coaching bookings, when the instructor/coach leaves the link blank.
+  DAILY_API_KEY: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
