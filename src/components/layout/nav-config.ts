@@ -60,6 +60,7 @@ export const adminNav: NavItem[] = [
   { group: "Money", label: "Payments", href: "/admin/payments", icon: CreditCard, permission: "payments:read" },
   { group: "Money", label: "Payouts", href: "/admin/payouts", icon: Banknote, permission: "payouts:manage" },
   { group: "Money", label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard, permission: "subscriptions:write" },
+  { group: "Money", label: "Reward claims", href: "/admin/rewards", icon: Gift, permission: "payments:read" },
 
   { group: "Growth", label: "Analytics", href: "/admin/analytics", icon: BarChart3, permission: "analytics:read" },
   { group: "Growth", label: "Jobs board", href: "/admin/jobs", icon: Briefcase, permission: "jobs:write" },

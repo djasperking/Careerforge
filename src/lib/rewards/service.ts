@@ -54,6 +54,34 @@ export async function socialRewardsStatus(userId: string) {
   return { platforms, rewardCents };
 }
 
+/** All social-follow claims, newest first — for the admin audit list. */
+export async function listSocialFollowClaims() {
+  return db.socialFollowClaim.findMany({
+    orderBy: { claimedAt: "desc" },
+    include: { user: { select: { id: true, name: true, email: true, creditCents: true } } },
+  });
+}
+
+/**
+ * Revoke a claim: delete the record and claw back the credit it granted
+ * (clamped to the user's current balance — if they've already spent it,
+ * this just zeroes them out rather than going negative).
+ */
+export async function revokeSocialFollowClaim(claimId: string) {
+  const claim = await db.socialFollowClaim.findUnique({
+    where: { id: claimId },
+    include: { user: { select: { creditCents: true } } },
+  });
+  if (!claim) throw new ApiError(404, "NOT_FOUND", "Claim not found.");
+
+  const clawback = Math.min(claim.creditedCents, claim.user.creditCents);
+  await db.$transaction([
+    db.socialFollowClaim.delete({ where: { id: claimId } }),
+    db.user.update({ where: { id: claim.userId }, data: { creditCents: { decrement: clawback } } }),
+  ]);
+  return { platform: claim.platform, clawedBackCents: clawback };
+}
+
 export async function claimSocialFollow(userId: string, platform: SocialPlatform) {
   const links = await getSocialLinks();
   const url = links[PLATFORM_LINK_KEY[platform]];
