@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import { LearningTabs } from "../learning-tabs";
 
 export const metadata = { title: "Certificates" };
 
@@ -19,7 +20,8 @@ export default async function CertificatesPage() {
 
   return (
     <div>
-      <PageHeader title="Certificates" description="Certificates you've earned." />
+      <PageHeader title="Learning" description="Certificates you've earned." />
+      <LearningTabs active="certificates" />
 
       {certificates.length === 0 ? (
         <EmptyState icon={BadgeCheck} title="No certificates yet" description="Complete a course or pass an exam to earn one." />

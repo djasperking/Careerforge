@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { detectCurrency, formatPriceCents } from "@/lib/currency";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { UpgradePlanControl } from "./upgrade-plan-control";
 
 export const metadata = { title: "Payments" };
@@ -23,13 +25,15 @@ const STATUS_VARIANT: Record<string, "success" | "destructive" | "secondary" | "
 
 export default async function PaymentsPage() {
   const user = await requireUser();
-  const [transactions, subscriptions, plans] = await Promise.all([
+  const [transactions, subscriptions, plans, buyerCurrency] = await Promise.all([
     db.transaction.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
     db.subscription.findMany({ where: { userId: user.id, status: "ACTIVE" }, include: { plan: true } }),
     db.subscriptionPlan.findMany({ where: { isActive: true, priceCents: { gt: 0 } }, orderBy: { position: "asc" } }),
+    detectCurrency(),
   ]);
 
   const activePlanId = subscriptions[0]?.planId;
+  const anyUSDPlan = plans.some((p) => p.priceUSDCents);
 
   return (
     <div>
@@ -53,13 +57,22 @@ export default async function PaymentsPage() {
       )}
 
       {plans.filter((p) => p.id !== activePlanId).length > 0 ? (
+        <div className="mb-2 flex justify-end">
+          {anyUSDPlan ? <CurrencyToggle current={buyerCurrency} /> : null}
+        </div>
+      ) : null}
+      {plans.filter((p) => p.id !== activePlanId).length > 0 ? (
         <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.filter((p) => p.id !== activePlanId).map((p) => (
+          {plans.filter((p) => p.id !== activePlanId).map((p) => {
+            const showUSD = buyerCurrency === "USD" && !!p.priceUSDCents;
+            const displayCents = showUSD ? p.priceUSDCents! : p.priceCents;
+            const displayCurrency = showUSD ? "USD" : "NGN";
+            return (
             <Card key={p.id}>
               <CardContent className="p-4">
                 <p className="font-medium">{p.name}</p>
                 <p className="mt-1 text-xl font-semibold">
-                  {formatCurrency(p.priceCents, p.currency)}
+                  {formatPriceCents(displayCents, displayCurrency)}
                   <span className="text-sm font-normal text-muted-foreground">/{p.billingPeriod}</span>
                 </p>
                 <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
@@ -70,7 +83,8 @@ export default async function PaymentsPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       ) : null}
 

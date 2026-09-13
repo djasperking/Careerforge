@@ -5,11 +5,12 @@ import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
 import { userOwnsDigitalProduct } from "@/lib/marketplace/digital";
 import { appUrl } from "@/lib/email";
 import { SharePanel } from "@/components/ui/share-panel";
+import { detectCurrency, formatPriceCents } from "@/lib/currency";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 import { BuyProductButton } from "./buy-button";
 
@@ -43,7 +44,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const isSeller = user?.id === product.sellerId;
   const owned = user ? isSeller || (await userOwnsDigitalProduct(user.id, product.id)) : false;
-  const price = effectivePriceCents(product);
+
+  const buyerCurrency = await detectCurrency();
+  const showUSD = buyerCurrency === "USD" && !!product.priceUSDCents;
+  const basePriceCents = showUSD ? product.priceUSDCents! : product.priceCents;
+  const displayCurrency = showUSD ? "USD" : "NGN";
+  const price = effectivePriceCents(product, basePriceCents);
 
   return (
     <div className="min-h-screen">
@@ -64,14 +70,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="rounded-lg border bg-card p-5">
             <div className="flex items-baseline gap-2">
               <span className="font-display text-2xl font-semibold">
-                {price === 0 ? "Free" : formatCurrency(price, product.currency)}
+                {price === 0 ? "Free" : formatPriceCents(price, displayCurrency)}
               </span>
               {discountIsActive(product) ? (
                 <span className="text-sm text-muted-foreground line-through">
-                  {formatCurrency(product.priceCents, product.currency)}
+                  {formatPriceCents(basePriceCents, displayCurrency)}
                 </span>
               ) : null}
             </div>
+            {price > 0 && product.priceUSDCents ? <CurrencyToggle current={displayCurrency} className="mt-1" /> : null}
             <p className="mt-1 text-xs text-muted-foreground">
               {product.deliveryType !== "FILE"
                 ? product.videoDurationSec

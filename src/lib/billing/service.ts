@@ -15,7 +15,17 @@ import {
   rewardReferralOnFirstPurchase,
 } from "@/lib/referral/service";
 import { effectivePriceCents, discountIsActive } from "@/lib/instructor/service";
+import { detectCurrency, type BuyerCurrency } from "@/lib/currency";
 import type { ProductType } from "@prisma/client";
+
+/** Pick the price to charge: the item's USD price when the buyer wants USD
+ * and one is set, otherwise its NGN price. */
+function priceFor(item: { priceCents: number; priceUSDCents: number | null }, currency: BuyerCurrency) {
+  if (currency === "USD" && item.priceUSDCents != null && item.priceUSDCents > 0) {
+    return { amountCents: item.priceUSDCents, currency: "USD" as const };
+  }
+  return { amountCents: item.priceCents, currency: "NGN" as const };
+}
 
 export const CALLBACK_PATH = "/dashboard/payments/callback";
 
@@ -36,6 +46,7 @@ async function resolveProduct(
   productType: ProductType,
   productId: string,
   userId: string,
+  currency: BuyerCurrency,
   cohortId?: string,
 ): Promise<CheckoutProduct> {
   if (productType === "COURSE") {
@@ -63,6 +74,7 @@ async function resolveProduct(
       if (cohort.capacity > 0 && cohort._count.enrollments >= cohort.capacity) {
         throw new ApiError(409, "COHORT_FULL", "This class is full.");
       }
+      // Cohorts don't have their own USD price — always NGN.
       const amountCents = cohort.priceCents ?? effectivePriceCents(course);
       if (amountCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This class is free — join directly.");
       return { amountCents, currency: cohort.currency, description: `Class: ${course.title} — ${cohort.title}` };
@@ -70,16 +82,18 @@ async function resolveProduct(
 
     if (course.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This course is free — enrol directly.");
     // Price is always resolved server-side, including any active discount.
-    const amountCents = effectivePriceCents(course);
+    const base = priceFor(course, currency);
+    const amountCents = effectivePriceCents(course, base.amountCents);
     const label = discountIsActive(course) ? `Course: ${course.title} (${course.discountPercent}% off)` : `Course: ${course.title}`;
-    return { amountCents, currency: course.currency, description: label };
+    return { amountCents, currency: base.currency, description: label };
   }
 
   if (productType === "SUBSCRIPTION") {
     const plan = await db.subscriptionPlan.findUnique({ where: { id: productId } });
     if (!plan || !plan.isActive) throw new ApiError(404, "NOT_FOUND", "Plan not available.");
     if (plan.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This plan is free — no checkout needed.");
-    return { amountCents: plan.priceCents, currency: plan.currency, description: `Subscription: ${plan.name}` };
+    const priced = priceFor(plan, currency);
+    return { amountCents: priced.amountCents, currency: priced.currency, description: `Subscription: ${plan.name}` };
   }
 
   if (productType === "CV_PREMIUM") {
@@ -87,8 +101,8 @@ async function resolveProduct(
     if (!cv) throw new ApiError(404, "NOT_FOUND", "CV not found.");
     if (cv.isPremium) throw new ApiError(409, "ALREADY_OWNED", "This CV is already unlocked.");
     if (await hasUnlimitedTools(userId)) throw new ApiError(409, "ALREADY_OWNED", "Your account already has premium CV exports.");
-    const { amountCents, currency } = await cvUnlockPrice();
-    return { amountCents, currency, description: `CV unlock: ${cv.title}` };
+    const { amountCents, currency: resolvedCurrency } = await cvUnlockPrice(currency);
+    return { amountCents, currency: resolvedCurrency, description: `CV unlock: ${cv.title}` };
   }
 
   if (productType === "DIGITAL_PRODUCT") {
@@ -102,9 +116,10 @@ async function resolveProduct(
       where: { productId_userId: { productId, userId } },
     });
     if (owned) throw new ApiError(409, "ALREADY_OWNED", "You already own this product.");
-    const amountCents = effectivePriceCents(product);
+    const base = priceFor(product, currency);
+    const amountCents = effectivePriceCents(product, base.amountCents);
     const label = discountIsActive(product) ? `${product.title} (${product.discountPercent}% off)` : product.title;
-    return { amountCents, currency: product.currency, description: label };
+    return { amountCents, currency: base.currency, description: label };
   }
 
   if (productType === "COACHING") {
@@ -120,7 +135,8 @@ async function resolveProduct(
       throw new ApiError(404, "NOT_FOUND", "This coaching offer is no longer available.");
     }
     if (offer.priceCents <= 0) throw new ApiError(422, "FREE_PRODUCT", "This session is free.");
-    return { amountCents: offer.priceCents, currency: offer.currency, description: `Coaching: ${offer.title}` };
+    const priced = priceFor(offer, currency);
+    return { amountCents: priced.amountCents, currency: priced.currency, description: `Coaching: ${offer.title}` };
   }
 
   throw new ApiError(422, "UNSUPPORTED_PRODUCT", `Checkout for ${productType} is not implemented yet.`);
@@ -136,17 +152,23 @@ export async function createCheckout(input: {
   callbackPath?: string;
   /** For a COURSE purchase tied to a scheduled cohort. */
   cohortId?: string;
+  /** NGN or USD. Defaults to the buyer's detected/chosen currency (see
+   * `detectCurrency`) when the caller doesn't already know it. */
+  currency?: BuyerCurrency;
 }): Promise<{ authorizationUrl?: string; reference: string; free?: boolean }> {
-  const product = await resolveProduct(input.productType, input.productId, input.userId, input.cohortId);
+  const currency = input.currency ?? (await detectCurrency());
+  const product = await resolveProduct(input.productType, input.productId, input.userId, currency, input.cohortId);
   const reference = newPaymentReference(input.productType, input.userId);
 
-  // Account credit (referral rewards, social-follow and signup bonuses) can
-  // only be spent on courses and premium CV unlocks — not digital products,
-  // coaching, or subscriptions.
+  // Account credit (referral rewards, social-follow and signup bonuses) is
+  // NGN-denominated, so it only applies on an NGN checkout — and even then
+  // only to courses and premium CV unlocks, not digital products, coaching,
+  // or subscriptions.
   const CREDIT_ELIGIBLE: ProductType[] = ["COURSE", "CV_PREMIUM"];
-  const credit = CREDIT_ELIGIBLE.includes(input.productType)
-    ? await creditToApply(input.userId, product.amountCents).catch(() => 0)
-    : 0;
+  const credit =
+    currency === "NGN" && CREDIT_ELIGIBLE.includes(input.productType)
+      ? await creditToApply(input.userId, product.amountCents).catch(() => 0)
+      : 0;
   const payable = product.amountCents - credit;
 
   await db.transaction.create({

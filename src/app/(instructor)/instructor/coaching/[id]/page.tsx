@@ -77,6 +77,7 @@ export default async function InstructorOfferEditor({ params }: { params: Promis
               durationMinutes: offer.durationMinutes,
               priceCents: offer.priceCents,
               currency: offer.currency,
+              priceUSDCents: offer.priceUSDCents ?? 0,
             }}
           />
         </CardContent>

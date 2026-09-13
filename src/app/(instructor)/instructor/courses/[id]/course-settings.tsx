@@ -20,6 +20,7 @@ interface Initial {
   durationMinutes: number;
   priceCents: number;
   currency: string;
+  priceUSDCents: number;
   requirements: string;
   objectives: string;
   discountPercent: number;
@@ -120,6 +121,17 @@ export function InstructorCourseSettings({
           <div className="space-y-1.5">
             <Label>Currency</Label>
             <Input value={form.currency} maxLength={3} onChange={(e) => set("currency", e.target.value.toUpperCase())} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>USD price (optional)</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              value={minorToMajor(form.priceUSDCents)}
+              onChange={(e) => set("priceUSDCents", majorToMinor(e.target.value as unknown as number))}
+            />
+            <p className="text-xs text-muted-foreground">Shown to buyers outside Nigeria instead of the Naira price. 0 = Naira only.</p>
           </div>
         </div>
 

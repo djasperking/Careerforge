@@ -7,7 +7,8 @@ import { MarketingHeader } from "@/components/layout/marketing-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
+import { detectCurrency, formatPriceCents } from "@/lib/currency";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { listOpenCohorts } from "@/lib/cohort/service";
@@ -74,6 +75,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
       )
     : new Set<string>();
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
+
+  const buyerCurrency = await detectCurrency();
+  const showUSD = buyerCurrency === "USD" && !!course.priceUSDCents;
+  const displayPriceCents = showUSD ? course.priceUSDCents! : course.priceCents;
+  const displayCurrency = showUSD ? "USD" : "NGN";
 
   return (
     <div className="min-h-screen">
@@ -185,8 +191,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         <div>
           <div className="sticky top-6 rounded-lg border bg-card p-6">
             <p className="font-display text-2xl font-semibold">
-              {course.priceCents === 0 ? "Free" : formatCurrency(course.priceCents, course.currency)}
+              {course.priceCents === 0 ? "Free" : formatPriceCents(displayPriceCents, displayCurrency)}
             </p>
+            {course.priceCents > 0 && course.priceUSDCents ? (
+              <CurrencyToggle current={displayCurrency} className="mt-1" />
+            ) : null}
             <div className="mt-4">
               <EnrollButton
                 courseId={course.id}

@@ -21,7 +21,7 @@ export async function claimSocialFollowAction(platform: string): Promise<Result<
     const user = await requireUserApi();
     const p = platformSchema.parse(platform) as SocialPlatform;
     const rewardCents = await claimSocialFollow(user.id, p);
-    revalidatePath("/dashboard/profile");
+    revalidatePath("/dashboard");
     revalidatePath("/dashboard/referrals");
     return { ok: true, data: { rewardCents } };
   } catch (err) {

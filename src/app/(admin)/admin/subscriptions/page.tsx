@@ -47,6 +47,7 @@ export default async function AdminSubscriptionsPage() {
                   initial={{
                     name: p.name,
                     priceCents: p.priceCents,
+                    priceUSDCents: p.priceUSDCents ?? 0,
                     billingPeriod: p.billingPeriod,
                     features: p.features.join("\n"),
                     isActive: p.isActive,

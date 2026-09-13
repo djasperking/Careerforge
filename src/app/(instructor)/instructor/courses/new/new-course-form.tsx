@@ -21,6 +21,7 @@ export function NewCourseForm({ categories }: { categories: { id: string; name: 
     durationMinutes: 0,
     priceCents: 0,
     currency: "NGN",
+    priceUSDCents: 0,
     requirements: "",
     objectives: "",
   });
@@ -92,6 +93,17 @@ export function NewCourseForm({ categories }: { categories: { id: string; name: 
         <div className="space-y-1.5">
           <Label>Currency</Label>
           <Input value={form.currency} maxLength={3} onChange={(e) => set("currency", e.target.value.toUpperCase())} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>USD price (optional)</Label>
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            value={minorToMajor(form.priceUSDCents)}
+            onChange={(e) => set("priceUSDCents", majorToMinor(e.target.value as unknown as number))}
+          />
+          <p className="text-xs text-muted-foreground">Shown to buyers outside Nigeria instead of the Naira price. Leave 0 to only sell in Naira.</p>
         </div>
       </div>
       <div className="space-y-1.5">

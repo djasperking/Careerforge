@@ -31,6 +31,7 @@ const productSchema = z
     videoDurationSec: z.coerce.number().int().min(0).optional(),
     priceCents: z.coerce.number().int().min(0).max(100_000_000),
     currency: z.string().min(3).max(3).default("NGN"),
+    priceUSDCents: z.coerce.number().int().min(0).max(1_000_000).optional(),
     discountPercent: z.coerce.number().int().min(0).max(90).optional(),
     discountEndsAt: z.string().optional().or(z.literal("")),
   })
@@ -110,6 +111,7 @@ export async function createMyProduct(raw: unknown): Promise<Result<{ id: string
         ...deliveryData(input),
         priceCents: input.priceCents,
         currency: input.currency,
+        priceUSDCents: input.priceUSDCents || null,
         discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
         discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : null,
         status: "DRAFT",
@@ -150,6 +152,7 @@ export async function updateMyProduct(id: string, raw: unknown): Promise<Result<
         ...deliveryData(input),
         priceCents: input.priceCents,
         currency: input.currency,
+        priceUSDCents: input.priceUSDCents || null,
         discountPercent: input.discountPercent && input.discountPercent > 0 ? input.discountPercent : null,
         discountEndsAt: input.discountEndsAt ? new Date(input.discountEndsAt) : null,
         reviewStatus: demote ? "DRAFT" : product.reviewStatus,

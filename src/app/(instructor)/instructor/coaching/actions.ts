@@ -24,6 +24,7 @@ const offerSchema = z.object({
   durationMinutes: z.coerce.number().int().min(15).max(240),
   priceCents: z.coerce.number().int().min(0).max(100_000_000),
   currency: z.string().min(3).max(3).default("NGN"),
+  priceUSDCents: z.coerce.number().int().min(0).max(1_000_000).optional(),
 });
 
 export async function createMyOffer(raw: unknown): Promise<Result<{ id: string }>> {
@@ -42,6 +43,7 @@ export async function createMyOffer(raw: unknown): Promise<Result<{ id: string }
         durationMinutes: input.durationMinutes,
         priceCents: input.priceCents,
         currency: input.currency,
+        priceUSDCents: input.priceUSDCents || null,
         status: "DRAFT",
         reviewStatus: "DRAFT",
       },
@@ -72,6 +74,7 @@ export async function updateMyOffer(id: string, raw: unknown): Promise<Result<nu
         durationMinutes: input.durationMinutes,
         priceCents: input.priceCents,
         currency: input.currency,
+        priceUSDCents: input.priceUSDCents || null,
         reviewStatus: offer.reviewStatus === "APPROVED" ? "DRAFT" : offer.reviewStatus,
         status: offer.reviewStatus === "APPROVED" ? "DRAFT" : offer.status,
       },

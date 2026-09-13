@@ -5,7 +5,8 @@ import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { detectCurrency, formatPriceCents } from "@/lib/currency";
+import { CurrencyToggle } from "@/components/ui/currency-toggle";
 import { BookForm } from "./book-form";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 
@@ -37,7 +38,10 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
   ]);
   if (!offer) notFound();
 
-  const priceLabel = formatCurrency(offer.priceCents, offer.currency);
+  const buyerCurrency = await detectCurrency();
+  const showUSD = buyerCurrency === "USD" && !!offer.priceUSDCents;
+  const displayCurrency = showUSD ? "USD" : "NGN";
+  const priceLabel = formatPriceCents(showUSD ? offer.priceUSDCents! : offer.priceCents, displayCurrency);
 
   return (
     <div className="min-h-screen">
@@ -59,6 +63,7 @@ export default async function CoachingDetailPage({ params }: { params: Promise<{
         <aside className="lg:col-span-1">
           <div className="rounded-lg border bg-card p-5">
             <p className="font-display text-2xl font-semibold">{priceLabel}</p>
+            {offer.priceUSDCents ? <CurrencyToggle current={displayCurrency} className="mt-1" /> : null}
             <p className="mt-1 text-xs text-muted-foreground">{offer.durationMinutes}-minute session</p>
             <div className="mt-4">
               <BookForm offerId={offer.id} slug={offer.slug} isLoggedIn={Boolean(user)} priceLabel={priceLabel} />

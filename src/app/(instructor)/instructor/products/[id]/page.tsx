@@ -85,6 +85,7 @@ export default async function InstructorProductEditor({ params }: { params: Prom
               videoDurationSec: product.videoDurationSec ?? 0,
               priceCents: product.priceCents,
               currency: product.currency,
+              priceUSDCents: product.priceUSDCents ?? 0,
               discountPercent: product.discountPercent ?? 0,
               discountEndsAt: product.discountEndsAt ? product.discountEndsAt.toISOString().slice(0, 10) : "",
             }}

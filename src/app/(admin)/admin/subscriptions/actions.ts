@@ -16,6 +16,7 @@ function fail(err: unknown): Result<never> {
 export async function updatePlan(planId: string, input: {
   name: string;
   priceCents: number;
+  priceUSDCents?: number;
   billingPeriod: string;
   features: string;
   isActive: boolean;
@@ -45,6 +46,7 @@ export async function updatePlan(planId: string, input: {
       data: {
         name: input.name.trim(),
         priceCents: Math.max(0, input.priceCents),
+        priceUSDCents: input.priceUSDCents && input.priceUSDCents > 0 ? Math.max(0, input.priceUSDCents) : null,
         billingPeriod: input.billingPeriod,
         features: input.features.split("\n").map((f) => f.trim()).filter(Boolean),
         isActive: input.isActive,

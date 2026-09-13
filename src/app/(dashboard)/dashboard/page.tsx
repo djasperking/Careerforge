@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, GraduationCap, BadgeCheck, CreditCard, ArrowRight, Bell, Briefcase } from "lucide-react";
+import { FileText, GraduationCap, BadgeCheck, CreditCard, ArrowRight, Bell, Briefcase, Gift } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
@@ -11,13 +11,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { AdSlot } from "@/components/ads/ad-slot";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
 import { matchedJobsForUser } from "@/lib/jobs/matching";
+import { socialRewardsStatus } from "@/lib/rewards/service";
+import { SocialRewards } from "./social-rewards";
 
 export default async function DashboardHome() {
   const user = await requireUser();
 
-  const [cvCount, enrollments, certificates, recentTx, notifications, profile, matchedJobs] = await Promise.all([
+  const [cvCount, enrollments, certificates, recentTx, notifications, profile, matchedJobs, dbUser, rewards] = await Promise.all([
     db.cV.count({ where: { userId: user.id, deletedAt: null } }),
     db.enrollment.findMany({
       where: { userId: user.id },
@@ -38,6 +40,8 @@ export default async function DashboardHome() {
     }),
     db.profile.findUnique({ where: { userId: user.id } }),
     matchedJobsForUser(user.id),
+    db.user.findUnique({ where: { id: user.id }, select: { creditCents: true } }),
+    socialRewardsStatus(user.id),
   ]);
 
   const activeCourses = enrollments.filter((e) => e.status === "ACTIVE").length;
@@ -55,6 +59,30 @@ export default async function DashboardHome() {
             <ResendVerification />
           </AlertDescription>
         </Alert>
+      ) : null}
+
+      {rewards.platforms.length > 0 ? (
+        <Card className="mb-6 border-primary/40 bg-primary/5">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="size-4 text-primary" /> Follow us & earn credit
+            </CardTitle>
+            <span className="rounded-full border border-primary/40 bg-card px-3 py-1 text-xs font-medium text-primary">
+              Available credit: {formatCurrency(dbUser?.creditCents ?? 0)}
+            </span>
+          </CardHeader>
+          <CardContent>
+            <SocialRewards platforms={rewards.platforms} rewardCents={rewards.rewardCents} />
+            <p className="mt-3 text-sm text-muted-foreground">
+              Credit is used automatically at checkout on courses and premium CV unlocks. You can also earn
+              more by{" "}
+              <Link href="/dashboard/referrals" className="text-primary hover:underline">
+                referring friends
+              </Link>
+              .
+            </p>
+          </CardContent>
+        </Card>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

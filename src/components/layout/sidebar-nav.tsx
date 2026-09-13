@@ -30,7 +30,10 @@ export function SidebarNav({
   return (
     <nav className="flex flex-col gap-1">
       {items.map((item) => {
-        const active = item.href === root ? pathname === root : pathname.startsWith(item.href);
+        const active =
+          item.href === root
+            ? pathname === root
+            : pathname.startsWith(item.href) || (item.matchPrefixes?.some((p) => pathname.startsWith(p)) ?? false);
         const badge = badges?.[item.href];
         const showGroup = item.group && item.group !== lastGroup;
         lastGroup = item.group;

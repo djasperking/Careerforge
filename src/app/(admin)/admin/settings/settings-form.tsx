@@ -15,6 +15,7 @@ export function SettingsForm({
     contactEmail: string;
     currency: string;
     cvOneTimePrice: number;
+    cvOneTimePriceUSD: number;
     registrationOpen: boolean;
     requireEmailVerification: boolean;
     adsEnabled: boolean;
@@ -49,6 +50,11 @@ export function SettingsForm({
         <div className="space-y-2">
           <Label htmlFor="cvOneTimePrice">One-time CV unlock price (₦)</Label>
           <Input id="cvOneTimePrice" name="cvOneTimePrice" type="number" min={0} step="0.01" defaultValue={initial.cvOneTimePrice} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cvOneTimePriceUSD">CV unlock price in USD (optional)</Label>
+          <Input id="cvOneTimePriceUSD" name="cvOneTimePriceUSD" type="number" min={0} step="0.01" defaultValue={initial.cvOneTimePriceUSD} />
+          <p className="text-xs text-muted-foreground">Shown to buyers outside Nigeria. 0 = Naira only.</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="payoutHoldDays">Payout hold (days)</Label>

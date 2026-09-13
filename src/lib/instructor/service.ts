@@ -73,11 +73,14 @@ export function discountIsActive(course: DiscountFields): boolean {
   return true;
 }
 
-/** The price a buyer actually pays right now, after any active discount. */
-export function effectivePriceCents(course: DiscountFields): number {
-  if (!discountIsActive(course)) return course.priceCents;
-  const off = Math.round((course.priceCents * course.discountPercent!) / 100);
-  return Math.max(0, course.priceCents - off);
+/** The price a buyer actually pays right now, after any active discount.
+ * Pass `basePriceCents` to apply the same discount percentage to a different
+ * base amount (e.g. a USD price) instead of `course.priceCents`. */
+export function effectivePriceCents(course: DiscountFields, basePriceCents?: number): number {
+  const base = basePriceCents ?? course.priceCents;
+  if (!discountIsActive(course)) return base;
+  const off = Math.round((base * course.discountPercent!) / 100);
+  return Math.max(0, base - off);
 }
 
 /** Grant the INSTRUCTOR role if the user doesn't already have it. */

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { parseCvContent } from "@/lib/cv/schema";
 import { cvHasCleanExport, cvUnlockPrice } from "@/lib/cv/service";
 import { formatCurrency } from "@/lib/utils";
+import { detectCurrency } from "@/lib/currency";
 import { CvEditor } from "./cv-editor";
 import { VersionHistory } from "./version-history";
 
@@ -17,11 +18,12 @@ export default async function CVDetailPage({ params }: { params: Promise<{ id: s
   });
   if (!cv) notFound();
 
-  const [templates, cleanExport, price] = await Promise.all([
+  const [templates, cleanExport, buyerCurrency] = await Promise.all([
     db.cVTemplate.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
     cvHasCleanExport(user.id, cv),
-    cvUnlockPrice(),
+    detectCurrency(),
   ]);
+  const price = await cvUnlockPrice(buyerCurrency);
 
   return (
     <div>

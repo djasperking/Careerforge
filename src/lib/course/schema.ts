@@ -9,6 +9,7 @@ export const courseFormSchema = z.object({
   durationMinutes: z.coerce.number().int().min(0).max(100_000),
   priceCents: z.coerce.number().int().min(0).max(100_000_000),
   currency: z.string().min(3).max(3).default("NGN"),
+  priceUSDCents: z.coerce.number().int().min(0).max(1_000_000).optional(),
   requirements: z.string().max(2000).optional().or(z.literal("")),
   objectives: z.string().max(2000).optional().or(z.literal("")),
 });

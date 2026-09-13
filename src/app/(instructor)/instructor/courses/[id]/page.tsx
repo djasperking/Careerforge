@@ -113,6 +113,7 @@ export default async function InstructorCourseEditor({ params }: { params: Promi
                 durationMinutes: course.durationMinutes,
                 priceCents: course.priceCents,
                 currency: course.currency,
+                priceUSDCents: course.priceUSDCents ?? 0,
                 requirements: course.requirements.join("\n"),
                 objectives: course.objectives.join("\n"),
                 discountPercent: course.discountPercent ?? 0,

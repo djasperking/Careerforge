@@ -14,6 +14,9 @@ export interface NavItem {
   permission?: PermissionKey | PermissionKey[];
   /** Section heading this item sits under (admin nav only). */
   group?: string;
+  /** Extra path prefixes that should also count as "active" for this item —
+   * e.g. a merged nav entry whose page links out to a sibling route. */
+  matchPrefixes?: string[];
 }
 
 export const customerNav: NavItem[] = [
@@ -25,8 +28,7 @@ export const customerNav: NavItem[] = [
   { label: "My Purchases", href: "/dashboard/purchases", icon: ShoppingBag },
   { label: "Refer & earn", href: "/dashboard/referrals", icon: Gift },
   { label: "Teach & Sell", href: "/instructor", icon: Presentation },
-  { label: "Exams", href: "/dashboard/exams", icon: ClipboardCheck },
-  { label: "Certificates", href: "/dashboard/certificates", icon: BadgeCheck },
+  { label: "Learning", href: "/dashboard/exams", icon: ClipboardCheck, matchPrefixes: ["/dashboard/certificates"] },
   { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Support", href: "/dashboard/support", icon: LifeBuoy },

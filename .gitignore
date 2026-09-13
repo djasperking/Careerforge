@@ -50,3 +50,6 @@ yarn-error.log*
 
 # generated social/marketing image assets
 brand/social/
+
+.vercel
+.env*

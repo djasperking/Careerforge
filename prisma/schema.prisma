@@ -168,6 +168,7 @@ model DigitalProduct {
   videoDurationSec    Int?
   priceCents          Int                @default(0)
   currency            String             @default("NGN")
+  priceUSDCents       Int? // optional fixed USD price, for buyers outside Nigeria
   status              PublishStatus      @default(DRAFT)
   reviewStatus        CourseReviewStatus @default(DRAFT)
   reviewNote          String?
@@ -216,6 +217,7 @@ model CoachingOffer {
   durationMinutes     Int                @default(45)
   priceCents          Int                @default(0)
   currency            String             @default("NGN")
+  priceUSDCents       Int? // optional fixed USD price, for buyers outside Nigeria
   status              PublishStatus      @default(DRAFT)
   reviewStatus        CourseReviewStatus @default(DRAFT)
   reviewNote          String?
@@ -516,6 +518,7 @@ model Course {
   durationMinutes    Int           @default(0)
   priceCents         Int           @default(0)
   currency           String        @default("NGN")
+  priceUSDCents      Int? // optional fixed USD price, for buyers outside Nigeria
   isPremiumPlanOnly  Boolean       @default(false)
   requirements       String[]
   objectives         String[]
@@ -989,6 +992,7 @@ model SubscriptionPlan {
   name          String
   priceCents    Int      @default(0)
   currency      String   @default("NGN")
+  priceUSDCents Int? // optional fixed USD price, for buyers outside Nigeria
   billingPeriod String   @default("monthly") // monthly | yearly | none
   features      String[]
   // Usage limits are data, not code: { aiRequestsPerMonth, cvCount, premiumTemplates, ... }

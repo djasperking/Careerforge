@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { LearningTabs } from "../learning-tabs";
 
 export const metadata = { title: "Exams" };
 
@@ -32,7 +33,8 @@ export default async function ExamsPage() {
 
   return (
     <div>
-      <PageHeader title="Exams" description="Available exams, attempts and results." />
+      <PageHeader title="Learning" description="Available exams, attempts and results." />
+      <LearningTabs active="exams" />
 
       <Card className="mb-6">
         <CardHeader><CardTitle>Available exams</CardTitle></CardHeader>

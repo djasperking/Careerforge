@@ -14,15 +14,21 @@ export async function resolveActivePlan(userId: string) {
 }
 
 /** Price (minor units) + currency for a one-time single-CV unlock. Configurable
- * from system settings; defaults to ₦1,000. */
-export async function cvUnlockPrice(): Promise<{ amountCents: number; currency: string }> {
-  const [priceRow, currencyRow] = await Promise.all([
+ * from system settings; defaults to ₦1,000. Pass "USD" to get the optional
+ * fixed USD price instead — falls back to the NGN price if none is set. */
+export async function cvUnlockPrice(currency: "NGN" | "USD" = "NGN"): Promise<{ amountCents: number; currency: string }> {
+  const [priceRow, usdPriceRow, currencyRow] = await Promise.all([
     db.systemSetting.findUnique({ where: { key: "cv.oneTimePriceCents" } }),
+    db.systemSetting.findUnique({ where: { key: "cv.oneTimePriceUSDCents" } }),
     db.systemSetting.findUnique({ where: { key: "cv.oneTimeCurrency" } }),
   ]);
-  const amountCents = typeof priceRow?.value === "number" ? priceRow.value : 100_000;
-  const currency = typeof currencyRow?.value === "string" ? currencyRow.value : "NGN";
-  return { amountCents, currency };
+  const ngnCents = typeof priceRow?.value === "number" ? priceRow.value : 100_000;
+  const usdCents = typeof usdPriceRow?.value === "number" ? usdPriceRow.value : null;
+  if (currency === "USD" && usdCents != null && usdCents > 0) {
+    return { amountCents: usdCents, currency: "USD" };
+  }
+  const baseCurrency = typeof currencyRow?.value === "string" ? currencyRow.value : "NGN";
+  return { amountCents: ngnCents, currency: baseCurrency };
 }
 
 /** Whether the user gets un-watermarked output for *this* CV. True if they hold

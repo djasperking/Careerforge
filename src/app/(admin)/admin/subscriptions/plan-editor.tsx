@@ -21,6 +21,7 @@ export function PlanEditor({
   initial: {
     name: string;
     priceCents: number;
+    priceUSDCents: number;
     billingPeriod: string;
     features: string;
     isActive: boolean;
@@ -35,6 +36,7 @@ export function PlanEditor({
   const [form, setForm] = useState({
     name: initial.name,
     priceCents: initial.priceCents,
+    priceUSDCents: initial.priceUSDCents,
     billingPeriod: initial.billingPeriod,
     features: initial.features,
     isActive: initial.isActive,
@@ -64,6 +66,7 @@ export function PlanEditor({
     const res = await updatePlan(planId, {
       name: form.name,
       priceCents: form.priceCents,
+      priceUSDCents: form.priceUSDCents,
       billingPeriod: form.billingPeriod,
       features: form.features,
       isActive: form.isActive,
@@ -92,6 +95,10 @@ export function PlanEditor({
         <div className="space-y-1">
           <Label className="text-xs">Price (₦)</Label>
           <Input type="number" min={0} step="0.01" value={minorToMajor(form.priceCents)} onChange={(e) => setForm((f) => ({ ...f, priceCents: majorToMinor(e.target.value as unknown as number) }))} className="h-8" />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">USD price (optional)</Label>
+          <Input type="number" min={0} step="0.01" value={minorToMajor(form.priceUSDCents)} onChange={(e) => setForm((f) => ({ ...f, priceUSDCents: majorToMinor(e.target.value as unknown as number) }))} className="h-8" />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Billing period</Label>
