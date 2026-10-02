@@ -193,9 +193,21 @@ export async function importCvFromUpload(
     let content: CVContent;
     let notes: string[];
     try {
-      const result = jobDescription
-        ? await withAIUsage(ctx, (p) => p.importCV({ rawText, targetJobDescription: jobDescription }, ctx), { provider })
-        : await provider.importCV({ rawText }, ctx);
+      // The provider already retries briefly; if the AI is still overloaded,
+      // wait a little longer and try the whole call again before falling back
+      // to the (much cruder) local parser.
+      const attempt = () =>
+        jobDescription
+          ? withAIUsage(ctx, (p) => p.importCV({ rawText, targetJobDescription: jobDescription }, ctx), { provider })
+          : provider.importCV({ rawText }, ctx);
+      let result: Awaited<ReturnType<typeof attempt>>;
+      try {
+        result = await attempt();
+      } catch (firstErr) {
+        if ((firstErr as { code?: string })?.code !== "AI_BUSY") throw firstErr;
+        await new Promise((r) => setTimeout(r, 5000));
+        result = await attempt();
+      }
       content = coerceCvContent(result.data.content);
       notes = (result.data.tailoringNotes ?? []).map((n) => String(n)).filter(Boolean).slice(0, 12);
     } catch (aiErr) {

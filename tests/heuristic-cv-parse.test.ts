@@ -64,3 +64,31 @@ describe("heuristicParseCv", () => {
     expect(() => heuristicParseCv("...")).not.toThrow();
   });
 });
+
+describe("heuristicParseCv on a PDF-style CV with no name line", () => {
+  const TEXT = `improving financial efficiency.
+• General Ledger Maintenance & Reconciliation
+glory@example.com | 778.325.9367 | linkedin.com/in/glory-adeyemi-b5b73a196
+
+WORK EXPERIENCE
+STAFF ACCOUNTANT, Parihar & Associates, Langley 02/2025 · Present
+• Performed general ledger and bank reconciliations and assisted with accounts receivable transactions to support
+accurate monthly reporting.
+FINANCIAL ACCOUNTANT, FinaTrust Microfinance Bank, Lagos 07/2022 – 06/2023
+• Completed monthly bank reconciliations using Cleric
+software.
+`;
+  const cv = heuristicParseCv(TEXT) as ParsedCv;
+
+  it("does not mistake a stray sentence for the name", () => {
+    expect(cv.personalInfo?.fullName).toBe("Glory Adeyemi");
+  });
+
+  it("splits jobs, reads MM/YYYY dates and rejoins wrapped bullets", () => {
+    expect(cv.experience).toHaveLength(2);
+    expect(cv.experience?.[0]).toMatchObject({ title: "STAFF ACCOUNTANT", company: "Parihar & Associates", current: true });
+    expect(cv.experience?.[0].bullets).toHaveLength(1);
+    expect(cv.experience?.[0].bullets?.[0]).toContain("support accurate monthly reporting.");
+    expect(cv.experience?.[1].company).toBe("FinaTrust Microfinance Bank");
+  });
+});

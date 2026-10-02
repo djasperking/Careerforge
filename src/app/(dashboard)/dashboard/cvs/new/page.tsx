@@ -7,6 +7,9 @@ import { NewCvChooser } from "./new-cv-chooser";
 
 export const metadata = { title: "New CV" };
 
+// CV import calls the AI (with retries) from this route's server action.
+export const maxDuration = 60;
+
 export default async function NewCvPage() {
   await requireUser();
   const templates = await db.cVTemplate.findMany({
