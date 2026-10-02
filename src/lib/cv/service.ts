@@ -88,6 +88,7 @@ export async function assertTemplateAllowed(userId: string, templateId: string |
     throw new ApiError(404, "TEMPLATE_NOT_FOUND", "That template is not available.");
   }
   if (!template.isPremium) return;
+  if (await hasUnlimitedTools(userId)) return;
 
   const plan = await resolveActivePlan(userId);
   const limits = (plan?.limits ?? {}) as Record<string, unknown>;
