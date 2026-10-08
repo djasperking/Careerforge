@@ -69,6 +69,9 @@ const schema = z.object({
   ADZUNA_APP_ID: z.string().optional(),
   ADZUNA_APP_KEY: z.string().optional(),
   JOOBLE_API_KEY: z.string().optional(),
+
+  // Shared secret for the owner's job-clipper browser extension (POST /api/ingest/clip).
+  JOB_CLIPPER_TOKEN: z.string().min(24).optional(),
 });
 
 const parsed = schema.safeParse(process.env);

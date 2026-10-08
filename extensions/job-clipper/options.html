@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Career Forge Job Clipper — options</title>
+  <style>
+    body { font: 14px/1.5 system-ui, sans-serif; max-width: 640px; margin: 32px auto; padding: 0 16px; color: #111; }
+    h1 { font-size: 20px; }
+    label { display: block; margin-top: 16px; font-weight: 600; }
+    small { display: block; font-weight: 400; color: #555; }
+    input, textarea { width: 100%; box-sizing: border-box; padding: 8px; margin-top: 6px; font: inherit; }
+    textarea { min-height: 90px; font-family: ui-monospace, monospace; }
+    button { margin-top: 20px; padding: 8px 16px; font: inherit; cursor: pointer; }
+    #status { margin-left: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Career Forge Job Clipper</h1>
+  <p>Click the toolbar button (or right-click → “Send this job to Career Forge”) on any job page. It lands in <b>Admin → Jobs → Review</b> as a draft.</p>
+
+  <label>Source name shown on the listing
+    <small>Optional. Leave blank to use the website's name.</small>
+    <input id="via" placeholder="e.g. Turing" />
+  </label>
+
+  <label>Auto-clip pages I open that match
+    <small>One pattern per line, e.g. <code>https://work.turing.com/jobs/*</code>. When you open a matching page it is clipped after it finishes loading. The extension never clicks, scrolls or navigates for you — only pages you open yourself.</small>
+    <textarea id="patterns" placeholder="https://work.turing.com/jobs/*"></textarea>
+  </label>
+
+  <label>Server address
+    <small>Filled in automatically from <code>config.local.json</code>. Only change this if you know why.</small>
+    <input id="endpoint" />
+  </label>
+
+  <label>Token
+    <small>Filled in automatically from <code>config.local.json</code>. Leave blank to use that.</small>
+    <input id="token" type="password" autocomplete="off" />
+  </label>
+
+  <button id="save">Save</button><span id="status"></span>
+  <script src="options.js"></script>
+</body>
+</html>

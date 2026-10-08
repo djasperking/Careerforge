@@ -20,7 +20,8 @@ export default async function JobSourcesPage() {
     db.jobSource.findMany({ orderBy: { createdAt: "asc" }, include: { _count: { select: { jobs: true } } } }),
     db.jobPost.count({ where: { status: "DRAFT", sourceId: { not: null } } }),
   ]);
-  const label = (t: string) => SOURCE_TYPES.find((x) => x.type === t)?.label ?? t;
+  const label = (t: string) =>
+    t === "BROWSER_CLIP" ? "Clipped from your browser" : SOURCE_TYPES.find((x) => x.type === t)?.label ?? t;
 
   return (
     <div className="space-y-6">
@@ -72,7 +73,13 @@ export default async function JobSourcesPage() {
                           : "Not run yet"}
                       </p>
                     </div>
-                    <SourceActions id={s.id} enabled={s.enabled} />
+                    {s.type === "BROWSER_CLIP" ? (
+                      <p className="max-w-[14rem] text-right text-xs text-muted-foreground">
+                        Filled by your browser extension — nothing to run here.
+                      </p>
+                    ) : (
+                      <SourceActions id={s.id} enabled={s.enabled} />
+                    )}
                   </li>
                 );
               })}

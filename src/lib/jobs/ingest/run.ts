@@ -115,7 +115,8 @@ export async function runSource(source: JobSource): Promise<SourceRunResult> {
 export async function runAllSources(): Promise<SourceRunResult[]> {
   const started = Date.now();
   const sources = await db.jobSource.findMany({
-    where: { enabled: true },
+    // Browser clips are pushed by the extension, never pulled.
+    where: { enabled: true, type: { not: "BROWSER_CLIP" } },
     orderBy: [{ lastRunAt: { sort: "asc", nulls: "first" } }],
   });
   const results: SourceRunResult[] = [];

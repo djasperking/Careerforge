@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Career Forge Job Clipper",
+  "version": "1.0.0",
+  "description": "Send the job page you're looking at to your Career Forge review queue as a draft.",
+  "permissions": ["activeTab", "scripting", "storage", "contextMenus"],
+  "host_permissions": ["https://www.careerforge.com.ng/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Send this job to Career Forge" },
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "web_accessible_resources": []
+}

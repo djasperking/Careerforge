@@ -36,16 +36,30 @@ async function jsonCall<T>(
   // Gemini flash returns 429/503 under load — retry a few times before giving up.
   let res: Response | null = null;
   let lastStatus = 0;
+  // A stalled connection must not hang the request forever: each attempt gets a
+  // time limit, and we stop retrying once we're close to the serverless limit.
+  const deadline = started + 50_000;
   for (let attempt = 0; attempt < 4; attempt++) {
-    res = await fetch(`${BASE}/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        generationConfig: { responseMimeType: "application/json", maxOutputTokens, temperature: 0.4 },
-      }),
-    });
+    try {
+      res = await fetch(`${BASE}/models/${MODEL}:generateContent?key=${encodeURIComponent(API_KEY)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          generationConfig: { responseMimeType: "application/json", maxOutputTokens, temperature: 0.4 },
+        }),
+        signal: AbortSignal.timeout(Math.max(5_000, Math.min(25_000, deadline - Date.now()))),
+      });
+    } catch (err) {
+      // Timeout or network error — treat like an overloaded server.
+      console.error("gemini request failed", err instanceof Error ? err.message : err);
+      res = null;
+      lastStatus = 503;
+      if (Date.now() >= deadline) break;
+      await sleep(700 * 2 ** attempt);
+      continue;
+    }
     if (res.ok) break;
     lastStatus = res.status;
     if (res.status !== 429 && res.status !== 503 && res.status !== 500) break;
