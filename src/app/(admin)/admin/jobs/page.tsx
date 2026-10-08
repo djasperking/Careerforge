@@ -20,18 +20,41 @@ const BADGE: Record<string, { label: string; variant: "secondary" | "success" | 
 
 export default async function AdminJobsPage() {
   await requirePermissionPage("jobs:write");
-  const jobs = await db.jobPost.findMany({
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-    include: { _count: { select: { clicks: true } } },
-  });
+  // Imported drafts live on the review page, and closed imports are noise —
+  // this list is hand-posted jobs plus anything imported that is now live.
+  const [jobs, pendingReview] = await Promise.all([
+    db.jobPost.findMany({
+      where: { OR: [{ sourceId: null }, { status: "PUBLISHED" }] },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      include: { _count: { select: { clicks: true } } },
+    }),
+    db.jobPost.count({ where: { status: "DRAFT", sourceId: { not: null } } }),
+  ]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Jobs board"
         description="Curated roles for the community. Copy a job's link straight from its row to share it and drive traffic."
-        action={<Button asChild variant="outline"><Link href="/admin/jobs/new">Fill the form manually</Link></Button>}
+        action={
+          <div className="flex gap-2">
+            <Button asChild variant="outline"><Link href="/admin/jobs/sources">Job sources</Link></Button>
+            <Button asChild variant="outline"><Link href="/admin/jobs/new">Fill the form manually</Link></Button>
+          </div>
+        }
       />
+
+      {pendingReview > 0 ? (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <p className="text-sm">
+              <span className="font-medium">{pendingReview}</span> job{pendingReview === 1 ? "" : "s"} found by the job agent{" "}
+              {pendingReview === 1 ? "is" : "are"} waiting for your review.
+            </p>
+            <Link href="/admin/jobs/review" className="text-sm font-medium text-primary hover:underline">Review them →</Link>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <PasteJobPanel />
 
@@ -51,6 +74,7 @@ export default async function AdminJobsPage() {
                       <Link href={`/admin/jobs/${j.id}`} className="font-medium hover:underline">{j.title}</Link>
                       <p className="text-xs text-muted-foreground">
                         {j.company} · {j._count.clicks} apply clicks · {formatDate(j.createdAt)}
+                        {j.sourceName ? ` · via ${j.sourceName}` : ""}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">

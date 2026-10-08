@@ -51,6 +51,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
           {job.salaryText ? <span>{job.salaryText}</span> : null}
           {job.category ? <span>{job.category}</span> : null}
           <span>Posted {formatDate(job.postedAt ?? job.createdAt)}</span>
+          {job.sourceName ? <span>via {job.sourceName}</span> : null}
         </div>
 
         <div

@@ -1351,12 +1351,49 @@ model JobPost {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
+  // Set when imported by the job-ingest agent (null for hand-posted jobs).
+  sourceId   String?
+  externalId String? // the job's id in that source, for de-duplication
+  sourceName String? // shown as "via …" on the listing
+  linkOnly   Boolean   @default(false) // only title/company/link — no copied description
+  lastSeenAt DateTime? // last time the source still listed it
+
   createdBy User?           @relation("JobPostAuthor", fields: [createdById], references: [id])
+  source    JobSource?      @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   clicks    JobApplyClick[]
 
+  @@unique([sourceId, externalId])
   @@index([status])
   @@index([category])
   @@index([featured])
+}
+
+enum JobSourceType {
+  GREENHOUSE
+  LEVER
+  ASHBY
+  WEWORKREMOTELY
+  ARBEITNOW
+  ADZUNA
+  JOOBLE
+  SITEMAP_LINKS
+}
+
+/// A place the ingest agent pulls jobs from. `config` holds the per-type
+/// settings (board name, country, sitemap URL, ...).
+model JobSource {
+  id            String        @id @default(cuid())
+  name          String
+  type          JobSourceType
+  config        Json          @default("{}")
+  enabled       Boolean       @default(true)
+  lastRunAt     DateTime?
+  lastRunStatus String? // "ok" | error message
+  lastRunFound  Int           @default(0)
+  lastRunNew    Int           @default(0)
+  createdAt     DateTime      @default(now())
+
+  jobs JobPost[]
 }
 
 model JobApplyClick {

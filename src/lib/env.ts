@@ -64,6 +64,11 @@ const schema = z.object({
   // Daily.co — auto-generated video-call rooms for cohort sessions and
   // coaching bookings, when the instructor/coach leaves the link blank.
   DAILY_API_KEY: z.string().optional(),
+
+  // Job-ingest aggregator APIs (optional — those sources stay idle without a key).
+  ADZUNA_APP_ID: z.string().optional(),
+  ADZUNA_APP_KEY: z.string().optional(),
+  JOOBLE_API_KEY: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
