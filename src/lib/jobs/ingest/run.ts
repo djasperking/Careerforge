@@ -3,6 +3,7 @@ import { uniqueJobSlug } from "@/lib/jobs/service";
 import type { JobSource } from "@prisma/client";
 import { fetchSource } from "./adapters";
 import type { NormalizedJob, SourceConfig } from "./types";
+import { isEnglishJob } from "./language";
 
 /** Never flood the review queue from one source in one run. */
 const MAX_NEW_PER_RUN = 100;
@@ -17,6 +18,8 @@ function usable(j: NormalizedJob): boolean {
   if (!j.externalId || j.title.length < 3 || j.company.length < 2) return false;
   // This board is for remote work: skip on-site and hybrid roles.
   if (j.locationType !== "REMOTE") return false;
+  // English only: the posting is in English and the role doesn't need another language.
+  if (!isEnglishJob(j.title, j.description)) return false;
   if (!/^https?:\/\//i.test(j.applyUrl)) return false;
   if (j.postedAt && !Number.isNaN(+j.postedAt) && Date.now() - +j.postedAt > MAX_AGE_DAYS * 86_400_000) return false;
   return true;
