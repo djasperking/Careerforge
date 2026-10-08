@@ -125,7 +125,12 @@ export async function reviewImportedJobs(ids: string[], action: "publish" | "dis
     const where = { id: { in: list }, status: "DRAFT" as const, sourceId: { not: null } };
     const res =
       action === "publish"
-        ? await db.jobPost.updateMany({ where, data: { status: "PUBLISHED", postedAt: new Date() } })
+        ? await db.jobPost.updateMany({
+            where,
+            // Imported roles expire after 30 days as a safety net, in case their
+            // source is paused or stops listing them.
+            data: { status: "PUBLISHED", postedAt: new Date(), expiresAt: new Date(Date.now() + 30 * 86_400_000) },
+          })
         : await db.jobPost.updateMany({ where, data: { status: "CLOSED" } });
     await audit({
       actorId: admin.id,
