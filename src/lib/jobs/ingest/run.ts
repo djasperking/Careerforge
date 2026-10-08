@@ -40,7 +40,16 @@ export async function runSource(source: JobSource): Promise<SourceRunResult> {
     const { jobs, error } = await fetchSource(source.type, (source.config ?? {}) as SourceConfig);
     if (error) throw new Error(error);
 
-    const valid = jobs.filter(usable);
+    // Optional per-source topic filter, e.g. "annotator, rater" for AI-trainer boards.
+    const cfg = (source.config ?? {}) as Record<string, unknown>;
+    const keywords =
+      typeof cfg.keywords === "string"
+        ? cfg.keywords.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
+        : [];
+    const onTopic = (j: NormalizedJob) =>
+      keywords.length === 0 || keywords.some((k) => `${j.title} ${j.category ?? ""}`.toLowerCase().includes(k));
+
+    const valid = jobs.filter((j) => usable(j) && onTopic(j));
     result.found = valid.length;
 
     for (const j of valid) {
