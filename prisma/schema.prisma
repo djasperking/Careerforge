@@ -1377,6 +1377,7 @@ enum JobSourceType {
   ADZUNA
   JOOBLE
   SITEMAP_LINKS
+  MERCOR_EXPERTS
 }
 
 /// A place the ingest agent pulls jobs from. `config` holds the per-type

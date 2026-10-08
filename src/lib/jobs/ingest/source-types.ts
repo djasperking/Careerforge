@@ -19,6 +19,7 @@ export const SOURCE_TYPES: {
   { type: "WEWORKREMOTELY", label: "We Work Remotely (RSS)", fields: [
     { key: "feed", label: "Feed URL (optional)", placeholder: "https://weworkremotely.com/remote-jobs.rss" } ] },
   { type: "ARBEITNOW", label: "Arbeitnow (free API)", fields: [] },
+  { type: "MERCOR_EXPERTS", label: "Mercor experts page (link-only)", fields: [] },
   { type: "ADZUNA", label: "Adzuna (needs API key)", fields: [
     { key: "country", label: "Country code", placeholder: "gb" },
     { key: "what", label: "Search keywords", placeholder: "remote developer" } ] },

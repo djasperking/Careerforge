@@ -1,7 +1,7 @@
 import { env } from "@/lib/env";
 import type { JobSourceType } from "@prisma/client";
 import type { AdapterResult, NormalizedJob, SourceConfig } from "./types";
-import { decodeEntities, getJson, htmlToText, inferJobType, inferLocationType } from "./text";
+import { decodeEntities, getJson, htmlToText, inferJobType, inferLocationType, robotsAllows } from "./text";
 
 const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
@@ -207,6 +207,57 @@ async function jooble(cfg: SourceConfig): Promise<AdapterResult> {
   };
 }
 
+// ---- Mercor (public experts page, link-only) --------------------------------
+
+/**
+ * Mercor has no feed, but its public /experts/ page (allowed by its robots.txt)
+ * embeds the current roles it advertises. We take only the title, pay and a
+ * link back — no descriptions are copied — and send people to Mercor to apply.
+ */
+async function mercorExperts(): Promise<AdapterResult> {
+  const page = "https://www.mercor.com/experts/";
+  if (!(await robotsAllows(page))) {
+    return { jobs: [], error: "Mercor's robots.txt no longer allows reading this page, so the source was skipped." };
+  }
+  const res = await fetch(page, {
+    headers: { "User-Agent": "CareerForgeJobsBot/1.0 (+https://www.careerforge.com.ng)", Accept: "text/html" },
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!res.ok) throw new Error("mercor.com returned " + res.status);
+  const html = await res.text();
+  const raw = html.match(/__NEXT_DATA__[^>]*>([\s\S]*?)<\/script>/)?.[1];
+  if (!raw) return { jobs: [], error: "Mercor's page layout changed — couldn't find the role list." };
+  const props = (JSON.parse(raw) as { props?: { pageProps?: Record<string, unknown> } }).props?.pageProps ?? {};
+  const listings = [...((props.latestJobs as Record<string, any>[]) ?? []), ...((props.talentNetworkJobs as Record<string, any>[]) ?? [])];
+
+  const seen = new Set<string>();
+  const jobs: NormalizedJob[] = [];
+  for (const j of listings) {
+    const id = str(j.listingId);
+    const title = str(j.title);
+    if (!id || !title || seen.has(id)) continue;
+    seen.add(id);
+    const min = Number(j.rateMin);
+    const max = Number(j.rateMax);
+    const unit = str(j.payRateFrequency);
+    const per = unit === "hourly" ? "/hr" : unit === "one-time" ? " one-time" : unit ? ` ${unit}` : "";
+    const rate = min > 0 ? (max > min ? "$" + min + "–$" + max + per : "$" + min + per) : "";
+    jobs.push({
+      externalId: id,
+      title,
+      company: "Mercor",
+      location: "Remote",
+      locationType: "REMOTE",
+      type: "CONTRACT",
+      category: "AI training",
+      salaryText: rate || undefined,
+      description: title + ". A remote contract role advertised on Mercor" + (rate ? " paying " + rate : "") + ". View the full description and apply on Mercor.",
+      applyUrl: "https://work.mercor.com/jobs/" + id,
+    });
+  }
+  return { jobs };
+}
+
 export async function fetchSource(type: JobSourceType, cfg: SourceConfig): Promise<AdapterResult> {
   switch (type) {
     case "GREENHOUSE": return greenhouse(cfg);
@@ -216,6 +267,7 @@ export async function fetchSource(type: JobSourceType, cfg: SourceConfig): Promi
     case "ARBEITNOW": return arbeitnow();
     case "ADZUNA": return adzuna(cfg);
     case "JOOBLE": return jooble(cfg);
+    case "MERCOR_EXPERTS": return mercorExperts();
     default: return { jobs: [], error: `Source type ${type} is not supported.` };
   }
 }

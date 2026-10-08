@@ -60,3 +60,37 @@ export async function getJson<T>(url: string, init: RequestInit = {}): Promise<T
   if (!res.ok) throw new Error(`${new URL(url).host} returned ${res.status}`);
   return (await res.json()) as T;
 }
+
+/**
+ * Whether robots.txt lets a generic crawler fetch this URL. Used by the
+ * page-based sources so ingestion stops by itself if a site ever disallows it.
+ * Honours the `User-agent: *` group's Disallow/Allow prefixes (longest wins).
+ */
+export async function robotsAllows(url: string): Promise<boolean> {
+  const u = new URL(url);
+  let body = "";
+  try {
+    const res = await fetch(`${u.origin}/robots.txt`, {
+      headers: { "User-Agent": "CareerForgeJobsBot/1.0 (+https://www.careerforge.com.ng)" },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) return true; // no robots file: nothing is disallowed
+    body = await res.text();
+  } catch {
+    return false; // can't verify — don't crawl
+  }
+  let inStar = false;
+  let best: { len: number; allow: boolean } | null = null;
+  for (const raw of body.split("\n")) {
+    const line = raw.split("#")[0].trim();
+    const m = line.match(/^([a-z-]+)\s*:\s*(.*)$/i);
+    if (!m) continue;
+    const key = m[1].toLowerCase();
+    const val = m[2].trim();
+    if (key === "user-agent") inStar = val === "*";
+    else if (inStar && (key === "disallow" || key === "allow") && val && u.pathname.startsWith(val)) {
+      if (!best || val.length > best.len) best = { len: val.length, allow: key === "allow" };
+    }
+  }
+  return best ? best.allow : true;
+}
