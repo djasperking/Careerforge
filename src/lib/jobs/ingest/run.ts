@@ -15,6 +15,8 @@ const clip = (s: string | undefined, n: number) => (s ?? "").trim().slice(0, n);
 
 function usable(j: NormalizedJob): boolean {
   if (!j.externalId || j.title.length < 3 || j.company.length < 2) return false;
+  // This board is for remote work: skip on-site and hybrid roles.
+  if (j.locationType !== "REMOTE") return false;
   if (!/^https?:\/\//i.test(j.applyUrl)) return false;
   if (j.postedAt && !Number.isNaN(+j.postedAt) && Date.now() - +j.postedAt > MAX_AGE_DAYS * 86_400_000) return false;
   return true;
