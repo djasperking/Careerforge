@@ -4,8 +4,9 @@ import { htmlToText, inferJobType, inferLocationType } from "@/lib/jobs/ingest/t
 describe("htmlToText", () => {
   it("strips tags and keeps list structure", () => {
     const t = htmlToText("<h2>Role</h2><p>Build things.</p><ul><li>SQL</li><li>Python</li></ul>");
-    expect(t).toContain("Role");
-    expect(t).toContain("• SQL");
+    expect(t).toContain("## Role");
+    expect(t).toContain("- SQL");
+    expect(t).toContain("- Python");
     expect(t).not.toMatch(/<[a-z]/i);
   });
 

@@ -1,58 +1,91 @@
 import Link from "next/link";
-import { Briefcase, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Search, X } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { formatDate } from "@/lib/utils";
-import { listPublicJobs, listJobCategories, JOB_TYPE_LABELS, JOB_LOCATION_LABELS } from "@/lib/jobs/service";
+import { JobCard } from "@/components/jobs/job-card";
+import {
+  searchPublicJobs,
+  listJobCategories,
+  jobBoardStats,
+  JOB_TYPE_LABELS,
+  JOB_LOCATION_LABELS,
+} from "@/lib/jobs/service";
 import { matchedJobsForUser } from "@/lib/jobs/matching";
-import { cn } from "@/lib/utils";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 
 export const metadata = {
   title: "Jobs",
-  description: "Remote and on-site roles in data annotation, AI training, support and more.",
+  description: "Remote roles in data annotation, AI training, support and more — real openings, with the employer's own apply link.",
 };
 
-export default async function JobsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string; type?: string; q?: string }>;
-}) {
+type Params = { category?: string; type?: string; q?: string; location?: string; page?: string };
+
+const SELECT =
+  "h-10 rounded-md border border-input bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
+
+function href(sp: Params, patch: Partial<Params>) {
+  const next = { ...sp, ...patch };
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(next)) if (v) qs.set(k, v);
+  const s = qs.toString();
+  return s ? `/jobs?${s}` : "/jobs";
+}
+
+export default async function JobsPage({ searchParams }: { searchParams: Promise<Params> }) {
   const sp = await searchParams;
   const { notice, banner } = await checkMaintenance("jobs");
   if (notice) return notice;
 
   const user = await getCurrentUser();
-  const [jobs, categories, matchedJobs] = await Promise.all([
-    listPublicJobs({ category: sp.category, type: sp.type, q: sp.q?.trim() }),
+  const [result, categories, stats, matchedJobs] = await Promise.all([
+    searchPublicJobs({
+      category: sp.category,
+      type: sp.type,
+      location: sp.location,
+      q: sp.q?.trim(),
+      page: Number(sp.page) || 1,
+    }),
     listJobCategories(),
+    jobBoardStats(),
     user ? matchedJobsForUser(user.id) : Promise.resolve([]),
   ]);
+  const { jobs, total, page, pages } = result;
   const matchedIds = new Set(matchedJobs.map((m) => m.id));
+
+  const active: { label: string; clear: string }[] = [];
+  if (sp.q?.trim()) active.push({ label: `“${sp.q.trim()}”`, clear: href(sp, { q: undefined, page: undefined }) });
+  if (sp.location) active.push({ label: JOB_LOCATION_LABELS[sp.location] ?? sp.location, clear: href(sp, { location: undefined, page: undefined }) });
+  if (sp.type) active.push({ label: JOB_TYPE_LABELS[sp.type] ?? sp.type, clear: href(sp, { type: undefined, page: undefined }) });
+  if (sp.category) active.push({ label: sp.category, clear: href(sp, { category: undefined, page: undefined }) });
 
   return (
     <div className="min-h-screen">
       {banner}
       <MarketingHeader loggedIn={Boolean(user)} />
-      <main className="container py-10">
-        <h1 className="font-display text-3xl font-semibold">Jobs</h1>
-        <p className="mt-1 text-muted-foreground">
-          Real openings at other companies, hand-picked for annotators, AI trainers and remote workers.
-          Career Forge doesn&apos;t hire — we point you to the roles, and you apply.
-        </p>
-        <Link
-          href="/jobs/today"
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10"
-        >
-          📢 This week&apos;s jobs — a shareable list for WhatsApp &amp; Telegram →
-        </Link>
 
+      <section className="border-b bg-muted/30">
+        <div className="container py-10">
+          <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Find remote work</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Real openings in data annotation, AI training, support and more. Each one links to the employer&apos;s own
+            application page — Career Forge doesn&apos;t hire, we point you to the roles.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+            <span><b className="font-semibold">{stats.total}</b> <span className="text-muted-foreground">open roles</span></span>
+            <span><b className="font-semibold">{stats.remote}</b> <span className="text-muted-foreground">remote</span></span>
+            <span><b className="font-semibold">{stats.thisWeek}</b> <span className="text-muted-foreground">added this week</span></span>
+            <Link href="/jobs/today" className="font-medium text-primary hover:underline">
+              Share this week&apos;s list on WhatsApp / Telegram →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <main className="container py-8">
         {matchedJobs.length > 0 ? (
-          <div className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4">
             <p className="font-display text-base font-semibold">Suited to you</p>
             <p className="mb-3 text-xs text-muted-foreground">Matched to the skills and experience on your CV.</p>
             <div className="flex flex-wrap gap-2">
@@ -69,64 +102,85 @@ export default async function JobsPage({
           </div>
         ) : null}
 
-        <form className="mt-6 flex flex-wrap gap-2" action="/jobs">
-          <input
-            name="q"
-            defaultValue={sp.q ?? ""}
-            placeholder="Search title or company"
-            className="h-9 flex-1 min-w-[200px] rounded-md border border-input bg-card px-3 text-sm"
-          />
-          <select name="type" defaultValue={sp.type ?? ""} className="h-9 rounded-md border border-input bg-card px-2 text-sm">
+        <form action="/jobs" className="grid gap-2 rounded-xl border bg-card p-3 sm:grid-cols-[1fr_auto_auto_auto_auto]">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              name="q"
+              defaultValue={sp.q ?? ""}
+              placeholder="Search job title or company"
+              className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            />
+          </div>
+          <select name="location" defaultValue={sp.location ?? ""} className={SELECT} aria-label="Work mode">
+            <option value="">Any work mode</option>
+            {Object.entries(JOB_LOCATION_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <select name="type" defaultValue={sp.type ?? ""} className={SELECT} aria-label="Job type">
             <option value="">Any type</option>
             {Object.entries(JOB_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          <button className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">Filter</button>
+          <select name="category" defaultValue={sp.category ?? ""} className={SELECT} aria-label="Category">
+            <option value="">All categories</option>
+            {categories.map((c) => <option key={c.name} value={c.name}>{c.name} ({c.count})</option>)}
+          </select>
+          <button className="h-10 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+            Search
+          </button>
         </form>
 
-        {categories.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link href="/jobs" className={cn("rounded-full border px-3 py-1 text-xs", !sp.category && "border-primary bg-primary text-primary-foreground")}>All</Link>
-            {categories.map((c) => (
-              <Link
-                key={c}
-                href={`/jobs?category=${encodeURIComponent(c)}`}
-                className={cn("rounded-full border px-3 py-1 text-xs", sp.category === c && "border-primary bg-primary text-primary-foreground")}
-              >
-                {c}
-              </Link>
-            ))}
-          </div>
-        ) : null}
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">
+            {total === 0 ? "No jobs" : `${total} job${total === 1 ? "" : "s"}`}
+            {pages > 1 ? ` · page ${page} of ${pages}` : ""}
+          </span>
+          {active.map((a) => (
+            <Link
+              key={a.label}
+              href={a.clear}
+              className="inline-flex items-center gap-1 rounded-full border bg-card px-2.5 py-1 text-xs hover:border-primary"
+              aria-label={`Remove filter ${a.label}`}
+            >
+              {a.label} <X className="size-3" />
+            </Link>
+          ))}
+          {active.length > 1 ? (
+            <Link href="/jobs" className="text-xs text-primary hover:underline">Clear all</Link>
+          ) : null}
+        </div>
 
         {jobs.length === 0 ? (
-          <EmptyState icon={Briefcase} title="No jobs match" description="Try clearing the filters or check back soon." />
+          <div className="mt-6">
+            <EmptyState
+              icon={Briefcase}
+              title="No jobs match those filters"
+              description="Try a broader search, or clear the filters to see every open role."
+              action={<Link href="/jobs" className="text-sm font-medium text-primary hover:underline">Clear filters</Link>}
+            />
+          </div>
         ) : (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 space-y-3">
             {jobs.map((j) => (
-              <Link key={j.id} href={`/jobs/${j.slug}`}>
-                <Card className="transition-colors hover:border-primary/40">
-                  <CardContent className="flex items-start justify-between gap-4 p-5">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium">{j.title}</p>
-                        {j.featured ? <Badge>Featured</Badge> : null}
-                        {matchedIds.has(j.id) ? <Badge variant="secondary">Suited to you</Badge> : null}
-                      </div>
-                      <p className="mt-0.5 text-sm text-muted-foreground">{j.company}</p>
-                      <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><MapPin className="size-3" /> {JOB_LOCATION_LABELS[j.locationType]}{j.location ? ` · ${j.location}` : ""}</span>
-                        <span>{JOB_TYPE_LABELS[j.type]}</span>
-                        {j.salaryText ? <span>{j.salaryText}</span> : null}
-                        {j.category ? <span>{j.category}</span> : null}
-                      </div>
-                    </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">{formatDate(j.postedAt ?? j.createdAt)}</span>
-                  </CardContent>
-                </Card>
-              </Link>
+              <JobCard key={j.id} job={j} suited={matchedIds.has(j.id)} />
             ))}
           </div>
         )}
+
+        {pages > 1 ? (
+          <nav aria-label="Pagination" className="mt-8 flex items-center justify-between">
+            {page > 1 ? (
+              <Link href={href(sp, { page: String(page - 1) })} className="inline-flex items-center gap-1 rounded-md border bg-card px-4 py-2 text-sm hover:border-primary">
+                <ArrowLeft className="size-4" /> Newer
+              </Link>
+            ) : <span />}
+            <span className="text-xs text-muted-foreground">Page {page} of {pages}</span>
+            {page < pages ? (
+              <Link href={href(sp, { page: String(page + 1) })} className="inline-flex items-center gap-1 rounded-md border bg-card px-4 py-2 text-sm hover:border-primary">
+                Older <ArrowRight className="size-4" />
+              </Link>
+            ) : <span />}
+          </nav>
+        ) : null}
       </main>
       <SiteFooter />
     </div>

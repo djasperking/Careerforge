@@ -22,8 +22,14 @@ export function htmlToText(html: string): string {
     s = s
       .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
       .replace(/<\s*br\s*\/?>/gi, "\n")
-      .replace(/<\/(p|div|h[1-6]|ul|ol|tr)>/gi, "\n\n")
-      .replace(/<li[^>]*>/gi, "\n• ")
+      // Keep structure as Markdown so the job page can render real headings and
+      // lists. Headings must be handled before the generic closing-tag rule below.
+      .replace(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi, (_m, t: string) => {
+        const text = t.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+        return text ? "\n\n## " + text + "\n\n" : "\n";
+      })
+      .replace(/<\/(p|div|ul|ol|tr)>/gi, "\n\n")
+      .replace(/<li[^>]*>/gi, "\n- ")
       .replace(/<[^>]+>/g, "");
     if (!/&(?:amp;)*lt;\/?[a-z]/i.test(s)) break;
   }
