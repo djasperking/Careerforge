@@ -65,11 +65,6 @@ const schema = z.object({
   // coaching bookings, when the instructor/coach leaves the link blank.
   DAILY_API_KEY: z.string().optional(),
 
-  // Job-ingest aggregator APIs (optional — those sources stay idle without a key).
-  ADZUNA_APP_ID: z.string().optional(),
-  ADZUNA_APP_KEY: z.string().optional(),
-  JOOBLE_API_KEY: z.string().optional(),
-
   // Shared secret for the owner's job-clipper browser extension (POST /api/ingest/clip).
   JOB_CLIPPER_TOKEN: z.string().min(24).optional(),
 });

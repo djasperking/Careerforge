@@ -1357,6 +1357,7 @@ model JobPost {
   sourceName String? // shown as "via …" on the listing
   linkOnly   Boolean   @default(false) // only title/company/link — no copied description
   lastSeenAt DateTime? // last time the source still listed it
+  origin     JobOrigin @default(MANUAL) // who created it: you, the extension, or the (removed) crawler
 
   createdBy User?           @relation("JobPostAuthor", fields: [createdById], references: [id])
   source    JobSource?      @relation(fields: [sourceId], references: [id], onDelete: SetNull)
@@ -1366,6 +1367,12 @@ model JobPost {
   @@index([status])
   @@index([category])
   @@index([featured])
+}
+
+enum JobOrigin {
+  MANUAL
+  CLIP
+  CRAWLER
 }
 
 enum JobSourceType {

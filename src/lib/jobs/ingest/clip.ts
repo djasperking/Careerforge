@@ -6,6 +6,7 @@ import { uniqueJobSlug } from "@/lib/jobs/service";
 import type { JobImportOutput } from "@/lib/ai/types";
 import type { JobLocationType, JobType } from "@prisma/client";
 import { htmlToText, inferJobType, inferLocationType } from "./text";
+import { isGenericTitle, looksLikeSingleJob } from "./clip-guard";
 
 export interface ClipInput {
   url: string;
@@ -113,6 +114,9 @@ export async function ingestClip(input: ClipInput): Promise<ClipResult> {
   }
 
   const ld = findJobPosting(input.jsonLd);
+  if (!looksLikeSingleJob({ url: applyUrl, text: input.text ?? "", hasStructuredData: !!ld })) {
+    throw new Error("That doesn't look like a single job page. Open one specific job and try again.");
+  }
   const parsed = ld ? fromJsonLd(ld) : await parseText(input.text ?? "");
 
   const host = new URL(applyUrl).hostname.replace(/^(www|work|jobs|careers)\./, "");
@@ -120,6 +124,7 @@ export async function ingestClip(input: ClipInput): Promise<ClipResult> {
   const title = (str(parsed.title) || str(input.title)).slice(0, 160);
   const company = (str(parsed.company) || via).slice(0, 160);
   if (title.length < 3) throw new Error("Couldn't find a job title on that page.");
+  if (isGenericTitle(title)) throw new Error("That page is a heading or landing page, not a job. Open one specific job and try again.");
 
   // Same role clipped from a different URL (e.g. a tracking variant).
   const dupe2 = await db.jobPost.findFirst({
@@ -146,6 +151,7 @@ export async function ingestClip(input: ClipInput): Promise<ClipResult> {
       description,
       applyUrl,
       status: "DRAFT",
+      origin: "CLIP",
       sourceId: source.id,
       externalId: createHash("sha1").update(applyUrl).digest("hex").slice(0, 24),
       sourceName: via,

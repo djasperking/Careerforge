@@ -18,7 +18,11 @@ The server address and your private token are already in `config.local.json` in 
 - **One job:** open the job page → click the extension's button. The badge shows
   **✓** added, **=** already on your site (no duplicate made), **!** a problem
   (hover the button to read it).
-- **Right-click** anywhere on a page → “Send this job to Career Forge”.
+- **Right-click** anywhere on a page → “Send this job to Career Forge”, or
+  “See my clipped jobs” to open your review list (Admin → Jobs → **From your extension**),
+  where each clipped job has one-click **Publish** / **Discard**.
+- **Only single job pages are accepted.** Job lists, careers landing pages and marketing
+  pages are refused (the badge shows **!** and hovering explains why) — open one specific job first.
 - **Select text first** if a page is messy — the extension then sends only your selection.
 - **Hands-free for pages you open:** open the extension's **Options**, add a pattern such as
   `https://work.turing.com/jobs/*`, and Save (Chrome will ask permission for that site).

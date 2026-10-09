@@ -80,10 +80,18 @@ chrome.action.onClicked.addListener((tab) => clipTab(tab));
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({ id: "clip", title: "Send this job to Career Forge", contexts: ["page", "selection"] });
+  chrome.contextMenus.create({ id: "open", title: "See my clipped jobs (review & publish)", contexts: ["page", "selection", "action"] });
   restoreAutoClip();
 });
 chrome.runtime.onStartup.addListener(restoreAutoClip);
-chrome.contextMenus.onClicked.addListener((info, tab) => info.menuItemId === "clip" && clipTab(tab));
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === "clip") return clipTab(tab);
+  if (info.menuItemId === "open") {
+    // Open the "From your extension" tab of the admin Jobs board, on the same site the clips go to.
+    const { endpoint } = await getConfig();
+    chrome.tabs.create({ url: new URL("/admin/jobs/clips", endpoint).toString() });
+  }
+});
 
 // Pages the user opened that match a pattern they chose in Options: the content
 // script just reports "this page has settled"; the clip itself goes through clipTab.

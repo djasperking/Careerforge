@@ -38,6 +38,13 @@ const nextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
+  async redirects() {
+    return [
+      // The job crawler (and its review/sources pages) was removed.
+      { source: "/admin/jobs/review", destination: "/admin/jobs/clips", permanent: false },
+      { source: "/admin/jobs/sources", destination: "/admin/jobs", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {
