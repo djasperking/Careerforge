@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { SupportWidget } from "@/components/support/support-widget";
 import { env } from "@/lib/env";
 
 const sora = Sora({
@@ -81,7 +82,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify([orgJsonLd, siteJsonLd]) }}
         />
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <SupportWidget />
+        </Providers>
       </body>
     </html>
   );

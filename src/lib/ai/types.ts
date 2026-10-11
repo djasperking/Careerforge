@@ -109,6 +109,13 @@ export interface JobImportOutput {
   description: string;
 }
 
+export interface SupportChatOutput {
+  reply: string;
+  /** True when the user needs a human (account/payment/bug issues, or the answer isn't in the knowledge). */
+  suggestTicket: boolean;
+  category: "PAYMENT" | "COURSE" | "ACCOUNT" | "CV" | "TECHNICAL" | "OTHER";
+}
+
 export interface AIProvider {
   name: string;
   generateCV(input: CVGenerationInput, ctx: AIContext): Promise<AIResult<Record<string, unknown>>>;
@@ -134,6 +141,10 @@ export interface AIProvider {
     input: { rawText: string },
     ctx: AIContext,
   ): Promise<AIResult<JobImportOutput>>;
+  supportChat(
+    input: { messages: { role: "user" | "assistant"; content: string }[]; knowledge: string; loggedIn: boolean },
+    ctx: AIContext,
+  ): Promise<AIResult<SupportChatOutput>>;
   generateQuestions(input: QuestionGenInput, ctx: AIContext): Promise<AIResult<GeneratedQuestion[]>>;
   gradeAnswer(
     input: { question: string; rubric?: string; answer: string; maxPoints: number },

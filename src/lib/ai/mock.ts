@@ -93,6 +93,15 @@ export const mockAIProvider: AIProvider = {
     });
   },
 
+  async supportChat() {
+    return wrap({
+      reply:
+        "Thanks for your message. [Demo assistant] I can help with how Career Forge works — CVs, courses, payments and refunds. For anything about your own account, please create a support ticket.",
+      suggestTicket: true,
+      category: "OTHER" as const,
+    });
+  },
+
   async generateCourseOutline(input) {
     return wrap({
       modules: [
