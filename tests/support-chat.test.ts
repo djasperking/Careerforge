@@ -45,8 +45,19 @@ describe("ticket drafting", () => {
     { role: "assistant" as const, content: "Sorry about that. Please create a ticket." },
     { role: "user" as const, content: "Payment reference is course_ab12" },
   ];
-  it("uses the first question as the subject, shortened", () => {
-    expect(deriveTicketSubject(msgs)).toBe("I paid for the Data Annotation course but it still shows locked");
+  it("keeps only the last three user messages", () => {
+    const many = Array.from({ length: 6 }, (_, i) => ({ role: "user" as const, content: `q${i}` }));
+    expect(deriveTicketMessage(many)).toBe("q3\n\nq4\n\nq5");
+  });
+  it("uses the most recent question as the subject, shortened", () => {
+    expect(deriveTicketSubject(msgs)).toBe("Payment reference is course_ab12");
+    expect(
+      deriveTicketSubject([
+        { role: "user", content: "How do refunds work?" },
+        { role: "assistant", content: "Courses: 7 days." },
+        { role: "user", content: "I paid for a course but it still shows locked" },
+      ]),
+    ).toBe("I paid for a course but it still shows locked");
     expect(deriveTicketSubject([{ role: "user", content: "x".repeat(200) }]).length).toBeLessThanOrEqual(80);
     expect(deriveTicketSubject([])).toBe("Help from the support chat");
   });

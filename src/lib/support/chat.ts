@@ -31,16 +31,16 @@ export function cleanMessages(raw: unknown): ChatMessage[] | null {
   return out.length ? out : null;
 }
 
-/** A sensible ticket subject from what the user first asked. */
+/** A sensible ticket subject: the user's most recent question (the one that led to the ticket). */
 export function deriveTicketSubject(messages: ChatMessage[]): string {
-  const first = messages.find((m) => m.role === "user")?.content ?? "";
-  const clean = first.replace(/\s+/g, " ").trim();
+  const last = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  const clean = last.replace(/\s+/g, " ").trim();
   if (!clean) return "Help from the support chat";
   return clean.length > 80 ? clean.slice(0, 77).trimEnd() + "…" : clean;
 }
 
-/** The user's side of the conversation, as the starting text of a ticket. */
+/** The user's recent messages (last three), as the starting text of a ticket. */
 export function deriveTicketMessage(messages: ChatMessage[]): string {
-  const userLines = messages.filter((m) => m.role === "user").map((m) => m.content);
+  const userLines = messages.filter((m) => m.role === "user").map((m) => m.content).slice(-3);
   return userLines.join("\n\n").slice(0, 1500);
 }
