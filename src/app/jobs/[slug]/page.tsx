@@ -73,8 +73,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
   };
 
   return (
-    <div className="min-h-screen">
-      <MarketingHeader loggedIn={Boolean(user)} />
+    <div className={user ? "" : "min-h-screen"}>
+      {user ? null : <MarketingHeader loggedIn={false} />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }}
@@ -167,7 +167,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
           </section>
         ) : null}
       </main>
-      <SiteFooter />
+      {user ? null : <SiteFooter />}
     </div>
   );
 }

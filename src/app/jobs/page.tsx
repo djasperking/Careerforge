@@ -61,9 +61,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   if (sp.category) active.push({ label: sp.category, clear: href(sp, { category: undefined, page: undefined }) });
 
   return (
-    <div className="min-h-screen">
+    <div className={user ? "" : "min-h-screen"}>
       {banner}
-      <MarketingHeader loggedIn={Boolean(user)} />
+      {user ? null : <MarketingHeader loggedIn={false} />}
 
       <section className="border-b bg-muted/30">
         <div className="container py-10">
@@ -182,7 +182,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
           </nav>
         ) : null}
       </main>
-      <SiteFooter />
+      {user ? null : <SiteFooter />}
     </div>
   );
 }

@@ -60,9 +60,9 @@ export default async function JobsTodayPage() {
     `\n\nSee all + apply free 👉 ${PAGE_URL}`;
 
   return (
-    <div className="min-h-screen">
+    <div className={user ? "" : "min-h-screen"}>
       {banner}
-      <MarketingHeader loggedIn={Boolean(user)} />
+      {user ? null : <MarketingHeader loggedIn={false} />}
       <main className="container py-10">
         <div className="mx-auto max-w-3xl">
           <p className="text-sm font-medium uppercase tracking-wide text-primary">Jobs this week · {todayLabel()}</p>
@@ -146,7 +146,7 @@ export default async function JobsTodayPage() {
           </p>
         </div>
       </main>
-      <SiteFooter />
+      {user ? null : <SiteFooter />}
     </div>
   );
 }
