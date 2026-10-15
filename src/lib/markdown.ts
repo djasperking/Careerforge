@@ -93,6 +93,25 @@ export function renderMarkdown(md: string): string {
       continue;
     }
 
+    // Tables: a header row, a |---|---| divider, then rows.
+    if (line.trim().startsWith("|") && i + 1 < lines.length && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/.test(lines[i + 1])) {
+      closeList();
+      const cells = (row: string) => row.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+      const head = cells(line);
+      i += 2;
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        rows.push(cells(lines[i]));
+        i++;
+      }
+      out.push(
+        `<div class="cf-table"><table><thead><tr>${head.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>` +
+          rows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("") +
+          "</tbody></table></div>",
+      );
+      continue;
+    }
+
     if (line.trim().startsWith("&gt;")) {
       closeList();
       const quote = inline(line.trim().replace(/^&gt;\s?/, ""));

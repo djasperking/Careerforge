@@ -106,3 +106,13 @@ describe("seeded course files (scripts/courses)", () => {
     }
   });
 });
+
+describe("renderMarkdown tables", () => {
+  it("renders a pipe table with escaped, inline-formatted cells", () => {
+    const html = renderMarkdown("| Item | Price |\n|---|---|\n| **Rice** | <b>1500</b> |\n\nafter");
+    expect(html).toContain("<th>Item</th>");
+    expect(html).toContain("<td><strong>Rice</strong></td>");
+    expect(html).toContain("&lt;b&gt;1500&lt;/b&gt;");
+    expect(html).toContain("<p>after</p>");
+  });
+});

@@ -156,3 +156,8 @@ body {
 .cf-pop { animation: cf-pop 0.35s ease both; }
 .cf-shake { animation: cf-shake 0.35s ease both; }
 @media (prefers-reduced-motion: reduce) { .cf-rise, .cf-pop, .cf-shake { animation: none; } }
+.cf-prose .cf-table { overflow-x: auto; border: 1px solid hsl(var(--border)); border-radius: 0.75rem; }
+.cf-prose .cf-table table { margin: 0; }
+.cf-prose th, .cf-prose td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid hsl(var(--border)); }
+.cf-prose th { background: hsl(var(--muted) / 0.6); font-weight: 600; }
+.cf-prose tr:last-child td { border-bottom: 0; }
