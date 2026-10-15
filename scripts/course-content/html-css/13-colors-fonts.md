@@ -12,10 +12,28 @@ All three mean the same tomato red. Hex is the most common in real projects.
 
 > 🎯 **Tip:** search "color picker" in your browser to pick a colour and copy its hex code.
 
+> 📌 **Remember:** Colours: names (tomato), hex (#ff6347), rgb().
+
+::: check Which is a hex colour?
+- tomato
++ #ff6347
+- red-ish
+= Hex starts with #.
+:::
+
 ### Colour properties
 
 - `color` — the **text** colour
 - `background-color` — the **background** colour
+
+> 📌 **Remember:** color = text colour, background-color = the background.
+
+::: check Which property changes the text colour?
++ color
+- background-color
+- font
+= Note: just color, not text-color.
+:::
 
 ### Text properties
 
@@ -25,6 +43,15 @@ All three mean the same tomato red. Hex is the most common in real projects.
 - `text-align` — `left`, `center`, `right`
 - `line-height` — space between lines (try `1.6` — it makes text much easier to read)
 - `text-decoration` — underline, or `none` to remove link underlines
+
+> 📌 **Remember:** font-size, font-weight, text-align, line-height shape your text.
+
+::: check Which property centres text?
+- font-align
++ text-align
+- center-text
+= text-align: center;
+:::
 
 ### Play with a colour palette
 
@@ -63,9 +90,27 @@ Fonts only work if they're installed on the visitor's device. Safe choices every
 
 (Later, you can use free **Google Fonts** for fancier typefaces — they just need one extra line in your `<head>`.)
 
+> 📌 **Remember:** Always give a fallback: font-family: Arial, sans-serif;
+
+::: check Why list more than one font?
+- To use all of them
++ If the first isn't available, the next is used
+- It looks cooler
+= Fallbacks keep the page readable.
+:::
+
 ### Units: `px` vs `rem`
 
 - `px` — pixels, fixed size
 - `rem` — relative to the base font size. `1rem` is usually 16px. Great for accessible, scalable design.
 
-✅ **You learned:** colour formats, text and background colours, fonts, `line-height`, alignment, and `:hover` on a link.
+> 📌 **You learned:** colour formats, text and background colours, fonts, `line-height`, alignment, and `:hover` on a link.
+
+> 📌 **Remember:** rem scales with the user's font size; px is fixed.
+
+::: check Which unit respects the user's text-size settings?
+- px
++ rem
+- none
+= rem is relative to the base font size.
+:::

@@ -10,6 +10,15 @@ No jargon walls. No boring theory dumps. Every idea comes with a **live code box
 - 🎨 A beautifully **styled** version, using CSS
 - 🚀 A **responsive landing page** that looks great on phones *and* laptops (your final project)
 
+> 📌 **Remember:** You'll build an About Me page, style it, then a responsive landing page.
+
+::: check Which language gives a page its colours and style?
+- HTML
++ CSS
+- Python
+= CSS is the style language. HTML is the structure.
+:::
+
 ### How the course works
 
 1. **Read** a short lesson (5–8 minutes).
@@ -17,6 +26,15 @@ No jargon walls. No boring theory dumps. Every idea comes with a **live code box
 3. **Check yourself** with friendly quizzes.
 4. **Build** 3 hands-on assignments.
 5. **Take the final exam** and earn your certificate 🎓
+
+> 📌 **Remember:** Read, play with the code boxes, check yourself, build, then take the final.
+
+::: check What's the best way to learn from this course?
+- Only read, never touch the code
++ Read, then edit the live code boxes yourself
+- Skip to the end
+= Editing real code is how it sticks.
+:::
 
 ### Try your very first code — right now
 
@@ -38,8 +56,17 @@ Only two things:
 
 You'll start using them for your assignments in Module 2. For now, the code boxes in the lessons are all you need.
 
+> 📌 **Remember:** You only need a browser and a text editor (Notepad works, VS Code is nicer).
+
+::: check What do you need to start?
++ A browser and a text editor
+- An expensive laptop
+- A paid app
+= Free tools are all it takes.
+:::
+
 ### Ready?
 
 Mark this lesson complete, then jump into **How websites work** — it's the "aha!" lesson that makes everything else click.
 
-✅ **You learned:** what you'll build, how the course works, and that you can already edit real HTML.
+> 📌 **You learned:** what you'll build, how the course works, and that you can already edit real HTML.

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { QuizRunner, type LearnerQuiz } from "./quiz-runner";
 import { AssignmentPanel, type AssignmentData } from "./assignment-panel";
 import { renderMarkdown } from "@/lib/markdown";
-import { enhancePlaygrounds } from "@/components/lesson/playground";
+import { StepLesson } from "./step-lesson";
 
 interface Props {
   courseId: string;
@@ -42,12 +42,6 @@ export function LessonPlayer({
   const [completed, setCompleted] = useState(initiallyCompleted);
   const [marking, setMarking] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-
-  // Turn any ```playground blocks in a text lesson into live, editable previews.
-  useEffect(() => {
-    if (type === "TEXT" && textRef.current) enhancePlaygrounds(textRef.current);
-  }, [type, content]);
 
   // Quiz pass / assignment submit complete the lesson server-side, then
   // router.refresh() feeds a fresh prop — mirror it into local state.
@@ -92,7 +86,7 @@ export function LessonPlayer({
     }
   }
 
-  const canMarkManually = type === "TEXT" || type === "PDF";
+  const canMarkManually = type === "PDF";
 
   return (
     <div>
@@ -107,11 +101,7 @@ export function LessonPlayer({
 
       {type === "TEXT" ? (
         content ? (
-          <div
-            ref={textRef}
-            className="prose prose-neutral max-w-none rounded-lg border bg-card p-6 text-sm leading-relaxed dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
-          />
+          <StepLesson content={content} alreadyCompleted={completed} finishing={marking} onFinish={markComplete} />
         ) : (
           <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">No content yet.</div>
         )
@@ -165,7 +155,9 @@ export function LessonPlayer({
           </Button>
         ) : (
           <span className="text-xs text-muted-foreground">
-            {type === "QUIZ"
+            {type === "TEXT"
+              ? "Finish every part to complete this lesson."
+              : type === "QUIZ"
               ? "Pass the quiz to complete this lesson."
               : type === "ASSIGNMENT"
                 ? "Submit the assignment to complete this lesson."
@@ -175,8 +167,8 @@ export function LessonPlayer({
           </span>
         )}
 
-        <Button asChild size="sm" disabled={!nextLessonId}>
-          <Link href={nextLessonId ? `/dashboard/courses/${courseId}/lessons/${nextLessonId}` : "#"}>
+        <Button asChild size="sm" disabled={!nextLessonId || (!completed && type !== "EXAM")} className={!completed && type !== "EXAM" ? "pointer-events-none opacity-50" : undefined}>
+          <Link href={nextLessonId && (completed || type === "EXAM") ? `/dashboard/courses/${courseId}/lessons/${nextLessonId}` : "#"}>
             Next <ChevronRight className="size-4" />
           </Link>
         </Button>

@@ -16,6 +16,15 @@ HTML is made of **elements**. Most elements have an **opening tag**, some **cont
 
 Tags are like labels on boxes: they tell the browser *what kind of thing* is inside.
 
+> 📌 **Remember:** Most elements: an opening tag, content, and a closing tag with a slash.
+
+::: check Which is the correct closing tag for a paragraph?
+- <p>
++ </p>
+- <end>
+= Closing tags start with a slash.
+:::
+
 ### Attributes: extra settings
 
 Tags can carry extra information called **attributes**, written inside the opening tag:
@@ -25,6 +34,15 @@ Tags can carry extra information called **attributes**, written inside the openi
 ```
 
 Here `href` is the attribute name and the web address is its value.
+
+> 📌 **Remember:** Attributes live in the opening tag, like href in a link.
+
+::: check In <a href="https://x.com">, what is href?
+- the content
++ an attribute
+- a closing tag
+= Attributes give a tag extra information.
+:::
 
 ### The skeleton every page needs
 
@@ -53,10 +71,28 @@ Let's read it like a map:
 
 > 💡 **Indentation** (the spaces at the start of lines) is just to keep things readable. Browsers ignore it. Use it so *you* can see which tags are inside which.
 
+> 📌 **Remember:** Visible stuff goes inside <body>; page info goes inside <head>.
+
+::: check Where does everything you can SEE on the page go?
+- <head>
++ <body>
+- <title>
+= The body holds the visible page.
+:::
+
 ### Saving your first file
 
 1. Open your text editor and paste the skeleton above.
 2. Save it as `index.html` (make sure it doesn't end in `.txt`!).
 3. Double-click the file. Your browser opens it. 🎉
 
-✅ **You learned:** tags, elements, attributes, and the five-part page skeleton.
+> 📌 **You learned:** tags, elements, attributes, and the five-part page skeleton.
+
+> 📌 **Remember:** Save as index.html (not .txt) and double-click to open it.
+
+::: check What should the file name end with?
+- .txt
++ .html
+- .page
+= The .html ending tells the browser it is a web page.
+:::

@@ -14,6 +14,15 @@ Put `display: flex;` on a **container**, and its direct children become **flex i
 
 That one line turns stacked boxes into a row. 🎉
 
+> 📌 **Remember:** display: flex on a parent lines its children up in a row.
+
+::: check Which CSS turns on flexbox?
+- layout: flex
++ display: flex
+- flex: on
+= Put it on the container.
+:::
+
 ### The controls you'll use constantly
 
 On the **container**:
@@ -27,6 +36,15 @@ On the **container**:
 On an **item**:
 
 - `flex: 1;` — grow to share the leftover space equally
+
+> 📌 **Remember:** justify-content (main axis), align-items (cross axis), gap (spacing).
+
+::: check Which adds space between flex items?
+- space
++ gap
+- margin-all
+= gap is the easiest spacing.
+:::
 
 ### Build a navigation bar and a row of cards
 
@@ -86,4 +104,13 @@ Want something perfectly centred, horizontally *and* vertically? Three lines:
 
 > 💡 **Remember the two directions:** `justify-content` works along the main direction (a row, by default). `align-items` works across it. Flip `flex-direction` and they swap roles.
 
-✅ **You learned:** `display: flex`, `justify-content`, `align-items`, `gap`, `flex-wrap`, `flex-direction` and `flex: 1`.
+> 📌 **You learned:** `display: flex`, `justify-content`, `align-items`, `gap`, `flex-wrap`, `flex-direction` and `flex: 1`.
+
+> 📌 **Remember:** Centre anything: display:flex; justify-content:center; align-items:center;
+
+::: check Which property centres items along the main axis?
++ justify-content
+- align-text
+- centre
+= justify-content: center;
+:::

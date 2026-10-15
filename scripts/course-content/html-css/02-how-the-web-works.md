@@ -17,6 +17,15 @@ In this course we master the first two. They're the foundation of everything on 
 
 That's it. The browser is a translator: it turns text files into the page you see.
 
+> 📌 **Remember:** Your browser asks a server for files, then reads them and draws the page.
+
+::: check Which of these sends a website's files to your browser?
+- The keyboard
++ A server
+- Your printer
+= A server stores websites and sends the files when asked.
+:::
+
 ### HTML alone vs HTML + CSS
 
 Here is the *same* page twice. First the plain HTML. Then try deleting the `<style>` part and see what CSS was doing for you.
@@ -35,11 +44,29 @@ Here is the *same* page twice. First the plain HTML. Then try deleting the `<sty
 
 Without CSS the page still **works** — it's just plain. HTML gives it meaning; CSS gives it personality.
 
+> 📌 **Remember:** HTML gives meaning; CSS gives personality.
+
+::: check If you delete all the CSS from a page, what happens?
+- The page disappears
++ It still works, but looks plain
+- The text turns into pictures
+= HTML alone still shows the content.
+:::
+
 ### Where do you write code?
 
 You write HTML in a plain **text file** that ends in `.html`, for example `index.html`. Double-click it and your browser opens it — no internet needed.
 
 > 💡 **Tip:** `index.html` is the traditional name for a website's front page. Browsers look for it first.
+
+> 📌 **Remember:** A website's front page is traditionally called index.html.
+
+::: check What is the traditional name for a site's front page?
+- home.txt
+- first.doc
++ index.html
+= Browsers look for index.html first.
+:::
 
 ### Quick vocabulary
 
@@ -49,4 +76,13 @@ You write HTML in a plain **text file** that ends in `.html`, for example `index
 - **CSS** – the language of style
 - **Tag** – a label in HTML, like `<p>` (you'll meet these next module)
 
-✅ **You learned:** HTML is structure, CSS is style, and the browser turns both into the page you see.
+> 📌 **You learned:** HTML is structure, CSS is style, and the browser turns both into the page you see.
+
+> 📌 **Remember:** HTML = structure, CSS = style, the browser turns both into the page.
+
+::: check Which one is the language of structure?
++ HTML
+- CSS
+- The browser
+= HTML decides what is on the page.
+:::

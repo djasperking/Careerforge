@@ -12,6 +12,15 @@ button:hover {
 
 Add `:hover` after any selector. (On phones, a tap triggers it.)
 
+> 📌 **Remember:** Hover styles use :hover — e.g. .btn:hover { ... }
+
+::: check Which selector styles a button while the mouse is over it?
+- .btn:over
++ .btn:hover
+- .btn:mouse
+= :hover is a pseudo-class.
+:::
+
 ### `transition` — make changes smooth
 
 Without a transition, the change is instant and jerky. With one, it **glides**:
@@ -24,11 +33,29 @@ button {
 
 "Animate any change over 0.3 seconds, easing in and out."
 
+> 📌 **Remember:** transition makes changes smooth: transition: all 0.3s ease;
+
+::: check What does transition do?
+- Changes the page title
++ Animates the change smoothly
+- Loads faster
+= Without it, changes snap instantly.
+:::
+
 ### `transform` — move, scale and rotate
 
 - `transform: scale(1.1);` — grow 10%
 - `transform: translateY(-6px);` — float up 6 pixels
 - `transform: rotate(5deg);` — tilt
+
+> 📌 **Remember:** transform can move, scale and rotate: transform: scale(1.1);
+
+::: check Which makes something 10% bigger?
+- zoom: 10%
++ transform: scale(1.1)
+- bigger: yes
+= scale(1) is normal size.
+:::
 
 ### Build something satisfying
 
@@ -93,8 +120,17 @@ Hover over the button and the cards — then make them your own!
 - Use effects to give **feedback** (this is clickable!), not just decoration.
 - Don't animate everything. A little goes a long way.
 
+> 📌 **Remember:** Subtle, fast effects (0.2–0.3s) feel professional.
+
+::: check Which feels most professional?
+- Spinning every element forever
++ A subtle 0.3s hover lift
+- Flashing colours
+= Less is more.
+:::
+
 ### Bonus: the `cursor` property
 
 `cursor: pointer;` changes the mouse to a hand. Put it on anything clickable so people know it is.
 
-✅ **You learned:** `:hover`, `transition`, `transform` (`scale`, `translate`, `rotate`), and how to make a page feel alive.
+> 📌 **You learned:** `:hover`, `transition`, `transform` (`scale`, `translate`, `rotate`), and how to make a page feel alive.

@@ -10,14 +10,29 @@ const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 
 function inline(s: string): string {
-  return s
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+  // Code spans are lifted out first so asterisks inside them are never read as emphasis.
+  const codes: string[] = [];
+  const text = s.replace(/`([^`]+)`/g, (_m, c: string) => {
+    codes.push(c);
+    return "\u0000" + (codes.length - 1) + "\u0000";
+  });
+  return text
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\w)/g, "$1<em>$2</em>")
     .replace(
       /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
       '<a href="$2" target="_blank" rel="noopener noreferrer nofollow">$1</a>',
-    );
+    )
+    .replace(/\u0000(\d+)\u0000/g, (_m, i: string) => "<code>" + codes[Number(i)] + "</code>");
+}
+
+/** A quote that opens with an emoji becomes a coloured callout (tip, warning, key point…). */
+function calloutClass(text: string): string {
+  if (/^(💡|✨|🎯)/u.test(text)) return "cf-callout cf-tip";
+  if (/^(⚠️|⚠|🚫|❌|🛑)/u.test(text)) return "cf-callout cf-warn";
+  if (/^(📌|🔑|⭐|✅|♿|🧠)/u.test(text)) return "cf-callout cf-key";
+  return "cf-callout";
 }
 
 export function renderMarkdown(md: string): string {
@@ -79,7 +94,8 @@ export function renderMarkdown(md: string): string {
 
     if (line.trim().startsWith("&gt;")) {
       closeList();
-      out.push(`<blockquote>${inline(line.trim().replace(/^&gt;\s?/, ""))}</blockquote>`);
+      const quote = inline(line.trim().replace(/^&gt;\s?/, ""));
+      out.push(`<blockquote class="${calloutClass(quote)}">${quote}</blockquote>`);
       i++;
       continue;
     }

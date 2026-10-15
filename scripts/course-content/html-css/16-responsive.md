@@ -10,6 +10,15 @@ Every page you build needs this line inside `<head>`. Without it, phones show a 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ```
 
+> 📌 **Remember:** Always add the viewport meta tag so phones show your page properly.
+
+::: check What does the viewport tag help with?
+- Colours
++ Looking right on phones
+- Faster downloads
+= Without it phones zoom out.
+:::
+
 ### Step 2: use flexible sizes
 
 Avoid fixed pixel widths for big areas. Prefer:
@@ -18,6 +27,15 @@ Avoid fixed pixel widths for big areas. Prefer:
 - `width: 100%;` — fill the available space
 - `margin: 0 auto;` — centre a fixed-max-width block
 - `rem` and `%` units instead of lots of `px`
+
+> 📌 **Remember:** Use %, rem and max-width instead of fixed pixels.
+
+::: check Which keeps an image from overflowing its box?
+- width: 3000px
++ max-width: 100%
+- float: none
+= Images then shrink to fit.
+:::
 
 ### Step 3: media queries
 
@@ -32,6 +50,15 @@ A **media query** applies CSS **only** when a condition is true — usually the 
 ```
 
 Read it: "When the screen is 600px wide **or less**, stack the cards in a column."
+
+> 📌 **Remember:** @media (max-width: 600px) { ... } applies only on small screens.
+
+::: check What does @media (max-width: 600px) target?
+- Big screens
++ Screens 600px wide or narrower
+- Printers only
+= Great for phone-only tweaks.
+:::
 
 ### See it respond
 
@@ -71,8 +98,17 @@ This page stacks its cards on narrow screens. The preview box is narrower on a p
 
 Many developers design for **phones first**, then add media queries (`min-width`) for bigger screens. It forces you to keep things simple, and it matches how most people browse.
 
+> 📌 **Remember:** Design for phones first, then enhance for bigger screens.
+
+::: check What is mobile-first?
++ Style for phones first, then add for larger screens
+- Ignore phones
+- Only build apps
+= Simple small layouts first.
+:::
+
 ### Test on a real phone
 
 Open your page on your phone, or press **F12** in Chrome and click the little phone/tablet icon to simulate different devices.
 
-✅ **You learned:** the viewport tag, flexible units, `max-width`, `@media` queries, and designing for phones.
+> 📌 **You learned:** the viewport tag, flexible units, `max-width`, `@media` queries, and designing for phones.

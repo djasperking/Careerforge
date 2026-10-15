@@ -20,6 +20,15 @@ h1 {
 
 Read it aloud: "For every `h1`, make the colour tomato and the font size 40 pixels."
 
+> 📌 **Remember:** A rule = selector + { property: value; }
+
+::: check In h1 { color: red; }, what is h1?
++ the selector
+- the value
+- the property
+= The selector picks which elements to style.
+:::
+
 ### Three ways to add CSS
 
 1. **Inline** — inside a tag: `<p style="color: red;">` (quick, but messy)
@@ -27,6 +36,15 @@ Read it aloud: "For every `h1`, make the colour tomato and the font size 40 pixe
 3. **External** — in a separate `.css` file linked with `<link rel="stylesheet" href="style.css">` (the professional way)
 
 In the practice boxes we use a `<style>` block so you can see everything in one place.
+
+> 📌 **Remember:** Best practice: put CSS in its own .css file and link it.
+
+::: check Which way is cleanest for real sites?
+- Inline styles everywhere
++ A separate .css file
+- Writing it on paper
+= One file can style every page.
+:::
 
 ### Three kinds of selectors
 
@@ -49,10 +67,28 @@ In the practice boxes we use a `<style>` block so you can see everything in one 
 <p id="special">This one uses an ID.</p>
 ```
 
+> 📌 **Remember:** Element selectors (p), class selectors (.card), ID selectors (#top).
+
+::: check Which selector starts with a dot?
++ class
+- element
+- id
+= .card targets class="card".
+:::
+
 ### The "cascade" in one sentence
 
 When two rules disagree, CSS picks the more **specific** one, and if they're equally specific, the **later** one wins. (That's the "cascading" part.) You'll feel this naturally as you practise.
 
 > 💡 **Use classes for almost everything.** Classes are flexible and reusable — the standard choice for professional developers.
 
-✅ **You learned:** selectors, properties, values, the three ways to add CSS, and the difference between element, class and ID selectors.
+> 📌 **You learned:** selectors, properties, values, the three ways to add CSS, and the difference between element, class and ID selectors.
+
+> 📌 **Remember:** When rules clash, the more specific (or later) rule wins.
+
+::: check Two rules clash with equal specificity. Which wins?
+- The first
++ The one written later
+- Neither
+= Later rules override earlier ones.
+:::

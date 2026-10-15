@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/session";
@@ -25,7 +25,16 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const lesson = flatLessons[idx];
   if (!lesson) notFound();
 
-  const progress = await db.courseProgress.findUnique({ where: { userId_lessonId: { userId: user.id, lessonId } } });
+  const doneRows = await db.courseProgress.findMany({
+    where: { userId: user.id, lessonId: { in: flatLessons.map((l) => l.id) }, completed: true },
+    select: { lessonId: true },
+  });
+  const doneIds = new Set(doneRows.map((r) => r.lessonId));
+  const progress = { completed: doneIds.has(lesson.id) };
+
+  // Lessons open in order: finish the earlier ones first (exam lessons are taken elsewhere, so they never block).
+  const blocker = flatLessons.slice(0, idx).find((l) => l.type !== "EXAM" && !doneIds.has(l.id));
+  if (blocker && !progress.completed) redirect(`/dashboard/courses/${courseId}/lessons/${blocker.id}`);
 
   const quiz = lesson.type === "QUIZ" ? await getLessonQuizForLearner(lesson.id) : null;
   const quizAttempts =
@@ -55,7 +64,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         type={lesson.type}
         videoUrl={lesson.videoUrl}
         content={lesson.content}
-        initiallyCompleted={progress?.completed ?? false}
+        initiallyCompleted={progress.completed}
         prevLessonId={flatLessons[idx - 1]?.id ?? null}
         nextLessonId={flatLessons[idx + 1]?.id ?? null}
         quiz={quiz}

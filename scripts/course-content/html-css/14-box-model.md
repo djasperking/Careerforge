@@ -15,6 +15,15 @@ From the inside out (like a gift box 🎁):
 3. **Border** — the box's edge line
 4. **Margin** — empty space *outside* the box, pushing neighbours away
 
+> 📌 **Remember:** Every element is a box: content, padding, border, margin.
+
+::: check Which layer is the space INSIDE the border?
++ padding
+- margin
+- content
+= Padding is inside; margin is outside.
+:::
+
 ### The properties
 
 - `padding: 16px;` — space inside
@@ -25,6 +34,15 @@ From the inside out (like a gift box 🎁):
 - `box-shadow: 0 4px 12px rgba(0,0,0,0.2);` — a soft shadow
 
 > 💡 **Padding vs margin:** padding is *inside* the border (it's part of the box). Margin is *outside* (it keeps other boxes at a distance).
+
+> 📌 **Remember:** padding = inside space, margin = outside space.
+
+::: check Which pushes OTHER elements away?
+- padding
++ margin
+- border
+= Margin creates space outside.
+:::
 
 ### Meet the box: change the numbers!
 
@@ -67,10 +85,28 @@ By default, padding and border get **added** to the width, which makes sizes con
 
 Now `width: 300px` means the *whole box* is 300px, padding and border included. Much more predictable.
 
+> 📌 **Remember:** set box-sizing: border-box so widths include padding and border.
+
+::: check What does box-sizing: border-box do?
++ Width includes padding and border
+- Removes the border
+- Adds a margin
+= Sizes behave the way you expect.
+:::
+
 ### Shorthand: top, right, bottom, left
 
 - `padding: 10px;` — all four sides
 - `padding: 10px 20px;` — top & bottom 10px, left & right 20px
 - `padding: 5px 10px 15px 20px;` — top, right, bottom, left (clockwise, like a clock)
 
-✅ **You learned:** content, padding, border and margin; `border-radius`, `box-shadow`, `box-sizing`, and the shorthand order.
+> 📌 **You learned:** content, padding, border and margin; `border-radius`, `box-shadow`, `box-sizing`, and the shorthand order.
+
+> 📌 **Remember:** Shorthand goes clockwise: top, right, bottom, left.
+
+::: check In margin: 10px 20px 30px 40px, which is the LEFT margin?
+- 10px
+- 20px
++ 40px
+= Order: top, right, bottom, left.
+:::

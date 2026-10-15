@@ -128,3 +128,31 @@ body {
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 75%);
 }
+
+/* ---- Lesson content ---- */
+.cf-prose { font-size: 0.95rem; line-height: 1.75; color: hsl(var(--foreground)); }
+.cf-prose > * + * { margin-top: 1rem; }
+.cf-prose h2, .cf-prose h3, .cf-prose h4 { font-family: var(--font-display, inherit); font-weight: 600; margin-top: 1.5rem; }
+.cf-prose strong { font-weight: 700; color: hsl(var(--foreground)); }
+.cf-prose ul, .cf-prose ol { padding-left: 1.4rem; display: grid; gap: 0.4rem; }
+.cf-prose ul { list-style: disc; }
+.cf-prose ol { list-style: decimal; }
+.cf-prose li::marker { color: hsl(var(--primary)); font-weight: 700; }
+.cf-prose a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
+.cf-prose code { border-radius: 0.35rem; background: hsl(var(--muted)); padding: 0.1rem 0.4rem; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: hsl(var(--primary)); }
+.cf-prose pre { overflow-x: auto; border-radius: 0.75rem; background: #0f172a; padding: 1rem; font-size: 0.8rem; line-height: 1.6; }
+.cf-prose pre code { background: transparent; padding: 0; color: #e2e8f0; font-size: inherit; }
+.cf-prose hr { border: 0; border-top: 1px solid hsl(var(--border)); }
+.cf-prose .cf-callout { border-radius: 0.75rem; border: 1px solid hsl(var(--border)); background: hsl(var(--muted) / 0.5); padding: 0.75rem 1rem; }
+.cf-prose .cf-tip { border-color: rgb(245 158 11 / 0.5); background: rgb(245 158 11 / 0.1); }
+.cf-prose .cf-warn { border-color: rgb(239 68 68 / 0.45); background: rgb(239 68 68 / 0.08); }
+.cf-prose .cf-key { border-color: hsl(var(--primary) / 0.45); background: hsl(var(--primary) / 0.08); }
+.cf-prose table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+@keyframes cf-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes cf-pop { 0% { transform: scale(0.96); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+@keyframes cf-shake { 0%, 100% { transform: none; } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.cf-rise { animation: cf-rise 0.45s ease both; }
+.cf-pop { animation: cf-pop 0.35s ease both; }
+.cf-shake { animation: cf-shake 0.35s ease both; }
+@media (prefers-reduced-motion: reduce) { .cf-rise, .cf-pop, .cf-shake { animation: none; } }

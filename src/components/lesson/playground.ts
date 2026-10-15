@@ -64,6 +64,7 @@ function enhanceOne(host: HTMLElement) {
     timer = setTimeout(render, 200);
     if (!celebrated && editor.value !== original) {
       celebrated = true;
+      card.dispatchEvent(new CustomEvent("cf-edit", { bubbles: true }));
       status.textContent = "🎉 Nice — you just changed real code!";
       status.className = "text-xs font-medium text-primary";
     }
