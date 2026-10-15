@@ -38,6 +38,7 @@ export function renderMarkdown(md: string): string {
 
     if (line.trim().startsWith("```")) {
       closeList();
+      const info = line.trim().slice(3).trim(); // already HTML-escaped with the rest of the text
       const buf: string[] = [];
       i++;
       while (i < lines.length && !lines[i].trim().startsWith("```")) {
@@ -45,7 +46,18 @@ export function renderMarkdown(md: string): string {
         i++;
       }
       i++;
-      out.push(`<pre><code>${buf.join("\n")}</code></pre>`);
+      const code = buf.join("\n");
+      if (/^playground\b/.test(info)) {
+        // An editable live-preview box. Lessons upgrade it in the browser; anywhere
+        // else it degrades to a plain code block. The code is escaped, so it is safe
+        // both as the fallback <pre> and inside the data attribute.
+        const title = info.replace(/^playground\s*/, "");
+        out.push(
+          `<div class="cf-playground" data-title="${title}" data-code="${code}"><pre><code>${code}</code></pre></div>`,
+        );
+      } else {
+        out.push(`<pre><code>${code}</code></pre>`);
+      }
       continue;
     }
 

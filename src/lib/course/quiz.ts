@@ -68,7 +68,9 @@ export async function saveLessonQuiz(lessonId: string, raw: unknown) {
         },
       });
     }
-  });
+    // Saving a quiz is one request per question; over a real network that easily
+    // outlasts Prisma's 5-second default and the whole save fails half-way.
+  }, { timeout: 30_000, maxWait: 10_000 });
 }
 
 export async function deleteLessonQuiz(lessonId: string) {

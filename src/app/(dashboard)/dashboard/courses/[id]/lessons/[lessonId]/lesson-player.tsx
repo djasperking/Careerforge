@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { QuizRunner, type LearnerQuiz } from "./quiz-runner";
 import { AssignmentPanel, type AssignmentData } from "./assignment-panel";
 import { renderMarkdown } from "@/lib/markdown";
+import { enhancePlaygrounds } from "@/components/lesson/playground";
 
 interface Props {
   courseId: string;
@@ -41,6 +42,12 @@ export function LessonPlayer({
   const [completed, setCompleted] = useState(initiallyCompleted);
   const [marking, setMarking] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+
+  // Turn any ```playground blocks in a text lesson into live, editable previews.
+  useEffect(() => {
+    if (type === "TEXT" && textRef.current) enhancePlaygrounds(textRef.current);
+  }, [type, content]);
 
   // Quiz pass / assignment submit complete the lesson server-side, then
   // router.refresh() feeds a fresh prop — mirror it into local state.
@@ -101,6 +108,7 @@ export function LessonPlayer({
       {type === "TEXT" ? (
         content ? (
           <div
+            ref={textRef}
             className="prose prose-neutral max-w-none rounded-lg border bg-card p-6 text-sm leading-relaxed dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
           />
