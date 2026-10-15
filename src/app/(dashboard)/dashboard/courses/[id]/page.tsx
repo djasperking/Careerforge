@@ -1,15 +1,25 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Circle, PlayCircle, ClipboardCheck, CalendarDays, Video } from "lucide-react";
+import {
+  CheckCircle2, PlayCircle, ClipboardCheck, CalendarDays, Video, Lock, FileText, HelpCircle, PencilRuler,
+  Clock, ChevronDown, ArrowLeft, Trophy,
+} from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { PageHeader } from "@/components/ui/page-header";
+import { CourseThumb } from "@/components/ui/course-thumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatDate } from "@/lib/utils";
 import { getUserReview } from "@/lib/review/service";
 import { CourseReviewForm } from "./review-form";
+
+const LESSON_ICON: Record<string, React.ElementType> = {
+  VIDEO: PlayCircle, TEXT: FileText, PDF: FileText, QUIZ: HelpCircle, ASSIGNMENT: PencilRuler, EXAM: ClipboardCheck,
+};
+const LESSON_LABEL: Record<string, string> = {
+  VIDEO: "Video", TEXT: "Lesson", PDF: "PDF", QUIZ: "Quiz", ASSIGNMENT: "Assignment", EXAM: "Exam",
+};
 
 export default async function EnrolledCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
@@ -38,6 +48,13 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
     .flatMap((m) => m.lessons)
     .find((l) => !progressByLesson.get(l.id)?.completed);
 
+  const allLessons = enrollment.course.modules.flatMap((m) => m.lessons);
+  const totalLessons = allLessons.length;
+  const doneCount = allLessons.filter((l) => progressByLesson.get(l.id)?.completed).length;
+  const percent = totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0;
+  // Lessons open in order; exam lessons are taken elsewhere so they never lock the ones after them.
+  const firstOpenIdx = allLessons.findIndex((l) => l.type !== "EXAM" && !progressByLesson.get(l.id)?.completed);
+
   const myReview = await getUserReview(user.id, id);
 
   const cohortEnrolment = await db.cohortEnrollment.findFirst({
@@ -48,26 +65,55 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
 
   return (
     <div>
-      <PageHeader
-        title={enrollment.course.title}
-        description={`${enrollment.progressPercent}% complete · ${enrollment.status}`}
-        action={
-          <div className="flex gap-2">
-            {nextLesson ? (
-              <Button asChild>
-                <Link href={`/dashboard/courses/${id}/lessons/${nextLesson.id}`}>
-                  {progressByLesson.size === 0 ? "Start course" : "Continue"}
-                </Link>
-              </Button>
-            ) : null}
-            <Button asChild variant="outline">
-              <Link href="/dashboard/courses">Back</Link>
-            </Button>
-          </div>
-        }
-      />
+      <Link href="/dashboard/courses" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="size-4" /> My courses
+      </Link>
 
-      <div className="space-y-4">
+      <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+        <div className="grid gap-0 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <CourseThumb src={enrollment.course.thumbnailUrl} alt={enrollment.course.title} className="h-full rounded-none border-0" />
+          <div className="flex flex-col justify-center gap-4 p-5 sm:p-7">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                {enrollment.status === "COMPLETED" ? "Completed" : "Your course"}
+              </p>
+              <h1 className="mt-1 font-display text-2xl font-semibold leading-tight sm:text-3xl">{enrollment.course.title}</h1>
+            </div>
+
+            <div>
+              <div className="mb-1.5 flex items-center justify-between text-sm">
+                <span className="font-medium">{doneCount} of {totalLessons} lessons done</span>
+                <span className="font-semibold text-primary">{percent}%</span>
+              </div>
+              <div className="h-3 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-fuchsia-500 transition-all"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+            </div>
+
+            {nextLesson ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <Button asChild size="lg">
+                  <Link href={`/dashboard/courses/${id}/lessons/${nextLesson.id}`}>
+                    <PlayCircle className="size-5" /> {doneCount === 0 ? "Start course" : "Continue learning"}
+                  </Link>
+                </Button>
+                <p className="min-w-0 text-sm text-muted-foreground">
+                  Up next: <span className="font-medium text-foreground">{nextLesson.title}</span>
+                </p>
+              </div>
+            ) : (
+              <p className="flex items-center gap-2 text-sm font-medium text-success">
+                <Trophy className="size-5" /> You have finished every lesson. Well done!
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-6 space-y-4">
         {cohortEnrolment ? (
           <Card className="border-primary/40 bg-primary/5">
             <CardHeader>
@@ -107,34 +153,82 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
           </Card>
         ) : null}
 
-        {enrollment.course.modules.map((m) => (
-          <Card key={m.id}>
-            <CardContent className="p-5">
-              <p className="font-medium">{m.title}</p>
-              <ul className="mt-2 space-y-1">
+        <h2 className="font-display text-lg font-semibold">Course content</h2>
+        {enrollment.course.modules.map((m, mi) => {
+          const moduleDone = m.lessons.filter((l) => progressByLesson.get(l.id)?.completed).length;
+          const complete = m.lessons.length > 0 && moduleDone === m.lessons.length;
+          const hasNext = nextLesson ? m.lessons.some((l) => l.id === nextLesson.id) : false;
+          return (
+            <details key={m.id} open={hasNext || (!nextLesson && mi === 0)} className="group overflow-hidden rounded-xl border bg-card">
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+                <span
+                  className={cn(
+                    "grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold",
+                    complete ? "bg-success/15 text-success" : "bg-primary/10 text-primary",
+                  )}
+                >
+                  {complete ? <CheckCircle2 className="size-5" /> : mi + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{m.title}</span>
+                  <span className="text-xs text-muted-foreground">{moduleDone} of {m.lessons.length} done</span>
+                </span>
+                <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <ul className="border-t">
                 {m.lessons.map((l) => {
                   const done = progressByLesson.get(l.id)?.completed ?? false;
-                  return (
-                    <li key={l.id}>
-                      <Link
-                        href={`/dashboard/courses/${id}/lessons/${l.id}`}
-                        className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
-                      >
+                  const idx = allLessons.findIndex((x) => x.id === l.id);
+                  const locked = !done && firstOpenIdx !== -1 && idx > firstOpenIdx && l.type !== "EXAM";
+                  const isNext = nextLesson?.id === l.id;
+                  const Icon = LESSON_ICON[l.type] ?? FileText;
+                  const mins = Math.max(1, Math.round(l.durationSeconds / 60));
+                  const row = (
+                    <>
+                      <span className="grid size-6 shrink-0 place-items-center">
                         {done ? (
-                          <CheckCircle2 className="size-4 shrink-0 text-success" />
+                          <CheckCircle2 className="size-5 text-success" />
+                        ) : locked ? (
+                          <Lock className="size-4 text-muted-foreground/60" />
                         ) : (
-                          <Circle className="size-4 shrink-0 text-muted-foreground" />
+                          <span className={cn("size-4 rounded-full border-2", isNext ? "border-primary bg-primary/20" : "border-muted-foreground/40")} />
                         )}
-                        <span className={cn(done && "text-muted-foreground line-through")}>{l.title}</span>
-                        <span className="text-xs text-muted-foreground">({l.type})</span>
-                      </Link>
+                      </span>
+                      <span className={cn("min-w-0 flex-1 truncate text-sm", done && "text-muted-foreground", isNext && "font-semibold")}>
+                        {l.title}
+                      </span>
+                      <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground sm:inline-flex">
+                        <Icon className="size-3.5" /> {LESSON_LABEL[l.type] ?? l.type}
+                        {l.durationSeconds > 0 ? (
+                          <>
+                            <Clock className="ml-2 size-3.5" /> {mins} min
+                          </>
+                        ) : null}
+                      </span>
+                      {isNext ? <Badge className="shrink-0">Up next</Badge> : null}
+                    </>
+                  );
+                  return (
+                    <li key={l.id} className="border-b last:border-b-0">
+                      {locked ? (
+                        <div className="flex items-center gap-3 px-4 py-3 opacity-60" title="Finish the earlier lessons to unlock this one">
+                          {row}
+                        </div>
+                      ) : (
+                        <Link
+                          href={`/dashboard/courses/${id}/lessons/${l.id}`}
+                          className={cn("flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/60", isNext && "bg-primary/5")}
+                        >
+                          {row}
+                        </Link>
+                      )}
                     </li>
                   );
                 })}
               </ul>
-            </CardContent>
-          </Card>
-        ))}
+            </details>
+          );
+        })}
 
         {enrollment.course.exams.length > 0 ? (
           <Card>
