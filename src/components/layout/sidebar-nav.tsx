@@ -1,12 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, GraduationCap, Search, TrendingUp, User, Users, Wallet, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { adminNav, customerNav, instructorNav, type NavItem } from "./nav-config";
 import { hasPermission, type PermissionKey } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
+
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  Learning: GraduationCap,
+  Money: Wallet,
+  Growth: TrendingUp,
+  "People & system": Users,
+  "My account": User,
+};
+
+/** Admin items carry a `group` label; fold each run of them into one dropdown. */
+function foldGroups(items: NavItem[]): NavItem[] {
+  const out: NavItem[] = [];
+  for (const item of items) {
+    if (!item.group) {
+      out.push(item);
+      continue;
+    }
+    const last = out[out.length - 1];
+    if (last?.children && last.label === item.group) last.children.push(item);
+    else out.push({ label: item.group, href: "#" + item.group, icon: GROUP_ICONS[item.group] ?? Users, children: [item] });
+  }
+  return out;
+}
 
 /**
  * Client component: owns the nav config (icons are React components and can't
@@ -25,7 +49,28 @@ export function SidebarNav({
 }) {
   const pathname = usePathname();
   const nav = area === "Admin" ? adminNav : area === "Instructor" ? instructorNav : customerNav;
-  const items: NavItem[] = nav.filter((i) => !i.permission || hasPermission(permissions, i.permission));
+  const allowed: NavItem[] = nav.filter((i) => !i.permission || hasPermission(permissions, i.permission));
+  const items = useMemo(() => (area === "Admin" ? foldGroups(allowed.map((i) => ({ ...i }))) : allowed), [area, allowed]);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Ctrl/⌘ + K jumps to the page finder.
+  useEffect(() => {
+    if (area !== "Admin") return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [area]);
+
+  const q = query.trim().toLowerCase();
+  const matches = q
+    ? allowed.filter((i) => i.label.toLowerCase().includes(q) || (i.group ?? "").toLowerCase().includes(q))
+    : [];
   const root = area === "Admin" ? "/admin" : area === "Instructor" ? "/instructor" : "/dashboard";
 
   // Groups the user opened or closed by hand; anything not listed follows the current page.
@@ -40,8 +85,47 @@ export function SidebarNav({
 
   let lastGroup: string | undefined;
 
+  const finder =
+    area === "Admin" ? (
+      <div className="relative mb-2">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          ref={searchRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && setQuery("")}
+          placeholder="Find a page…  Ctrl K"
+          aria-label="Find a page"
+          className="h-9 w-full rounded-md border bg-background pl-8 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
+        {query ? (
+          <button type="button" aria-label="Clear search" onClick={() => setQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <X className="size-4" />
+          </button>
+        ) : null}
+      </div>
+    ) : null;
+
+  if (q) {
+    return (
+      <nav className="flex flex-col gap-1">
+        {finder}
+        {matches.length === 0 ? (
+          <p className="px-3 py-2 text-sm text-muted-foreground">No page matches &ldquo;{query}&rdquo;.</p>
+        ) : (
+          matches.map((item) => (
+            <div key={item.href} onClick={() => setQuery("")}>
+              <NavLink item={item} active={isActive(item)} badge={badges?.[item.href]} hint={item.group} />
+            </div>
+          ))
+        )}
+      </nav>
+    );
+  }
+
   return (
     <nav className="flex flex-col gap-1">
+      {finder}
       {items.map((item) => {
         const showGroup = item.group && item.group !== lastGroup;
         lastGroup = item.group;
@@ -101,7 +185,7 @@ export function SidebarNav({
   );
 }
 
-function NavLink({ item, active, badge }: { item: NavItem; active: boolean; badge?: number }) {
+function NavLink({ item, active, badge, hint }: { item: NavItem; active: boolean; badge?: number; hint?: string }) {
   return (
     <Link
       href={item.href}
@@ -113,6 +197,7 @@ function NavLink({ item, active, badge }: { item: NavItem; active: boolean; badg
     >
       <item.icon className="size-4 shrink-0" />
       <span className="flex-1">{item.label}</span>
+      {hint ? <span className={cn("text-xs", active ? "text-primary-foreground/70" : "text-muted-foreground/70")}>{hint}</span> : null}
       {badge ? (
         <span
           className={cn(

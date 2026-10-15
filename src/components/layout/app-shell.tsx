@@ -3,6 +3,7 @@ import { Brand } from "./brand";
 import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
 import { MobileNav } from "./mobile-nav";
+import { AdminCrumbs } from "./admin-crumbs";
 import { ADMIN_ROLES, ROLE_NAMES, type PermissionKey, type RoleKey } from "@/lib/rbac";
 
 /** Most senior admin role a user holds, for display — e.g. "Customer Care" instead of a generic "Admin". */
@@ -54,7 +55,7 @@ export function AppShell({
   const areaLabel = area === "Admin" ? (seniorRoleLabel(user.roles) ?? area) : area;
   return (
     <div className="flex min-h-screen">
-      <aside className="hidden w-64 shrink-0 flex-col border-r bg-card p-4 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r bg-card p-4 md:flex">
         <div className="px-2 py-2">
           <Brand />
           <p className="mt-1 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -97,7 +98,10 @@ export function AppShell({
             <Avatar name={user.name} image={user.image} size={28} />
           </Link>
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-6 lg:p-8">
+          {area === "Admin" ? <AdminCrumbs /> : null}
+          {children}
+        </main>
       </div>
     </div>
   );
