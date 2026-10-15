@@ -82,8 +82,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   const displayCurrency = showUSD ? "USD" : "NGN";
 
   return (
-    <div className="min-h-screen">
-      <MarketingHeader loggedIn={Boolean(user)} />
+    <div className={user ? "" : "min-h-screen"}>
+      {user ? null : <MarketingHeader loggedIn={false} />}
 
       <main className="container grid gap-10 py-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -211,7 +211,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </div>
         </div>
       </main>
-      <SiteFooter />
+      {user ? null : <SiteFooter />}
     </div>
   );
 }
