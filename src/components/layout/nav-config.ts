@@ -17,19 +17,45 @@ export interface NavItem {
   /** Extra path prefixes that should also count as "active" for this item —
    * e.g. a merged nav entry whose page links out to a sibling route. */
   matchPrefixes?: string[];
+  /** Sub-pages. When present the item is a dropdown: clicking it opens/closes the list. */
+  children?: NavItem[];
 }
 
 export const customerNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "CV Builder", href: "/dashboard/cvs", icon: FileText },
-  { label: "Jobs", href: "/jobs", icon: Briefcase },
-  { label: "My Learning", href: "/dashboard/courses", icon: GraduationCap },
+  {
+    label: "Career", href: "#career", icon: Briefcase,
+    children: [
+      { label: "CV Builder", href: "/dashboard/cvs", icon: FileText },
+      { label: "Jobs", href: "/jobs", icon: Briefcase },
+    ],
+  },
+  {
+    label: "Learning", href: "#learning", icon: GraduationCap,
+    children: [
+      { label: "My courses", href: "/dashboard/courses", icon: GraduationCap },
+      { label: "Exams & certificates", href: "/dashboard/exams", icon: ClipboardCheck, matchPrefixes: ["/dashboard/certificates"] },
+    ],
+  },
+  {
+    label: "Teach & Sell", href: "#teach", icon: Presentation,
+    children: [
+      { label: "Overview", href: "/instructor", icon: LayoutDashboard },
+      { label: "Digital products", href: "/instructor/products", icon: Package },
+      { label: "Coaching", href: "/instructor/coaching", icon: CalendarClock },
+      { label: "Analytics", href: "/instructor/analytics", icon: BarChart3 },
+      { label: "Earnings", href: "/instructor/earnings", icon: Wallet },
+    ],
+  },
+  {
+    label: "Money", href: "#money", icon: Wallet,
+    children: [
+      { label: "My purchases", href: "/dashboard/purchases", icon: ShoppingBag },
+      { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
+      { label: "Refer & earn", href: "/dashboard/referrals", icon: Gift },
+    ],
+  },
   { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { label: "My Purchases", href: "/dashboard/purchases", icon: ShoppingBag },
-  { label: "Refer & earn", href: "/dashboard/referrals", icon: Gift },
-  { label: "Teach & Sell", href: "/instructor", icon: Presentation },
-  { label: "Learning", href: "/dashboard/exams", icon: ClipboardCheck, matchPrefixes: ["/dashboard/certificates"] },
-  { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { label: "Support", href: "/dashboard/support", icon: LifeBuoy },
   { label: "Profile", href: "/dashboard/profile", icon: User },

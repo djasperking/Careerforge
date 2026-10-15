@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SharePanel } from "@/components/ui/share-panel";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { appUrl } from "@/lib/email";
+import { socialRewardsStatus } from "@/lib/rewards/service";
+import { SocialRewards } from "../social-rewards";
 import { ensureReferralCode, referralSummary, referralRewardConfig, referralSignupBonusConfig } from "@/lib/referral/service";
 
 export const metadata = { title: "Refer & earn" };
@@ -19,11 +21,12 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 export default async function ReferralsPage() {
   const user = await requireUser();
-  const [code, summary, reward, signupBonus] = await Promise.all([
+  const [code, summary, reward, signupBonus, rewards] = await Promise.all([
     ensureReferralCode(user.id),
     referralSummary(user.id),
     referralRewardConfig(),
     referralSignupBonusConfig(),
+    socialRewardsStatus(user.id),
   ]);
   const link = appUrl(`/r/${code}`);
 
@@ -51,6 +54,15 @@ export default async function ReferralsPage() {
           />
         </CardContent>
       </Card>
+
+      {rewards.platforms.length > 0 ? (
+        <Card>
+          <CardHeader><CardTitle>Follow us &amp; earn credit</CardTitle></CardHeader>
+          <CardContent>
+            <SocialRewards platforms={rewards.platforms} rewardCents={rewards.rewardCents} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader><CardTitle>Rewards</CardTitle></CardHeader>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, GraduationCap, BadgeCheck, CreditCard, ArrowRight, Bell, Briefcase, Gift } from "lucide-react";
+import { FileText, GraduationCap, BadgeCheck, ArrowRight, Bell, Briefcase } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page-header";
@@ -10,16 +10,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { ResendVerification } from "@/components/auth/resend-verification";
-import { AdSlot } from "@/components/ads/ad-slot";
-import { formatDate, formatCurrency } from "@/lib/utils";
 import { matchedJobsForUser } from "@/lib/jobs/matching";
-import { socialRewardsStatus } from "@/lib/rewards/service";
-import { SocialRewards } from "./social-rewards";
 
 export default async function DashboardHome() {
   const user = await requireUser();
 
-  const [cvCount, enrollments, certificates, recentTx, notifications, profile, matchedJobs, dbUser, rewards] = await Promise.all([
+  const [cvCount, enrollments, certificates, notifications, profile, matchedJobs] = await Promise.all([
     db.cV.count({ where: { userId: user.id, deletedAt: null } }),
     db.enrollment.findMany({
       where: { userId: user.id },
@@ -28,11 +24,6 @@ export default async function DashboardHome() {
       take: 4,
     }),
     db.certificate.count({ where: { userId: user.id, revokedAt: null } }),
-    db.transaction.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
     db.notification.findMany({
       where: { userId: user.id, readAt: null },
       orderBy: { createdAt: "desc" },
@@ -40,8 +31,6 @@ export default async function DashboardHome() {
     }),
     db.profile.findUnique({ where: { userId: user.id } }),
     matchedJobsForUser(user.id),
-    db.user.findUnique({ where: { id: user.id }, select: { creditCents: true } }),
-    socialRewardsStatus(user.id),
   ]);
 
   const activeCourses = enrollments.filter((e) => e.status === "ACTIVE").length;
@@ -59,30 +48,6 @@ export default async function DashboardHome() {
             <ResendVerification />
           </AlertDescription>
         </Alert>
-      ) : null}
-
-      {rewards.platforms.length > 0 ? (
-        <Card className="mb-6 border-primary/40 bg-primary/5">
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="size-4 text-primary" /> Follow us & earn credit
-            </CardTitle>
-            <span className="rounded-full border border-primary/40 bg-card px-3 py-1 text-xs font-medium text-primary">
-              Available credit: {formatCurrency(dbUser?.creditCents ?? 0)}
-            </span>
-          </CardHeader>
-          <CardContent>
-            <SocialRewards platforms={rewards.platforms} rewardCents={rewards.rewardCents} />
-            <p className="mt-3 text-sm text-muted-foreground">
-              Credit is used automatically at checkout on courses and premium CV unlocks. You can also earn
-              more by{" "}
-              <Link href="/dashboard/referrals" className="text-primary hover:underline">
-                referring friends
-              </Link>
-              .
-            </p>
-          </CardContent>
-        </Card>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -190,38 +155,6 @@ export default async function DashboardHome() {
           </CardContent>
         </Card>
       ) : null}
-
-      <div className="mt-6">
-        <AdSlot placement="DASHBOARD" path="/dashboard" />
-      </div>
-
-      <Card className="mt-6">
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Recent transactions</CardTitle>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/dashboard/payments">
-              View all <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {recentTx.length === 0 ? (
-            <EmptyState icon={CreditCard} title="No transactions yet" />
-          ) : (
-            <ul className="divide-y">
-              {recentTx.map((t) => (
-                <li key={t.id} className="flex items-center justify-between py-3 text-sm">
-                  <div>
-                    <p className="font-medium">{t.description ?? t.productType}</p>
-                    <p className="text-muted-foreground">{formatDate(t.createdAt)}</p>
-                  </div>
-                  <span className="text-muted-foreground">{t.status}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

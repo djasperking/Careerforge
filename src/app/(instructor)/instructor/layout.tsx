@@ -8,7 +8,8 @@ export default async function InstructorLayout({ children }: { children: React.R
   const unreadMessages = await unreadConversationCount(user.id);
   // Staff see one consistent nav (the admin console) everywhere, instead of
   // bouncing between an "Instructor" nav and a separate "Admin console" link.
-  const area = isAdminRole(user.roles) ? "Admin" : "Instructor";
+  // Everyone else keeps the normal dashboard menu; "Teach & Sell" is a dropdown in it.
+  const area = isAdminRole(user.roles) ? "Admin" : "Dashboard";
   return (
     <AppShell user={user} area={area} badges={{ "/dashboard/messages": unreadMessages, "/admin/messages": unreadMessages }}>
       {children}
