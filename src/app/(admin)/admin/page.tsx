@@ -3,13 +3,12 @@ import {
   Users, CreditCard, GraduationCap, Bot, ArrowRight, ArrowUpRight, ArrowDownRight,
   UserPlus, ClipboardList, LifeBuoy, RefreshCcw, Banknote, CalendarClock,
   BookOpen, ClipboardCheck, BadgeCheck, FileText, ScrollText, Mail, Package,
-  Megaphone, BarChart3, Briefcase, Settings as SettingsIcon, Wrench, CheckCircle2, History,
+  Megaphone, BarChart3, Briefcase, Settings as SettingsIcon, Wrench, CheckCircle2,
 } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
-import { db } from "@/lib/db";
 import { hasPermission, type PermissionKey } from "@/lib/rbac";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import { getAdminOverview } from "@/lib/admin/metrics";
 
 export const metadata = { title: "Admin" };
@@ -100,9 +99,8 @@ export default async function AdminDashboard() {
   const admin = await requireAdmin();
   const can = (p: Parameters<typeof hasPermission>[1]) => hasPermission(admin.permissions, p);
 
-  const [{ kpis, attention }, recentAudit] = await Promise.all([
+  const [{ kpis, attention }] = await Promise.all([
     getAdminOverview(),
-    db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10, include: { actor: true } }),
   ]);
 
   const attentionItems = [
@@ -178,37 +176,9 @@ export default async function AdminDashboard() {
         <Kpi label="AI requests (30d)" value={String(kpis.ai.last30)} delta={kpis.ai.delta} hint={`${kpis.activeUsers} active users`} icon={Bot} />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <section className="self-start rounded-xl border bg-card">
-          <h2 className="flex items-center gap-2 border-b px-5 py-3.5 font-display text-base font-semibold">
-            <History className="size-4 text-muted-foreground" /> Recent activity
-          </h2>
-          {recentAudit.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-muted-foreground">No audit records yet.</p>
-          ) : (
-            <ul className="divide-y">
-              {recentAudit.map((a) => (
-                <li key={a.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-medium">{a.action}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {a.entity}{a.entityId ? ` · ${a.entityId.slice(0, 8)}` : ""} · {a.actor?.email ?? "system"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">{formatDate(a.createdAt)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {can("audit:read") ? (
-            <Link href="/admin/audit" className="block border-t px-5 py-3 text-sm font-medium text-primary hover:underline">
-              View all activity →
-            </Link>
-          ) : null}
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="font-display text-base font-semibold">Go to</h2>
+        <section>
+          <h2 className="mb-3 font-display text-base font-semibold">Go to</h2>
+          <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
           {hubGroups.map((g) => (
             <div key={g.title} className="rounded-xl border bg-card">
               <h3 className="border-b px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{g.title}</h3>
@@ -235,8 +205,8 @@ export default async function AdminDashboard() {
               </ul>
             </div>
           ))}
+          </div>
         </section>
-      </div>
     </div>
   );
 }
