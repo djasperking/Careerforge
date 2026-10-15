@@ -88,7 +88,7 @@ export function splitSteps(markdown: string | null | undefined): LessonStep[] {
       text = text.replace(/^##\s+.+\n?/m, "").trim();
     }
     const keyPoints = [...text.matchAll(/^>\s*(?:📌|🔑)\s*(.+)$/gmu)].map((m) => m[1].trim());
-    steps.push({ title, body: text, checks, hasPlayground: /^```playground\b/m.test(text), keyPoints });
+    steps.push({ title, body: text, checks, hasPlayground: /^```playground(-js)?\b/m.test(text), keyPoints });
   }
   return steps;
 }

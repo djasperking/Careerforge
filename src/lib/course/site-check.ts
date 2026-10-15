@@ -18,7 +18,7 @@ interface Check {
   group: CheckGroup;
   label: string;
   hint: string;
-  test: (src: { html: string; css: string }) => boolean;
+  test: (src: { html: string; css: string; js: string }) => boolean;
 }
 
 const has = (re: RegExp, s: string) => re.test(s);
@@ -69,6 +69,17 @@ const CHECKS: Check[] = [
   { id: "hover", group: "css", label: "A :hover effect", hint: "Add a rule like .btn:hover { ... }", test: ({ css }) => has(/:hover/i, css) },
   { id: "transition", group: "css", label: "A transition (smooth change)", hint: "Add transition: all 0.3s ease;", test: ({ css }) => has(/transition\s*:/i, css) },
   { id: "media", group: "css", label: "A media query (responsive)", hint: "Add @media (max-width: 600px) { ... }", test: ({ css }) => has(/@media[^{]*\(/i, css) },
+
+  // ---- JavaScript ----
+  { id: "js", group: "js", label: "You have some JavaScript", hint: "Write code in script.js.", test: ({ js }) => js.trim().length > 20 },
+  { id: "vars", group: "js", label: "Variables (let or const)", hint: "Store a value: const name = \"Ada\";", test: ({ js }) => has(/\b(let|const)\s+\w+/, js) },
+  { id: "function", group: "js", label: "A function", hint: "Write function greet() { ... } or an arrow function.", test: ({ js }) => has(/\bfunction\s+\w+\s*\(|=>\s*[{(\w]/, js) },
+  { id: "if", group: "js", label: "An if statement", hint: "Make a decision: if (score > 5) { ... }", test: ({ js }) => has(/\bif\s*\(/, js) },
+  { id: "loop", group: "js", label: "A loop or array method", hint: "Use for (...) { }, while, or .forEach / .map.", test: ({ js }) => has(/\bfor\s*\(|\bwhile\s*\(|\.(forEach|map|filter)\s*\(/, js) },
+  { id: "array", group: "js", label: "An array", hint: "Make a list: const fruits = [\"mango\", \"pawpaw\"];", test: ({ js }) => has(/=\s*\[[^\]]*\]/, js) },
+  { id: "dom", group: "js", label: "Finds an element on the page", hint: "Use document.querySelector(\"#id\") or getElementById.", test: ({ js }) => has(/document\.(querySelector|getElementById|querySelectorAll)/, js) },
+  { id: "event", group: "js", label: "Reacts to a click or input", hint: "Use button.addEventListener(\"click\", () => { ... });", test: ({ js }) => has(/addEventListener\s*\(/, js) },
+  { id: "update", group: "js", label: "Changes the page (textContent / innerHTML / style)", hint: "Update something: output.textContent = \"Hi!\";", test: ({ js }) => has(/\.(textContent|innerText|innerHTML|classList|style)\b/, js) },
 ];
 
 /** Everything the student wrote, split into the HTML text and all the CSS (files + <style> blocks). */
@@ -76,7 +87,9 @@ function sources(files: WorkspaceFile[]) {
   const html = files.filter((f) => /\.html?$/i.test(f.name)).map((f) => f.code).join("\n");
   const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]);
   const css = [...files.filter((f) => /\.css$/i.test(f.name)).map((f) => f.code), ...styleBlocks].join("\n");
-  return { html, css };
+  const scriptBlocks = [...html.matchAll(/<script(?![^>]*\bsrc\b)[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  const js = [...files.filter((f) => /\.js$/i.test(f.name)).map((f) => f.code), ...scriptBlocks].join("\n");
+  return { html, css, js };
 }
 
 export function checkWebsite(files: WorkspaceFile[], groups: CheckGroup[]): CheckResult[] {

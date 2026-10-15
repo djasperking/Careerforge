@@ -14,19 +14,20 @@ export interface EditorHandle {
 export interface MountOptions {
   parent: HTMLElement;
   value: string;
-  language: "html" | "css";
+  language: "html" | "css" | "js";
   onChange: (value: string) => void;
   /** Accessible name announced by screen readers. */
   label?: string;
 }
 
 export async function mountEditor(opts: MountOptions): Promise<EditorHandle> {
-  const [{ EditorView, basicSetup }, { EditorState }, { html }, { css }, { oneDark }] = await Promise.all([
+  const [{ EditorView, basicSetup }, { EditorState }, { html }, { css }, { oneDark }, { javascript }] = await Promise.all([
     import("codemirror"),
     import("@codemirror/state"),
     import("@codemirror/lang-html"),
     import("@codemirror/lang-css"),
     import("@codemirror/theme-one-dark"),
+    import("@codemirror/lang-javascript"),
   ]);
 
   const dark = document.documentElement.classList.contains("dark");
@@ -38,7 +39,7 @@ export async function mountEditor(opts: MountOptions): Promise<EditorHandle> {
       doc: opts.value,
       extensions: [
         basicSetup,
-        opts.language === "html" ? html({ autoCloseTags: true }) : css(),
+        opts.language === "html" ? html({ autoCloseTags: true }) : opts.language === "js" ? javascript() : css(),
         EditorView.lineWrapping,
         EditorView.contentAttributes.of({ "aria-label": opts.label ?? "Code editor", spellcheck: "false", autocapitalize: "off" }),
         EditorView.theme({

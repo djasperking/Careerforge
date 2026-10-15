@@ -62,13 +62,14 @@ export function renderMarkdown(md: string): string {
       }
       i++;
       const code = buf.join("\n");
-      if (/^playground\b/.test(info)) {
+      if (/^playground(-js)?\b/.test(info)) {
         // An editable live-preview box. Lessons upgrade it in the browser; anywhere
         // else it degrades to a plain code block. The code is escaped, so it is safe
         // both as the fallback <pre> and inside the data attribute.
-        const title = info.replace(/^playground\s*/, "");
+        const lang = /^playground-js\b/.test(info) ? "js" : "html";
+        const title = info.replace(/^playground(-js)?\s*/, "");
         out.push(
-          `<div class="cf-playground" data-title="${title}" data-code="${code}"><pre><code>${code}</code></pre></div>`,
+          `<div class="cf-playground" data-lang="${lang}" data-title="${title}" data-code="${code}"><pre><code>${code}</code></pre></div>`,
         );
       } else {
         out.push(`<pre><code>${code}</code></pre>`);

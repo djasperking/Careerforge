@@ -11,6 +11,7 @@ import {
   MAX_SUBMISSION_CHARS,
   serializeSubmission,
   totalChars,
+  usesScripts,
   type CheckGroup,
   type WorkspaceFile,
 } from "@/lib/course/workspace";
@@ -80,7 +81,7 @@ export function CodeWorkspace({
     mountEditor({
       parent: host.current,
       value: file.code,
-      language: /\.css$/i.test(file.name) ? "css" : "html",
+      language: /\.css$/i.test(file.name) ? "css" : /\.js$/i.test(file.name) ? "js" : "html",
       label: `Code for ${file.name}`,
       onChange: (code) =>
         setFiles((prev) => prev.map((f, i) => (i === active ? { ...f, code } : f))),
@@ -162,7 +163,7 @@ export function CodeWorkspace({
               Live preview — updates as you type
             </div>
             <div className="min-h-0 flex-1">
-              <SitePreview html={previewDoc} />
+              <SitePreview html={previewDoc} scripts={usesScripts(files)} />
             </div>
           </div>
         </div>

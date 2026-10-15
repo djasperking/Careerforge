@@ -9,7 +9,7 @@ export interface WorkspaceFile {
   code: string;
 }
 
-export type CheckGroup = "html" | "css";
+export type CheckGroup = "html" | "css" | "js";
 
 export interface WorkspaceSpec {
   /** Whether the assignment asked for the code workspace at all. */
@@ -41,7 +41,7 @@ export function parseWorkspaceBrief(brief: string | null | undefined): Workspace
   const checks = (marker[1] ?? "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
-    .filter((s): s is CheckGroup => s === "html" || s === "css");
+    .filter((s): s is CheckGroup => s === "html" || s === "css" || s === "js");
 
   const files: WorkspaceFile[] = [];
   const kept: string[] = [];
@@ -67,6 +67,12 @@ export function parseWorkspaceBrief(brief: string | null | undefined): Workspace
 
 const isHtml = (f: WorkspaceFile) => /\.html?$/i.test(f.name);
 const isCss = (f: WorkspaceFile) => /\.css$/i.test(f.name);
+const isJs = (f: WorkspaceFile) => /\.js$/i.test(f.name);
+
+/** True when the student wrote any JavaScript, so the preview needs scripts switched on. */
+export function usesScripts(files: WorkspaceFile[]): boolean {
+  return files.some((f) => isJs(f) && f.code.trim()) || files.some((f) => isHtml(f) && /<script\b/i.test(f.code));
+}
 
 /**
  * One self-contained HTML document for the preview. The student's CSS is
@@ -79,13 +85,25 @@ export function composePreview(files: WorkspaceFile[]): string {
   if (!html.trim()) {
     return '<p style="font-family:sans-serif;color:#64748b;padding:24px">Your page is empty — start writing HTML on the left.</p>';
   }
-  if (!css.trim()) return html;
+  let doc = html;
+  if (css.trim()) {
+    const style = `<style>\n${css}\n</style>`;
+    const link = /<link\b[^>]*href\s*=\s*["'][^"']*\.css["'][^>]*>/i;
+    if (link.test(doc)) doc = doc.replace(link, () => style);
+    else if (/<\/head>/i.test(doc)) doc = doc.replace(/<\/head>/i, () => `${style}\n</head>`);
+    else doc = `${style}\n${doc}`;
+  }
 
-  const style = `<style>\n${css}\n</style>`;
-  const link = /<link\b[^>]*href\s*=\s*["'][^"']*\.css["'][^>]*>/i;
-  if (link.test(html)) return html.replace(link, () => style);
-  if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, () => `${style}\n</head>`);
-  return `${style}\n${html}`;
+  // The student's script.js goes where their <script src="script.js"> is — or at the end of the page if they forgot it.
+  const js = files.filter(isJs).map((f) => f.code).join("\n").replace(/<\/script/gi, "<\\/script");
+  if (js.trim()) {
+    const script = `<script>\n${js}\n</script>`;
+    const tag = /<script\b[^>]*src\s*=\s*["'][^"']*\.js["'][^>]*>\s*<\/script>/i;
+    if (tag.test(doc)) doc = doc.replace(tag, () => script);
+    else if (/<\/body>/i.test(doc)) doc = doc.replace(/<\/body>/i, () => `${script}\n</body>`);
+    else doc = `${doc}\n${script}`;
+  }
+  return doc;
 }
 
 /** The submitted text: each file under a `=== name ===` heading. */

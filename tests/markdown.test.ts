@@ -39,7 +39,7 @@ describe("renderMarkdown playground blocks", () => {
     // the title are escaped, so "onmouseover=" is inert text, not a real attribute.
     const tag = html.match(/<div class="cf-playground"[^>]*>/)![0];
     const attrs = [...tag.matchAll(/\s([a-z-]+)="[^"]*"/g)].map((m) => m[1]);
-    expect(attrs).toEqual(["class", "data-title", "data-code"]);
+    expect(attrs).toEqual(["class", "data-lang", "data-title", "data-code"]);
   });
 
   it("leaves ordinary code fences alone", () => {

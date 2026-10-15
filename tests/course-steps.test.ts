@@ -86,3 +86,23 @@ describe("seeded course lessons", () => {
     }
   });
 });
+
+describe("seeded course files (scripts/courses)", () => {
+  it("parse, and every lesson question parses into the step engine", async () => {
+    const fs = await import("node:fs");
+    const { parseCourseMarkdown } = await import("../scripts/lib/course-md");
+    const dir = "scripts/courses/";
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith(".md"))) {
+      const spec = parseCourseMarkdown(fs.readFileSync(dir + f, "utf8"));
+      expect(spec.modules.length, f).toBeGreaterThan(0);
+      for (const l of spec.modules.flatMap((m) => m.lessons)) {
+        if (l.type === "QUIZ") expect(l.quiz?.questions.length, `${f}: ${l.title}`).toBeGreaterThanOrEqual(4);
+        if (l.type === "TEXT" && l.content) {
+          const written = (l.content.match(/^::: check /gm) ?? []).length;
+          const parsed = splitSteps(l.content).reduce((n, s) => n + s.checks.length, 0);
+          expect(parsed, `${f}: ${l.title}`).toBe(written);
+        }
+      }
+    }
+  });
+});
