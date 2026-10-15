@@ -1,38 +1,81 @@
 ## 🎨 Assignment 2: Style your About Me page
 
-In Assignment 1 you built the **structure** of your page. Now give it **personality**. Take your `about.html` and add a stylesheet.
+[[workspace checks=css]]
+
+Your page has its **structure**. Now give it **personality**. The editor below has two files: `index.html` (a plain page, already linked to your stylesheet) and `style.css` (nearly empty — that's where you work). Switch between them with the tabs.
 
 ### Your mission
 
-Add CSS (in a `<style>` block, or better, a separate `style.css` file linked from your page) so your page includes **all** of these:
+Write CSS in `style.css` so your page includes **all** of these (the checker will tick them off):
 
-1. ✅ A **colour scheme** you chose on purpose: a background colour, a text colour, and one accent colour
-2. ✅ A custom **font family** (with a fallback) and a comfortable `line-height`
-3. ✅ Your `<header>` styled: background colour, centred text, some padding
-4. ✅ Your `<nav>` laid out with **Flexbox** (links in a row, with `gap`)
-5. ✅ Your `<section>`s turned into **cards**: padding, a border or shadow, `border-radius`, and a margin between them
-6. ✅ At least one **class** and one **element** selector (you can use both — that's the point!)
-7. ✅ At least one **hover effect** on a link or button, with a `transition`
-8. ✅ The viewport meta tag, so it behaves on phones
+1. ✅ A **colour scheme** you chose on purpose: text colour and a background colour
+2. ✅ A custom **`font-family`** with a fallback
+3. ✅ **Padding** and **margin** used to give things room
+4. ✅ **Element selectors** (`body`, `h1`…) and at least one **class** (add `class="card"` in the HTML, then style `.card`)
+5. ✅ Sections turned into **cards**: `border-radius` and/or `box-shadow`
+6. ✅ Your `<nav>` laid out with **Flexbox** (`display: flex`)
+7. ✅ A **hover effect** with a smooth **transition**
+8. ✅ A **media query** that changes something on small screens
 
-### 🌟 Bonus (optional)
+> 💡 **Change one thing at a time.** Type a little, glance at the preview, repeat. If something looks wrong, check for a missing `;` or `}` — the two most common CSS typos.
 
-- Add a **media query** that changes something on small screens
-- Style your `<footer>` so it stays tidy and centred
-- Use `box-sizing: border-box` for all elements
+### 🌟 Bonus
 
-### Tips
+- `box-sizing: border-box` on everything
+- A gradient background with `linear-gradient`
 
-- Change **one thing at a time**, save, and refresh. That way you always know what caused what.
-- Stuck on a colour? Search "color palette generator" and pick three colours that go together.
-- If something looks wrong, check for a missing `;` or a missing `}` — the two most common CSS typos.
+### Submit it
 
-### How to submit
-
-Paste **all your code** (HTML and CSS together, with the CSS inside a `<style>` block is easiest) into the box below and submit.
-
-### How you'll be reviewed
-
-Your instructor checks the required features, that your styling is consistent, and that your code is readable. You'll get feedback and can resubmit.
+Press **Submit my website** when you're happy. Your instructor reviews your styling and code, and you can resubmit after feedback.
 
 Make it yours. Make it beautiful. 💜
+
+```file:index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Ada</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Ada Obi</h1>
+    <p>Learning to build websites, one tag at a time.</p>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#hobbies">Hobbies</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="about">
+      <h2>About me</h2>
+      <p>I love good food, good music and learning new skills.</p>
+    </section>
+
+    <section id="hobbies">
+      <h2>My hobbies</h2>
+      <ul>
+        <li>Cooking jollof</li>
+        <li>Football</li>
+        <li>Coding</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Ada Obi</p>
+  </footer>
+</body>
+</html>
+```
+
+```file:style.css
+/* Write your CSS here. Start with the body! */
+body {
+
+}
+```

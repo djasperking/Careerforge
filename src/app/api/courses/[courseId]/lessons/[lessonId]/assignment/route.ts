@@ -7,7 +7,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { assertEnrolled, markLessonComplete } from "@/lib/course/service";
 
 const bodySchema = z.object({
-  text: z.string().trim().min(1).max(10_000),
+  text: z.string().trim().min(1).max(50_000),
   fileUrl: z.string().url().max(600).optional().or(z.literal("")),
   fileName: z.string().max(200).optional().or(z.literal("")),
 });

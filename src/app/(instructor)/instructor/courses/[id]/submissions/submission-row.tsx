@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SubmissionPreview } from "@/components/lesson/site-preview";
+import { parseSubmission } from "@/lib/course/workspace";
 import { reviewAssignmentAction } from "@/app/(admin)/admin/courses/actions";
 
 export function SubmissionRow({
@@ -49,7 +51,17 @@ export function SubmissionRow({
         </div>
       </div>
 
-      <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{submission.text}</p>
+      {parseSubmission(submission.text) ? (
+        <div className="mt-2 space-y-2">
+          <SubmissionPreview text={submission.text} />
+          <details className="text-sm">
+            <summary className="cursor-pointer text-primary">View the code</summary>
+            <pre className="mt-2 max-h-96 overflow-auto rounded-md bg-muted p-3 text-xs">{submission.text}</pre>
+          </details>
+        </div>
+      ) : (
+        <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{submission.text}</p>
+      )}
 
       {submission.fileUrl ? (
         <a

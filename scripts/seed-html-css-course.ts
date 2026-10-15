@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { db } from "@/lib/db";
 import { uniqueCourseSlug } from "@/lib/course/service";
-import { EXAM_QUESTIONS, QUIZ_CSS, QUIZ_HTML, QUIZ_WEB_BASICS, type Q } from "./course-content/html-css-questions";
+import { QUIZ_CSS, QUIZ_HTML, QUIZ_WEB_BASICS, type Q } from "./course-content/html-css-questions";
 
 const OWNER_EMAIL = "danielakpobomej@gmail.com";
 const TITLE = "HTML & CSS from Zero: Build Your First Website";
@@ -62,11 +62,11 @@ const MODULES: { title: string; lessons: LessonSpec[] }[] = [
     ],
   },
   {
-    title: "Final Project & Exam",
+    title: "Final Exam: Build a Website",
     lessons: [
-      { title: "🚀 Final project: your personal landing page", type: "ASSIGNMENT", seconds: 5400, file: "20-final-project.md" },
       { title: "🧰 HTML & CSS cheat sheet", type: "TEXT", seconds: 300, file: "21-cheat-sheet.md" },
-      { title: "🎓 Your final exam & what's next", type: "TEXT", seconds: 240, file: "22-final-exam-next.md" },
+      { title: "🏁 FINAL EXAM: Build your own website", type: "ASSIGNMENT", seconds: 5400, file: "20-final-project.md" },
+      { title: "🎓 You did it! Certificate & what's next", type: "TEXT", seconds: 240, file: "22-final-exam-next.md" },
     ],
   },
 ];
@@ -124,7 +124,7 @@ async function main() {
       slug: await uniqueCourseSlug(TITLE),
       title: TITLE,
       description:
-        "Go from zero to your first real website. Learn HTML and CSS step by step with fun, interactive lessons — edit live code right inside every lesson — then test yourself with quizzes, build three hands-on assignments, pass the final exam and earn your certificate. No experience needed.",
+        "Go from zero to your first real website. Learn HTML and CSS step by step with fun, interactive lessons — edit live code right inside every lesson — then test yourself with quizzes, write code in the built-in editor with a live preview, build a complete website as your final exam, and earn your certificate. No experience needed.",
       thumbnailUrl: "/course-thumbs/html-css.svg",
       categoryId: category.id,
       instructorId: owner.id,
@@ -195,43 +195,10 @@ async function main() {
     }
   }
 
-  const exam = await db.exam.create({
-    data: {
-      courseId: course.id,
-      title: "HTML & CSS from Zero — Final Exam",
-      description:
-        "15 questions drawn at random from a pool covering everything in the course. You have 30 minutes and 2 attempts; 70% passes and earns your exam certificate.",
-      timeLimitMinutes: 30,
-      questionCount: 15,
-      passingScore: 70,
-      maxAttempts: 2,
-      randomizeQuestions: true,
-      randomizeOptions: true,
-      status: "PUBLISHED",
-    },
-  });
-  for (const [qi, q] of EXAM_QUESTIONS.entries()) {
-    await db.question.create({
-      data: {
-        examId: exam.id,
-        type: q.type,
-        prompt: q.prompt,
-        explanation: q.explanation,
-        points: q.points,
-        difficulty: q.difficulty ?? "easy",
-        topic: q.topic ?? null,
-        reviewStatus: "APPROVED",
-        position: qi,
-        options: { create: q.options.map((o, oi) => ({ text: o.text, isCorrect: o.isCorrect, position: oi })) },
-      },
-    });
-  }
-
   console.log("\n✅ Course created");
   console.log(`   ${course.title}`);
   console.log(`   slug: ${course.slug}  ·  instructor: ${owner.email}  ·  free  ·  published`);
-  console.log(`   ${MODULES.length} modules, ${lessonCount} lessons (${quizQuestions} quiz questions, 3 assignments), ~${course.durationMinutes} min`);
-  console.log(`   exam: ${EXAM_QUESTIONS.length} questions in the pool, 15 per attempt`);
+  console.log(`   ${MODULES.length} modules, ${lessonCount} lessons (${quizQuestions} quiz questions, 2 coding assignments + the final website), ~${course.durationMinutes} min`);
   console.log(`   /courses/${course.slug}`);
 }
 

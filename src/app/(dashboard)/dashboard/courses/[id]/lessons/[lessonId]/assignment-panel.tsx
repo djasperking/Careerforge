@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Paperclip, CheckCircle2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { renderMarkdown } from "@/lib/markdown";
+import { enhancePlaygrounds } from "@/components/lesson/playground";
+import { CodeWorkspace } from "@/components/lesson/code-workspace";
+import { SubmissionPreview } from "@/components/lesson/site-preview";
+import { mergeWithStarter, parseSubmission, parseWorkspaceBrief } from "@/lib/course/workspace";
 
 export type AssignmentData = {
   brief: string | null;
@@ -26,6 +31,11 @@ export function AssignmentPanel({
   data: AssignmentData;
 }) {
   const router = useRouter();
+  const spec = useMemo(() => parseWorkspaceBrief(data.brief), [data.brief]);
+  const briefRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (briefRef.current) enhancePlaygrounds(briefRef.current);
+  }, [spec.brief]);
   const [text, setText] = useState(data.submission?.text ?? "");
   const [file, setFile] = useState<{ url: string; name: string } | null>(
     data.submission?.fileUrl ? { url: data.submission.fileUrl, name: data.submission.fileName ?? "attachment" } : null,
@@ -50,13 +60,14 @@ export function AssignmentPanel({
     setFile({ url: json.data.url, name: f.name });
   }
 
-  async function submit() {
+  async function submit(body?: string) {
+    const payload = body ?? text;
     setBusy(true);
     setError(null);
     const res = await fetch(`/api/courses/${courseId}/lessons/${lessonId}/assignment`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, fileUrl: file?.url ?? "", fileName: file?.name ?? "" }),
+      body: JSON.stringify({ text: payload, fileUrl: file?.url ?? "", fileName: file?.name ?? "" }),
     });
     setBusy(false);
     const json = await res.json().catch(() => null);
@@ -70,10 +81,12 @@ export function AssignmentPanel({
 
   return (
     <div className="space-y-4">
-      {data.brief ? (
-        <div className="prose prose-sm max-w-none whitespace-pre-wrap rounded-lg border bg-card p-4 text-sm">
-          {data.brief}
-        </div>
+      {spec.brief ? (
+        <div
+          ref={briefRef}
+          className="cf-prose rounded-xl border bg-card p-5"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(spec.brief) }}
+        />
       ) : null}
 
       {data.submission && !editing ? (
@@ -82,7 +95,11 @@ export function AssignmentPanel({
             <CheckCircle2 className="size-4" />
             Submitted{data.submission.status === "REVIEWED" ? " · reviewed" : " · awaiting review"}
           </p>
-          <p className="whitespace-pre-wrap text-muted-foreground">{data.submission.text}</p>
+          {spec.enabled && parseSubmission(data.submission.text) ? (
+            <SubmissionPreview text={data.submission.text} />
+          ) : (
+            <p className="whitespace-pre-wrap text-muted-foreground">{data.submission.text}</p>
+          )}
           {data.submission.fileUrl ? (
             <a
               href={data.submission.fileUrl}
@@ -103,6 +120,18 @@ export function AssignmentPanel({
             Edit &amp; resubmit
           </Button>
         </div>
+      ) : spec.enabled ? (
+        <CodeWorkspace
+          starter={spec.files}
+          initial={mergeWithStarter(parseSubmission(data.submission?.text), spec.files)}
+          checks={spec.checks}
+          storageKey={`cf-workspace:${lessonId}`}
+          busy={busy}
+          error={error}
+          submitLabel={data.submission ? "Resubmit my website" : "Submit my website"}
+          onSubmit={(t) => void submit(t)}
+          onCancel={data.submission ? () => setEditing(false) : undefined}
+        />
       ) : (
         <div className="space-y-3 rounded-lg border bg-card p-4">
           <textarea
@@ -131,7 +160,7 @@ export function AssignmentPanel({
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <div className="flex gap-2">
-            <Button size="sm" onClick={submit} disabled={busy || text.trim().length === 0}>
+            <Button size="sm" onClick={() => void submit()} disabled={busy || text.trim().length === 0}>
               {busy ? <Loader2 className="size-4 animate-spin" /> : null}
               {data.submission ? "Resubmit" : "Submit assignment"}
             </Button>

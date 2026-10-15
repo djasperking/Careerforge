@@ -47,7 +47,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       : null;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className={`mx-auto ${lesson.type === "ASSIGNMENT" && lesson.content?.includes("[[workspace") ? "max-w-6xl" : "max-w-3xl"}`}>
       <div className="mb-4 flex items-center gap-3">
         <Button asChild variant="ghost" size="icon">
           <Link href={`/dashboard/courses/${courseId}`}><ArrowLeft className="size-4" /></Link>

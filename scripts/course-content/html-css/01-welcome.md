@@ -24,8 +24,8 @@ No jargon walls. No boring theory dumps. Every idea comes with a **live code box
 1. **Read** a short lesson (5–8 minutes).
 2. **Play** with the live code boxes — they're real code. Edit anything!
 3. **Check yourself** with friendly quizzes.
-4. **Build** 3 hands-on assignments.
-5. **Take the final exam** and earn your certificate 🎓
+4. **Build** two hands-on assignments in the built-in code editor — no software to install.
+5. **Final exam:** build your own complete website, then earn your certificate 🎓
 
 > 📌 **Remember:** Read, play with the code boxes, check yourself, build, then take the final.
 

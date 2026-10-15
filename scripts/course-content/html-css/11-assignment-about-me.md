@@ -1,37 +1,48 @@
 ## 🏗️ Assignment 1: Build your "About Me" page
 
-You've learned the HTML skeleton, text, links, images, lists, tables, forms and semantic tags. Time to **use them all** on a page about *you*.
+[[workspace checks=html]]
+
+You've learned the HTML skeleton, text, links, images, lists, tables, forms and semantic tags. Time to **use them all** on a page about *you* — right here, in the editor below. No downloads, no setup.
 
 ### Your mission
 
-Create a file called **`about.html`** that contains a personal page. It must include **all** of these:
+Write your page in the editor. The **live preview** on the right updates as you type, and the **requirements checker** ticks things off as you add them.
 
-1. ✅ The full page skeleton (`<!DOCTYPE html>`, `<html>`, `<head>` with a `<title>`, `<body>`)
+1. ✅ The full skeleton: `<!DOCTYPE html>`, `<html lang="en">`, a `<head>` with a `<title>` and the viewport tag
 2. ✅ A `<header>` with an `<h1>` (your name) and one line about you
-3. ✅ A `<nav>` with at least **two links** (they can go to `#`)
-4. ✅ A `<main>` containing at least **two `<section>`s** with `<h2>` headings (for example "About me" and "My hobbies")
-5. ✅ A **list** (`<ul>` or `<ol>`) — your favourite foods, skills, or goals
-6. ✅ At least one **link** to another website, with good link text
-7. ✅ An **image** with proper `alt` text (use any picture file, or the tiny built-in one from the Links & Images lesson)
-8. ✅ A small **form** (name + email + a button), *or* a **table** (for example your weekly timetable)
-9. ✅ A `<footer>` with a copyright line
+3. ✅ A `<nav>` with at least **two links**
+4. ✅ A `<main>` with at least **two `<section>`s**, each with an `<h2>`
+5. ✅ A **list** (`<ul>` or `<ol>`) — your favourite foods, skills or goals
+6. ✅ A **link** to another website, with good link text
+7. ✅ An **image** with proper `alt` text
+8. ✅ A small **form** (label + input + button)
+9. ✅ A `<footer>`
 
-### 🌟 Bonus (optional)
+> 💡 **Need a picture?** Use any image web address you like as the `src`, for example `https://placehold.co/120` — and don't forget the `alt` text.
+
+### 🌟 Bonus
 
 - Use `<strong>` and `<em>` somewhere sensible
 - Add an HTML comment explaining one part of your code
-- Give each section a clear heading order (`h1` → `h2` → `h3`)
 
-### How to do it
+### Submit it
 
-1. Open your text editor (Notepad or VS Code).
-2. Build the page step by step. **Save and refresh the browser often** — seeing your changes is the fun part.
-3. When you're happy, **copy all your HTML code** and paste it into the box below, then submit.
+When the checker is happy (or you've done your best), press **Submit my website**. Your work also saves in this browser while you type, so you won't lose it if you close the tab.
 
-> 💡 **Stuck?** Re-open the lessons and copy the examples as a starting point. Developers copy and adapt all the time — that's how everyone learns.
+Your instructor will look at your live page and your code, and send feedback. You can improve it and resubmit any time.
 
-### How you'll be reviewed
+```file:index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About me</title>
+</head>
+<body>
 
-Your instructor checks that the required elements are there, that the code is tidy, and the headings make sense. You'll get feedback, and you can improve and resubmit.
+  <!-- Build your About Me page here! -->
+  <p>Hello! Replace me with your page.</p>
 
-Good luck — I can't wait to see what you build! 🚀
+</body>
+</html>
+```
