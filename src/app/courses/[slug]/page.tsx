@@ -15,6 +15,8 @@ import { listOpenCohorts } from "@/lib/cohort/service";
 import { courseRatingSummary, listCourseReviews } from "@/lib/review/service";
 import { Stars } from "@/components/ui/star-rating";
 import { EnrollButton } from "./enroll-button";
+import { ShareCourse } from "@/components/course/share-course";
+import { appUrl } from "@/lib/email";
 import { CohortList } from "./cohort-list";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 
@@ -29,7 +31,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: course.title,
     description: course.description.slice(0, 300),
     alternates: { canonical: `/courses/${slug}` },
-    openGraph: { title: course.title, description: course.description.slice(0, 200), type: "article" },
+    openGraph: { title: course.title, description: course.description.slice(0, 200), type: "article", url: `/courses/${slug}` },
+    twitter: { card: "summary_large_image", title: course.title, description: course.description.slice(0, 200) },
   };
 }
 
@@ -204,6 +207,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                 alreadyEnrolled={!!enrollment}
                 isFree={course.priceCents === 0}
               />
+            </div>
+            <div className="mt-5 border-t pt-4">
+              <ShareCourse url={appUrl(`/courses/${course.slug}`)} title={course.title} free={course.priceCents === 0} />
             </div>
           </div>
           <div className="mt-4">

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CourseThumb } from "@/components/ui/course-thumb";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
+import { QuickEnroll } from "./quick-enroll";
 
 export const metadata = { title: "My Learning" };
 
@@ -35,6 +36,15 @@ export default async function MyCoursesPage({ searchParams }: { searchParams: Pr
     db.certificate.count({ where: { userId: user.id, revokedAt: null } }),
   ]);
 
+  // Every published course the student has not joined yet, so they can enrol right from here.
+  const enrolledIds = enrollments.map((e) => e.courseId);
+  const available = await db.course.findMany({
+    where: { status: "PUBLISHED", ...(enrolledIds.length ? { id: { notIn: enrolledIds } } : {}) },
+    include: { category: true, modules: { select: { _count: { select: { lessons: true } } } } },
+    orderBy: [{ priceCents: "asc" }, { publishedAt: "desc" }],
+    take: 40,
+  });
+
   const lessonIds = enrollments.flatMap((e) => e.course.modules.flatMap((m) => m.lessons.map((l) => l.id)));
   const doneRows = lessonIds.length
     ? await db.courseProgress.findMany({
@@ -58,6 +68,54 @@ export default async function MyCoursesPage({ searchParams }: { searchParams: Pr
   const shown = filter === "progress" ? inProgress : filter === "done" ? completed : items;
   const resume = inProgress.find((i) => i.finished > 0) ?? inProgress[0];
 
+
+  const explore =
+    available.length > 0 ? (
+      <section>
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="font-display text-lg font-semibold">Explore courses</h2>
+            <p className="text-sm text-muted-foreground">Enrol in any course below. Free courses start right away.</p>
+          </div>
+          <Link href="/courses" className="text-sm font-medium text-primary hover:underline">See the full catalogue</Link>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {available.map((c) => {
+            const free = c.priceCents === 0;
+            const lessonTotal = c.modules.reduce((n, m) => n + m._count.lessons, 0);
+            return (
+              <div key={c.id} className="flex flex-col overflow-hidden rounded-xl border bg-card transition hover:border-primary/50 hover:shadow-md">
+                <Link href={`/courses/${c.slug}`} className="relative block">
+                  <CourseThumb src={c.thumbnailUrl} alt={c.title} className="rounded-none border-0 border-b" />
+                  <span
+                    className={cn(
+                      "absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-bold shadow",
+                      free ? "bg-emerald-500 text-white" : "bg-card text-foreground",
+                    )}
+                  >
+                    {free ? "FREE" : formatCurrency(c.priceCents, c.currency)}
+                  </span>
+                </Link>
+                <div className="flex flex-1 flex-col gap-2 p-4">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {c.category ? <Badge variant="secondary">{c.category.name}</Badge> : null}
+                    <span>{lessonTotal} lessons</span>
+                  </div>
+                  <Link href={`/courses/${c.slug}`} className="font-display text-base font-semibold leading-snug hover:text-primary">
+                    {c.title}
+                  </Link>
+                  <p className="line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
+                  <div className="mt-auto pt-2">
+                    <QuickEnroll courseId={c.id} isFree={free} priceLabel={formatCurrency(c.priceCents, c.currency)} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ) : null;
+
   const tabs: { key: Filter; label: string; count: number }[] = [
     { key: "all", label: "All", count: items.length },
     { key: "progress", label: "In progress", count: inProgress.length },
@@ -80,6 +138,7 @@ export default async function MyCoursesPage({ searchParams }: { searchParams: Pr
             <Link href="/courses">Browse courses</Link>
           </Button>
         </div>
+        <div className="mt-8">{explore}</div>
       </div>
     );
   }
@@ -201,6 +260,8 @@ export default async function MyCoursesPage({ searchParams }: { searchParams: Pr
           ))}
         </div>
       )}
+
+      {explore}
     </div>
   );
 }

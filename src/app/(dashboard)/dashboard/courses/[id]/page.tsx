@@ -7,6 +7,8 @@ import {
 import { requireUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { CourseThumb } from "@/components/ui/course-thumb";
+import { ShareCourse } from "@/components/course/share-course";
+import { appUrl } from "@/lib/email";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -109,6 +111,10 @@ export default async function EnrolledCoursePage({ params }: { params: Promise<{
                 <Trophy className="size-5" /> You have finished every lesson. Well done!
               </p>
             )}
+
+            <div className="border-t pt-4">
+              <ShareCourse url={appUrl(`/courses/${enrollment.course.slug}`)} title={enrollment.course.title} free={enrollment.course.priceCents === 0} />
+            </div>
           </div>
         </div>
       </section>
