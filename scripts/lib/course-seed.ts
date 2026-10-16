@@ -49,6 +49,8 @@ export interface CourseSpec {
   description: string;
   category: { key: string; name: string };
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+  /** Price in naira; 0 or missing means free. */
+  priceNaira?: number;
   requirements: string[];
   objectives: string[];
   modules: { title: string; lessons: LessonSpec[] }[];
@@ -89,7 +91,7 @@ export async function seedCourse(spec: CourseSpec, opts: { replace?: boolean } =
       instructorId: owner.id,
       level: spec.level,
       durationMinutes: Math.round(totalSeconds / 60),
-      priceCents: 0,
+      priceCents: Math.round((spec.priceNaira ?? 0) * 100),
       currency: "NGN",
       requirements: spec.requirements,
       objectives: spec.objectives,
@@ -146,6 +148,10 @@ export async function seedCourse(spec: CourseSpec, opts: { replace?: boolean } =
 export async function refreshCourseContent(spec: CourseSpec) {
   const course = await db.course.findFirst({ where: { title: spec.title } });
   if (!course) throw new Error(`${spec.key} not seeded yet.`);
+  await db.course.update({
+    where: { id: course.id },
+    data: { description: spec.description, priceCents: Math.round((spec.priceNaira ?? 0) * 100), requirements: spec.requirements, objectives: spec.objectives },
+  });
   let n = 0;
   for (const mod of spec.modules) {
     for (const l of mod.lessons) {
@@ -158,7 +164,7 @@ export async function refreshCourseContent(spec: CourseSpec) {
 }
 
 /** A bright, on-brand thumbnail for the catalogue (1280×720 SVG). */
-export function thumbnailSvg(t: CourseSpec["thumb"]): string {
+export function thumbnailSvg(t: CourseSpec["thumb"], free = true): string {
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="${esc(t.headline)}. ${esc(t.sub)}">
   <defs>
@@ -181,8 +187,7 @@ export function thumbnailSvg(t: CourseSpec["thumb"]): string {
     <rect x="314" y="560" width="290" height="60" rx="30" fill="#fff"/><text x="459" y="600" fill="${t.from}">${esc(t.chips[1])}</text>
   </g>
   <g filter="url(#pop)"><circle cx="1000" cy="380" r="190" fill="#fff" opacity="0.95"/><text x="1000" y="450" font-size="190" text-anchor="middle">${t.emoji}</text></g>
-  <g filter="url(#pop)" transform="rotate(12 1180 118)"><polygon fill="#fde047" points="1180,30 1203,70 1250,66 1230,108 1262,144 1217,156 1213,204 1176,176 1137,204 1136,156 1094,142 1124,106 1108,64 1154,70"/>
-    <text x="1180" y="136" font-family="'Arial Black', Impact, Arial, sans-serif" font-weight="900" font-size="46" fill="${t.via}" text-anchor="middle">FREE</text></g>
+  ${free ? `<g filter="url(#pop)" transform="rotate(12 1180 118)"><polygon fill="#fde047" points="1180,30 1203,70 1250,66 1230,108 1262,144 1217,156 1213,204 1176,176 1137,204 1136,156 1094,142 1124,106 1108,64 1154,70"/><text x="1180" y="136" font-family="'Arial Black', Impact, Arial, sans-serif" font-weight="900" font-size="46" fill="${t.via}" text-anchor="middle">FREE</text></g>` : ""}
 </svg>
 `;
 }

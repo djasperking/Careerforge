@@ -1,8 +1,9 @@
 ---
 key: canva-graphic-design-beginners
 title: Canva Graphic Design for Beginners: Posts, Logos and Flyers
-description: Learn to design professional-looking graphics with free Canva, even if you have never designed anything. Understand colour, fonts, layout and spacing, then create social posts, a logo and a flyer. Practice with clear exercises, submit your designs for feedback and earn a free certificate.
+description: Learn to design professional-looking graphics with free Canva, even if you have never designed anything. Understand colour, fonts, layout and spacing, then create social posts, a logo and a flyer. Practice with clear exercises, submit your designs for feedback and earn a certificate.
 category: design | Design
+price: 5000
 level: BEGINNER
 requirements: A phone or computer with internet; A free Canva account (canva.com); No design experience needed
 objectives: Use the Canva editor confidently; Apply the basic rules of colour, fonts, layout and spacing; Design a social media post and a story; Create a simple logo and brand kit; Design a flyer and export it correctly; Avoid the common mistakes that make designs look amateur; Build a small portfolio of your designs
@@ -489,7 +490,7 @@ Your instructor reviews your designs and sends feedback.
 === ASSIGNMENT: 🏁 FINAL EXAM: Build a mini brand pack | 5400
 ## 🏁 FINAL EXAM: Build a mini brand pack
 
-For a **real or imaginary business**, design a complete **mini brand pack** in Canva. It is **free**, with **no timer**.
+For a **real or imaginary business**, design a complete **mini brand pack** in Canva. There is **no timer**.
 
 ### Part 1: Brand
 

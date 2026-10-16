@@ -1,8 +1,9 @@
 ---
 key: customer-support-skills
 title: Customer Support Skills: Win Remote Support Jobs
-description: Learn how to help customers well: communicate clearly in writing, stay calm with upset people, solve problems step by step, use ticket and chat tools, write great replies and measure your performance. Practice with real scenarios, finish two assignments and earn a free certificate. No experience needed.
+description: Learn how to help customers well: communicate clearly in writing, stay calm with upset people, solve problems step by step, use ticket and chat tools, write great replies and measure your performance. Practice with real scenarios, finish two assignments and earn a certificate. No experience needed.
 category: career-skills | Career Skills
+price: 5000
 level: BEGINNER
 requirements: A phone or computer with internet; Good reading and writing in English; Patience and a helpful attitude
 objectives: Explain what great customer support looks like; Write clear, friendly and professional replies; Stay calm and de-escalate upset customers; Solve problems with a simple step-by-step method; Use tickets, macros and a knowledge base; Handle chat, email and phone well; Understand support quality measures and prepare for support interviews
@@ -505,7 +506,7 @@ Write your answers, numbered 1 to 6. Your instructor reviews them and sends feed
 === ASSIGNMENT: 🏁 FINAL EXAM: Support readiness test | 5400
 ## 🏁 FINAL EXAM: Support readiness test
 
-This mirrors a real support hiring test. It is **free**, with **no timer**. Company: **BrightPay**, a mobile payments app.
+This mirrors a real support hiring test. There is **no timer**. Company: **BrightPay**, a mobile payments app.
 
 ### Part 1: Replies (write each reply in 50 to 100 words)
 

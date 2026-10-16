@@ -1,8 +1,9 @@
 ---
 key: virtual-assistant-starter-kit
 title: Virtual Assistant Starter Kit: Get Hired to Support Busy People
-description: Learn what a virtual assistant does and how to do it well: email, calendars, scheduling, task tools, research, professional communication and client management. Practice with real scenarios, build a client-ready profile and a sample work pack, and earn a free certificate. No experience needed.
+description: Learn what a virtual assistant does and how to do it well: email, calendars, scheduling, task tools, research, professional communication and client management. Practice with real scenarios, build a client-ready profile and a sample work pack, and earn a certificate. No experience needed.
 category: career-skills | Career Skills
+price: 5000
 level: BEGINNER
 requirements: A phone or computer with internet; Basic reading and writing in English; A free Google account (for the practice tasks)
 objectives: Explain what a virtual assistant does and the services you can offer; Manage an inbox and write clear professional emails; Schedule meetings and handle time zones; Organise tasks with a simple system; Research quickly and report the answer clearly; Communicate and set expectations with clients; Build a profile and sample work to win your first client
@@ -563,7 +564,7 @@ With no clients yet, create **sample work**:
 === ASSIGNMENT: 🏁 FINAL EXAM: Build your VA starter pack | 5400
 ## 🏁 FINAL EXAM: Build your VA starter pack
 
-This is your final exam: a **starter pack** you could use to win your first client. It is **free**, with **no timer**.
+This is your final exam: a **starter pack** you could use to win your first client. There is **no timer**.
 
 ### Part 1: Your profile
 

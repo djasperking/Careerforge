@@ -1,8 +1,9 @@
 ---
 key: python-for-beginners
 title: Python for Beginners: Write Your First Programs
-description: Learn Python from scratch, the friendly way. Understand variables, text, numbers, decisions, loops, lists, dictionaries and functions, predict what code does in quick checks, then write real programs: a quiz game, a budget tracker and an automation script. Free, with a certificate. Uses free online tools, no installation needed.
+description: Learn Python from scratch, the friendly way. Understand variables, text, numbers, decisions, loops, lists, dictionaries and functions, predict what code does in quick checks, then write real programs: a quiz game, a budget tracker and an automation script. With a certificate. Uses free online tools, no installation needed.
 category: programming | Programming
+price: 5000
 level: BEGINNER
 requirements: A phone or computer with internet; A free Google account to use Google Colab (colab.research.google.com), or Python installed; No programming experience needed
 objectives: Run Python code and read its output; Store information in variables and work with text and numbers; Make decisions with if statements; Repeat actions with loops; Organise data with lists and dictionaries; Write and reuse functions; Handle simple errors and read files; Build small programs that automate real tasks
@@ -810,7 +811,7 @@ def add(a, b):
 === ASSIGNMENT: 🏁 FINAL EXAM: Build your own useful program | 5400
 ## 🏁 FINAL EXAM: Build your own useful program
 
-Choose **one** idea (or invent your own) and build it in Python. It is **free**, with **no timer**.
+Choose **one** idea (or invent your own) and build it in Python. There is **no timer**.
 
 - 📇 A **contact book**: add, search and show contacts
 - 🧾 A **shop till**: items, prices, total and change

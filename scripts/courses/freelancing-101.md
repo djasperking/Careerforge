@@ -1,12 +1,13 @@
 ---
 key: freelancing-101
 title: Freelancing 101: Land Your First Client
-description: Turn a skill into income. Learn how to choose a service, set up a professional profile, find clients, write winning proposals, price your work, get paid safely and keep clients happy. Practice with real examples, finish two assignments and earn a free certificate. No experience needed.
+description: Turn a skill into income. Learn how to choose a service, set up a professional profile, find clients, write winning proposals, price your work, get paid safely and keep clients happy. Practice with real examples, finish two assignments and earn a certificate. No experience needed.
 category: career-skills | Career Skills
+price: 5000
 level: BEGINNER
 requirements: One skill you can offer (writing, design, admin, coding, tutoring, anything); A phone or computer with internet; No freelancing experience needed
 objectives: Choose a service and a clear target client; Build a professional freelance profile and portfolio; Find clients on platforms and through direct outreach; Write short proposals that win work; Price your services fairly; Agree scope and get paid safely; Deliver well and turn clients into repeat business
-thumb: START | FREELANCING | Land your first paying client | BEGINNER | FREE | 💼 | #7c2d12 | #ea580c | #facc15
+thumb: START | FREELANCING | Land your first paying client | BEGINNER | CERTIFICATE | 💼 | #7c2d12 | #ea580c | #facc15
 ---
 # MODULE: Freelancing Foundations
 === TEXT: 👋 Welcome: what freelancing really is | 300 | preview
@@ -455,7 +456,7 @@ Write your answers, numbered 1 to 4. Your instructor reviews them and sends feed
 === ASSIGNMENT: 🏁 FINAL EXAM: Your freelance launch plan | 5400
 ## 🏁 FINAL EXAM: Your freelance launch plan
 
-Create a complete **launch plan** you could start this week. It is **free**, with **no timer**.
+Create a complete **launch plan** you could start this week. There is **no timer**.
 
 ### Part 1: Your business
 

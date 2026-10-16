@@ -35,7 +35,7 @@ async function main() {
     }
 
     fs.mkdirSync(THUMBS, { recursive: true });
-    fs.writeFileSync(path.join(THUMBS, `${spec.key}.svg`), thumbnailSvg(spec.thumb));
+    fs.writeFileSync(path.join(THUMBS, `${spec.key}.svg`), thumbnailSvg(spec.thumb, !spec.priceNaira));
 
     if (args.includes("--refresh")) await refreshCourseContent(spec);
     else await seedCourse(spec, { replace: args.includes("--replace") });

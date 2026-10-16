@@ -19,6 +19,5 @@
     <rect x="314" y="560" width="290" height="60" rx="30" fill="#fff"/><text x="459" y="600" fill="#831843">NO EXPERIENCE</text>
   </g>
   <g filter="url(#pop)"><circle cx="1000" cy="380" r="190" fill="#fff" opacity="0.95"/><text x="1000" y="450" font-size="190" text-anchor="middle">🗂️</text></g>
-  <g filter="url(#pop)" transform="rotate(12 1180 118)"><polygon fill="#fde047" points="1180,30 1203,70 1250,66 1230,108 1262,144 1217,156 1213,204 1176,176 1137,204 1136,156 1094,142 1124,106 1108,64 1154,70"/>
-    <text x="1180" y="136" font-family="'Arial Black', Impact, Arial, sans-serif" font-weight="900" font-size="46" fill="#be185d" text-anchor="middle">FREE</text></g>
+  
 </svg>

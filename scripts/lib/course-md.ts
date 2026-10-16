@@ -73,6 +73,7 @@ export function parseCourseMarkdown(source: string): CourseSpec {
     description: meta.description,
     category: { key: catKey, name: catName || catKey },
     level: (meta.level as CourseSpec["level"]) || "BEGINNER",
+    priceNaira: Number(meta.price) || 0,
     requirements: list(meta.requirements),
     objectives: list(meta.objectives),
     thumb: { top: t[0], headline: t[1], sub: t[2], chips: [t[3], t[4]], emoji: t[5], from: t[6], via: t[7], to: t[8] },

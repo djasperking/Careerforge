@@ -1,8 +1,9 @@
 ---
 key: data-annotation-ai-training
 title: Data Annotation & AI Training Jobs: Start Remote Work
-description: Learn what data annotation and AI training work really is, how to do it accurately, how to pass the tests companies use, and how to apply safely for remote roles. Practice real task types, answer quick checks, finish two assignments, and earn a free certificate. No experience or degree needed.
+description: Learn what data annotation and AI training work really is, how to do it accurately, how to pass the tests companies use, and how to apply safely for remote roles. Practice real task types, answer quick checks, finish two assignments, and earn a certificate. No experience or degree needed.
 category: career-skills | Career Skills
+price: 5000
 level: BEGINNER
 requirements: A phone or computer with internet; Good reading and writing in English; Patience and attention to detail
 objectives: Explain what data annotation and AI training are; Label, rank and review data using clear guidelines; Avoid the common mistakes that lower quality scores; Prepare for assessments and onboarding tests; Spot job scams and apply safely; Set up a focused remote work routine; Write an application that gets noticed
@@ -582,7 +583,7 @@ Keep this open for your final assignment.
 === ASSIGNMENT: 🏁 FINAL EXAM: Annotator readiness test | 5400
 ## 🏁 FINAL EXAM: Annotator readiness test
 
-This is your final exam. It mirrors a real assessment: careful reading, good judgement, and a safe, honest application. It is **free**, with **no timer**.
+This is your final exam. It mirrors a real assessment: careful reading, good judgement, and a safe, honest application. There is **no timer**.
 
 ### Part 1: Apply the guidelines (6 tasks)
 

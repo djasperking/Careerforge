@@ -1,8 +1,9 @@
 ---
 key: javascript-from-zero
 title: JavaScript from Zero: Make Websites Interactive
-description: Learn JavaScript step by step and make your web pages come alive. Run real code in every lesson, answer quick checks, build a tip calculator and a to-do app in the built-in editor, then create your own interactive website as your final exam. Free, with a certificate. Best after HTML & CSS from Zero.
+description: Learn JavaScript step by step and make your web pages come alive. Run real code in every lesson, answer quick checks, build a tip calculator and a to-do app in the built-in editor, then create your own interactive website as your final exam. With a certificate. Best after HTML & CSS from Zero.
 category: web-development | Web Development
+price: 5000
 level: BEGINNER
 requirements: Basic HTML and CSS (take HTML & CSS from Zero first); A computer or phone with a web browser; Curiosity — no programming experience needed
 objectives: Store and change information with variables; Make decisions with if statements; Repeat actions with loops; Write reusable functions; Work with arrays and objects; Change a web page with JavaScript; React to clicks and typing; Build a small interactive app from scratch
@@ -1011,7 +1012,7 @@ list.appendChild(li);   li.remove();
 
 [[workspace checks=html,css,js]]
 
-No multiple choice. For your final exam you build a **small interactive website** that uses what you learned. It is **free**, with **no timer**.
+No multiple choice. For your final exam you build a **small interactive website** that uses what you learned. There is **no timer**.
 
 ### Pick an idea (or invent your own)
 

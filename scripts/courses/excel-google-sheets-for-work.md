@@ -1,8 +1,9 @@
 ---
 key: excel-google-sheets-for-work
 title: Excel & Google Sheets for Work: From Zero to Confident
-description: Learn spreadsheets the practical way: enter and format data, write formulas, use SUM, IF, VLOOKUP and more, sort and filter, make charts, and build a real budget or inventory sheet. Works in both Excel and free Google Sheets. Quick checks in every lesson, two hands-on assignments and a free certificate.
+description: Learn spreadsheets the practical way: enter and format data, write formulas, use SUM, IF, VLOOKUP and more, sort and filter, make charts, and build a real budget or inventory sheet. Works in both Excel and free Google Sheets. Quick checks in every lesson, two hands-on assignments and a certificate.
 category: office-skills | Office Skills
+price: 5000
 level: BEGINNER
 requirements: A computer or phone with Excel or a free Google account for Google Sheets; Basic maths (adding, percentages); No spreadsheet experience needed
 objectives: Enter, format and organise data clearly; Write formulas and understand cell references; Use SUM, AVERAGE, COUNT, MIN, MAX and IF; Look up information with VLOOKUP or XLOOKUP; Sort, filter and clean data; Build charts that tell a story; Create a working budget and an inventory tracker
@@ -563,7 +564,7 @@ Your instructor reviews it and sends feedback.
 === ASSIGNMENT: 🏁 FINAL EXAM: Sales report for a small business | 5400
 ## 🏁 FINAL EXAM: Sales report for a small business
 
-Pretend you work for a small shop. Build a **sales workbook** that the owner can use. It is **free**, with **no timer**.
+Pretend you work for a small shop. Build a **sales workbook** that the owner can use. There is **no timer**.
 
 ### Part 1: Data (Sheet "Sales")
 

@@ -1,12 +1,13 @@
 ---
 key: social-media-management-basics
 title: Social Media Management Basics: Run Accounts for Brands
-description: Learn how to manage social media for small businesses: choose platforms, plan content, write captions that work, schedule posts, engage with followers, read basic analytics and report results. Practice with real scenarios, build a 30-day content calendar and earn a free certificate.
+description: Learn how to manage social media for small businesses: choose platforms, plan content, write captions that work, schedule posts, engage with followers, read basic analytics and report results. Practice with real scenarios, build a 30-day content calendar and earn a certificate.
 category: marketing | Marketing
+price: 5000
 level: BEGINNER
 requirements: A phone with Instagram, Facebook or X (any account); Basic writing in English; No marketing experience needed
 objectives: Understand how brands use social media to grow; Choose the right platforms and goals for a business; Plan a content mix and a weekly posting schedule; Write clear captions with a call to action; Reply to comments and messages professionally; Read basic analytics and learn from them; Build a 30-day content calendar and a simple report
-thumb: START | SOCIAL MEDIA | Manage accounts for real businesses | BEGINNER | FREE | 📱 | #581c87 | #c026d3 | #f59e0b
+thumb: START | SOCIAL MEDIA | Manage accounts for real businesses | BEGINNER | CERTIFICATE | 📱 | #581c87 | #c026d3 | #f59e0b
 ---
 # MODULE: Social Media Foundations
 === TEXT: 👋 Welcome: the social media manager's job | 300 | preview
@@ -492,7 +493,7 @@ Write your answers, numbered 1 to 3. Your instructor reviews them and sends feed
 === ASSIGNMENT: 🏁 FINAL EXAM: Build a 30-day content plan | 5400
 ## 🏁 FINAL EXAM: Build a 30-day content plan
 
-Choose a **real or imaginary small business** and create a complete, 30-day plan. It is **free**, with **no timer**.
+Choose a **real or imaginary small business** and create a complete, 30-day plan. There is **no timer**.
 
 ### Part 1: Strategy
 

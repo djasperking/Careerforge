@@ -1,12 +1,13 @@
 ---
 key: cv-linkedin-job-search
 title: Build a Winning CV and LinkedIn Profile
-description: Create a CV that gets read and a LinkedIn profile that gets found. Learn what employers look for, how to write strong bullet points, how to beat automated screening, how to write a short cover note and how to prepare for interviews. Practice with real examples, finish two assignments and earn a free certificate.
+description: Create a CV that gets read and a LinkedIn profile that gets found. Learn what employers look for, how to write strong bullet points, how to beat automated screening, how to write a short cover note and how to prepare for interviews. Practice with real examples, finish two assignments and earn a certificate.
 category: career-skills | Career Skills
+price: 5000
 level: BEGINNER
 requirements: A phone or computer; Your work, school or project history (even if small); No CV experience needed
 objectives: Choose the right CV format and layout; Write bullet points that show results; Tailor a CV to a job description and pass automated screening; Build a complete LinkedIn profile; Write a short, convincing cover note; Prepare answers for common interview questions; Avoid the mistakes that get CVs rejected
-thumb: BUILD | WINNING CV | CV + LinkedIn that get you hired | BEGINNER | FREE | 📄 | #1e3a8a | #2563eb | #f59e0b
+thumb: BUILD | WINNING CV | CV + LinkedIn that get you hired | BEGINNER | CERTIFICATE | 📄 | #1e3a8a | #2563eb | #f59e0b
 ---
 # MODULE: Your CV
 === TEXT: 👋 Welcome: why your CV matters | 300 | preview
@@ -493,7 +494,7 @@ Write your answers, numbered 1 to 7. Your instructor reviews them and sends feed
 === ASSIGNMENT: 🏁 FINAL EXAM: Your complete application pack | 5400
 ## 🏁 FINAL EXAM: Your complete application pack
 
-Build a complete pack for **one real job you could apply for**. It is **free**, with **no timer**.
+Build a complete pack for **one real job you could apply for**. There is **no timer**.
 
 ### Part 1: The target
 
