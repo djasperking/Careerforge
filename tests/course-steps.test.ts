@@ -116,3 +116,31 @@ describe("renderMarkdown tables", () => {
     expect(html).toContain("<p>after</p>");
   });
 });
+
+describe("practice drills", () => {
+  const DRILL = "### Practice\n\n::: drill Sentiment\nlabels: Positive | Negative | Neutral\nrule: Label the feeling.\npass: 60\n- Great food! => Positive | praise\n- Slow service. => Negative | complaint\n- Opens at 9. => Neutral | fact\n:::\n";
+  it("parses labels, rule, pass mark and items", () => {
+    const [step] = splitSteps(DRILL);
+    expect(step.drills).toHaveLength(1);
+    expect(step.drills[0]).toMatchObject({ title: "Sentiment", labels: ["Positive", "Negative", "Neutral"], passPercent: 60 });
+    expect(step.drills[0].items.map((i) => i.answer)).toEqual(["Positive", "Negative", "Neutral"]);
+    expect(step.body).not.toContain(":::");
+  });
+  it("drops a drill whose answer is not one of its labels", () => {
+    const [step] = splitSteps(DRILL.replace("=> Neutral", "=> Maybe"));
+    expect(step.drills).toEqual([]);
+  });
+  it("every drill written in the course files parses", async () => {
+    const fs = await import("node:fs");
+    const { parseCourseMarkdown } = await import("../scripts/lib/course-md");
+    for (const f of fs.readdirSync("scripts/courses/").filter((n) => n.endsWith(".md"))) {
+      const spec = parseCourseMarkdown(fs.readFileSync("scripts/courses/" + f, "utf8"));
+      for (const l of spec.modules.flatMap((m) => m.lessons)) {
+        if (l.type !== "TEXT" || !l.content) continue;
+        const written = (l.content.match(/^::: drill /gm) ?? []).length;
+        const parsed = splitSteps(l.content).reduce((n, st) => n + st.drills.length, 0);
+        expect(parsed, `${f}: ${l.title}`).toBe(written);
+      }
+    }
+  });
+});

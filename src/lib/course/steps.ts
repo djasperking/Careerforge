@@ -13,6 +13,16 @@
  *     :::
  *
  * `+` marks the right answer, `-` a wrong one, `=` is the explanation shown after.
+ *
+ * A scored practice drill (like the "gold tasks" annotators are tested on):
+ *
+ *     ::: drill Sentiment practice
+ *     labels: Positive | Negative | Neutral
+ *     rule: Label the writer's feeling. Facts with no feeling are Neutral.
+ *     pass: 70
+ *     - The food arrived hot and on time. => Positive | It praises the delivery.
+ *     - The shop opens at 9am. => Neutral | A fact, no feeling.
+ *     :::
  */
 
 export interface StepCheck {
@@ -21,25 +31,64 @@ export interface StepCheck {
   explain: string;
 }
 
+export interface DrillItem {
+  text: string;
+  answer: string;
+  why: string;
+}
+
+export interface StepDrill {
+  title: string;
+  labels: string[];
+  rule: string;
+  passPercent: number;
+  items: DrillItem[];
+}
+
 export interface LessonStep {
   title: string;
   /** Markdown for the step, with its questions removed. */
   body: string;
   checks: StepCheck[];
+  drills: StepDrill[];
   hasPlayground: boolean;
   /** Lines from 📌 / 🔑 callouts, collected for the end-of-lesson recap. */
   keyPoints: string[];
 }
 
 const CHECK_OPEN = /^:::\s*check\s+(.+)$/;
+const DRILL_OPEN = /^:::\s*drill\s+(.+)$/;
 
-function parseChecks(lines: string[]): { rest: string[]; checks: StepCheck[] } {
+function parseChecks(lines: string[]): { rest: string[]; checks: StepCheck[]; drills: StepDrill[] } {
   const rest: string[] = [];
   const checks: StepCheck[] = [];
+  const drills: StepDrill[] = [];
   let fence = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line.trim().startsWith("```")) fence = !fence;
+    const drillOpen = fence ? null : line.trim().match(DRILL_OPEN);
+    if (drillOpen) {
+      const drill: StepDrill = { title: drillOpen[1].trim(), labels: [], rule: "", passPercent: 70, items: [] };
+      i++;
+      while (i < lines.length && lines[i].trim() !== ":::") {
+        const t = lines[i].trim();
+        if (t.startsWith("labels:")) drill.labels = t.slice(7).split("|").map((x) => x.trim()).filter(Boolean);
+        else if (t.startsWith("rule:")) drill.rule = t.slice(5).trim();
+        else if (t.startsWith("pass:")) drill.passPercent = Math.min(100, Math.max(1, Number(t.slice(5)) || 70));
+        else if (t.startsWith("- ") && t.includes("=>")) {
+          const [text, rest2] = t.slice(2).split("=>");
+          const [answer, ...why] = rest2.split("|");
+          drill.items.push({ text: text.trim(), answer: answer.trim(), why: why.join("|").trim() });
+        }
+        i++;
+      }
+      // A drill needs two or more labels and at least three items whose answers are real labels.
+      if (drill.labels.length >= 2 && drill.items.length >= 3 && drill.items.every((it) => drill.labels.includes(it.answer))) {
+        drills.push(drill);
+      }
+      continue;
+    }
     const open = fence ? null : line.trim().match(CHECK_OPEN);
     if (!open) {
       rest.push(line);
@@ -57,7 +106,7 @@ function parseChecks(lines: string[]): { rest: string[]; checks: StepCheck[] } {
     // A question needs at least two answers and exactly one right one to be fair.
     if (check.options.length >= 2 && check.options.filter((o) => o.correct).length === 1) checks.push(check);
   }
-  return { rest, checks };
+  return { rest, checks, drills };
 }
 
 function titleOf(heading: string): string {
@@ -76,7 +125,7 @@ export function splitSteps(markdown: string | null | undefined): LessonStep[] {
 
   const steps: LessonStep[] = [];
   for (const g of groups) {
-    const { rest, checks } = parseChecks(g.lines);
+    const { rest, checks, drills } = parseChecks(g.lines);
     const body = rest.join("\n").trim();
     if (!body && !g.title) continue;
     let title = g.title;
@@ -88,7 +137,7 @@ export function splitSteps(markdown: string | null | undefined): LessonStep[] {
       text = text.replace(/^##\s+.+\n?/m, "").trim();
     }
     const keyPoints = [...text.matchAll(/^>\s*(?:📌|🔑)\s*(.+)$/gmu)].map((m) => m[1].trim());
-    steps.push({ title, body: text, checks, hasPlayground: /^```playground(-js)?\b/m.test(text), keyPoints });
+    steps.push({ title, body: text, checks, drills, hasPlayground: /^```playground(-js)?\b/m.test(text), keyPoints });
   }
   return steps;
 }

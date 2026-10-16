@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { renderMarkdown } from "@/lib/markdown";
 import { enhancePlaygrounds } from "@/components/lesson/playground";
-import { splitSteps, type StepCheck } from "@/lib/course/steps";
+import { splitSteps, type StepCheck, type StepDrill } from "@/lib/course/steps";
 
 /**
  * A text lesson taught one topic at a time. Each part must be finished
@@ -42,9 +42,10 @@ export function StepLesson({
   const partReady = (i: number) => {
     const s = steps[i];
     if (!s) return true;
-    if (s.checks.length === 0 && !s.hasPlayground) return Boolean(acked[i]);
+    if (s.checks.length === 0 && s.drills.length === 0 && !s.hasPlayground) return Boolean(acked[i]);
     const questionsOk = s.checks.every((_, c) => solved[`${i}:${c}`]);
-    return questionsOk && (!s.hasPlayground || Boolean(edited[i]));
+    const drillsOk = s.drills.every((_, d) => solved[`${i}:d${d}`]);
+    return questionsOk && drillsOk && (!s.hasPlayground || Boolean(edited[i]));
   };
 
   // Make the part's live-code boxes work, and notice when the student edits one.
@@ -165,6 +166,14 @@ export function StepLesson({
               </p>
             ) : null}
 
+            {step.drills.map((d, di) => (
+              <PracticeDrill
+                key={`${index}:d${di}`}
+                drill={d}
+                onPassed={() => setSolved((r) => ({ ...r, [`${index}:d${di}`]: true }))}
+              />
+            ))}
+
             {step.checks.map((c, ci) => (
               <QuickCheck
                 key={`${index}:${ci}`}
@@ -180,7 +189,7 @@ export function StepLesson({
             <Button variant="ghost" size="sm" onClick={() => setIndex(index - 1)} disabled={index === 0}>
               <ArrowLeft className="size-4" /> Back
             </Button>
-            {step.checks.length === 0 && !step.hasPlayground && !free && !acked[index] ? (
+            {step.checks.length === 0 && step.drills.length === 0 && !step.hasPlayground && !free && !acked[index] ? (
               <Button size="sm" variant="outline" onClick={() => setAcked((d) => ({ ...d, [index]: true }))}>
                 <Check className="size-4" /> Got it
               </Button>
@@ -260,6 +269,127 @@ function QuickCheck({
           Not quite{tries > 1 ? " — re-read this part above" : ""}. Try again!
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** A scored practice round, like the gold tasks annotators are tested on. Passing unlocks the next part. */
+function PracticeDrill({ drill, onPassed }: { drill: StepDrill; onPassed: () => void }) {
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<(string | null)[]>(() => drill.items.map(() => null));
+  const [finished, setFinished] = useState(false);
+
+  const total = drill.items.length;
+  const item = drill.items[index];
+  const picked = answers[index];
+  const correctCount = answers.filter((a, i) => a === drill.items[i].answer).length;
+  const percent = Math.round((correctCount / total) * 100);
+  const passed = percent >= drill.passPercent;
+
+  function choose(label: string) {
+    if (picked) return;
+    setAnswers((a) => a.map((v, i) => (i === index ? label : v)));
+  }
+
+  function next() {
+    if (index < total - 1) setIndex(index + 1);
+    else {
+      setFinished(true);
+      if (Math.round((answers.filter((a, i) => a === drill.items[i].answer).length / total) * 100) >= drill.passPercent) onPassed();
+    }
+  }
+
+  function retry() {
+    setAnswers(drill.items.map(() => null));
+    setIndex(0);
+    setFinished(false);
+  }
+
+  return (
+    <div className="rounded-xl border-2 border-fuchsia-500/30 bg-fuchsia-500/5 p-4">
+      <p className="text-sm font-semibold">🏷️ Practice drill: {drill.title}</p>
+      {drill.rule ? (
+        <p className="mt-1 rounded-lg border bg-card px-3 py-2 text-xs text-muted-foreground">
+          <b className="text-foreground">Guideline:</b> {drill.rule}
+        </p>
+      ) : null}
+
+      {finished ? (
+        <div className="cf-rise mt-3 space-y-3">
+          <div>
+            <div className="mb-1 flex justify-between text-sm font-medium">
+              <span>
+                Accuracy: {correctCount} of {total}
+              </span>
+              <span className={passed ? "text-emerald-600" : "text-red-600"}>{percent}%</span>
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+              <div className={cn("h-full rounded-full", passed ? "bg-emerald-500" : "bg-red-500")} style={{ width: `${percent}%` }} />
+            </div>
+          </div>
+          <p className={cn("text-sm font-medium", passed ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
+            {passed ? "✅ Passed. That is the accuracy a project would want." : `Not yet. You need ${drill.passPercent}% to pass. Read the guideline and try again.`}
+          </p>
+          <ul className="space-y-1.5 text-sm">
+            {drill.items.map((it, i) =>
+              answers[i] === it.answer ? null : (
+                <li key={i} className="rounded-lg border bg-card px-3 py-2">
+                  <span className="text-muted-foreground">&ldquo;{it.text}&rdquo;</span>
+                  <br />
+                  You chose <b>{answers[i]}</b>, correct answer <b>{it.answer}</b>. {it.why}
+                </li>
+              ),
+            )}
+          </ul>
+          {!passed ? (
+            <Button size="sm" onClick={retry}>
+              Try the drill again
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <div className="mt-3 space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Task {index + 1} of {total}
+          </p>
+          <p className="cf-rise rounded-lg border bg-card px-4 py-3 text-sm font-medium" key={index}>
+            {item.text}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {drill.labels.map((l) => {
+              const chosen = picked === l;
+              const right = picked && l === item.answer;
+              return (
+                <button
+                  key={l}
+                  type="button"
+                  disabled={Boolean(picked)}
+                  onClick={() => choose(l)}
+                  className={cn(
+                    "rounded-full border px-4 py-1.5 text-sm font-medium transition",
+                    !picked && "bg-card hover:border-primary hover:bg-primary/5",
+                    right && "cf-pop border-emerald-500 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300",
+                    chosen && !right && "cf-shake border-red-400 bg-red-500/10 text-red-800 dark:text-red-300",
+                  )}
+                >
+                  {l}
+                </button>
+              );
+            })}
+          </div>
+          {picked ? (
+            <div className="cf-rise space-y-2">
+              <p className={cn("text-sm", picked === item.answer ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400")}>
+                {picked === item.answer ? "✅ Correct. " : `Not quite. The answer is ${item.answer}. `}
+                {item.why}
+              </p>
+              <Button size="sm" onClick={next}>
+                {index === total - 1 ? "See my accuracy" : "Next task"} <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
