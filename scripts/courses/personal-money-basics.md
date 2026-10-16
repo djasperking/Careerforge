@@ -1,508 +1,777 @@
 ---
 key: personal-money-basics
 title: Personal Money Basics: Budget, Save and Take Control
-description: Take control of your money from today. Learn how to track where your money goes, build a simple budget, spend wisely, save steadily and set goals. Practice with real numbers, quick checks and two assignments, and earn a certificate. Free, no experience needed. This course is education, not financial advice.
+description: Learn money as a subject, not just a budget. Draw on two classics, The Richest Man in Babylon by George S. Clason and Rich Dad Poor Dad by Robert Kiyosaki, to understand saving, spending, assets and liabilities, income, debt and financial literacy. Build your own money statements and a 90-day plan, with practical exercises and a practical final exam. Free. Education only, not financial advice.
 category: finance | Finance
 price: 0
 level: BEGINNER
-requirements: A phone or notebook to write numbers; Your rough monthly income and spending (estimates are fine); No finance knowledge needed
-objectives: Explain where your money goes with a spending tracker; Build a monthly budget that fits your income; Separate needs, wants and savings; Spend more wisely and cut hidden costs; Build a saving habit with clear goals; Handle irregular income; Create a simple 3-month money plan
-thumb: LEARN | MONEY BASICS | Budget, save and take control | BEGINNER | FREE | 💰 | #14532d | #15803d | #eab308
+requirements: A phone, notebook or free spreadsheet; Your rough monthly income and spending (estimates are fine); No finance knowledge needed
+objectives: Explain where money comes from and where yours goes; Apply the ten percent habit of paying yourself first; Tell assets from liabilities and read a simple income and balance statement; Use the seven cures from The Richest Man in Babylon to fix a lean purse; Understand earned, portfolio and passive income; Separate needs from desires and control spending; Handle debt, insurance and emergencies at a basic level; Build a personal money system and a 90-day plan
+thumb: LEARN | MONEY | Wisdom from Babylon to today | BEGINNER | FREE | 💰 | #14532d | #15803d | #eab308
 ---
-# MODULE: Know Your Money
-=== TEXT: 👋 Welcome: why money skills matter | 300 | preview
-## 👋 Welcome: why money skills matter
+# MODULE: The Money Mindset
+=== TEXT: 👋 Welcome: money is a subject you can learn | 360 | preview
+## 👋 Welcome: money is a subject you can learn
 
-Most money problems are not about how much you earn. They are about **not knowing where it goes**. The good news: money skills are simple habits that anyone can learn, at any income.
+Schools teach maths, science and history. Very few teach **money**: how it flows, how it is kept, and how it grows. Most of us learn it by trial and error, and some of the errors are expensive.
 
-### What you will learn
+This course teaches money **as a subject**. We use two famous books as guides:
 
-- 🔍 Where your money really goes
-- 🧾 How to build a budget that works
-- 🎯 Needs, wants and savings
-- 🐖 How to build a saving habit
-- 📅 How to handle irregular income
-- 🗺️ A 3-month money plan
+- 📜 **The Richest Man in Babylon** by George S. Clason (1926), a collection of short parables set in ancient Babylon about saving, spending and building wealth.
+- 🏠 **Rich Dad Poor Dad** by Robert Kiyosaki (1997), which popularised ideas such as assets versus liabilities and financial literacy.
 
-> 📌 **Remember:** a plan for your money beats good intentions every time.
+### How we use the books
 
-::: check What causes most money problems?
-- Earning too little only
-+ Not knowing where the money goes
-- Bad luck
-= Awareness comes first. Tracking shows you the truth.
+We **summarise ideas in our own words**, with short, credited quotes, and we **test them with real numbers**. The books are worth reading in full. And we think critically: a good idea is one you can check against your own life.
+
+> ⚠️ **Important:** this course is **education, not financial advice**. It does not tell you what to buy, sell or invest in. Your situation is unique. For big decisions, speak to a **licensed professional**.
+
+::: check What kind of course is this?
++ Education about money, not personal financial advice
+- A list of things to buy
+- A promise of quick riches
+= It teaches how money works so you can decide for yourself.
 :::
 
-### An honest note
+### What you will do
 
-This course teaches **general money habits**. It is **education, not financial advice**. Your situation is unique, so use these ideas to make your own decisions, and talk to a qualified professional for big choices.
+1. Learn the **mindset** behind the two books.
+2. Work through **Clason's seven cures** for a lean purse, with a practical exercise for each.
+3. Apply **Kiyosaki's assets versus liabilities** idea to your own numbers.
+4. Build your own **money statements** and a **90-day plan**.
 
-::: check What kind of content is this course?
-+ General education, not personal financial advice
-- A promise of guaranteed wealth
-- A way to get rich quick
-= Real money progress is built on habits, not shortcuts.
+> 📌 **Remember:** knowledge only helps when you use it. Every lesson ends with something to try.
+
+::: check How will we handle the two books?
++ Summarise the ideas, credit the authors and test them with real numbers
+- Copy whole chapters
+- Treat every word as advice
+= We learn from them, and keep our own judgment.
 :::
 
-=== TEXT: 🔍 Where does your money go? | 480 | preview
-## 🔍 Where does your money go?
+=== TEXT: 📜 Arkad of Babylon: the first lesson | 480 | preview
+## 📜 Arkad of Babylon: the first lesson
 
-### Income and spending
+### The story, in short
 
-- **Income:** money coming in (salary, business, gifts, side income).
-- **Expenses:** money going out (rent, food, transport, data, fun).
-- **Surplus:** income minus expenses. If it is **negative**, you are spending more than you earn.
+In **The Richest Man in Babylon**, a young scribe named **Arkad** works for a modest wage. He notices that some men grow rich while others, earning just as much, stay poor. He asks a wealthy moneylender to teach him, and receives a short, powerful lesson.
 
-> 📌 **Remember:** income minus expenses is what is left. If it is below zero, you are borrowing from your future.
+### The lesson, in our words
 
-::: check Income is 100,000 and expenses are 90,000. What is the surplus?
-- 190,000
-+ 10,000
-- 0
-= 100,000 - 90,000 = 10,000.
+The moneylender explains that wealth begins with one habit: **keep a fixed part of every earning for yourself**, before paying everyone else. The book puts it simply:
+
+> *"A part of all you earn is yours to keep."* (George S. Clason)
+
+The suggested share is **at least one tenth**. Nothing fancy: take it first, every time you are paid, and leave it alone.
+
+### Why this works
+
+1. It **turns saving into a rule**, not a hope for what is left.
+2. It **builds the habit** before the amount grows.
+3. It creates a **pool of money that can later be put to work**.
+
+> 📌 **Remember:** wealth starts with a habit, not an income. Pay yourself first, even when the amount is small.
+
+::: check According to the Babylon story, what comes first when you are paid?
++ Keep a part for yourself, at least a tenth
+- Pay for wants
+- Wait to see what is left
+= The saving is taken first.
 :::
 
-### Track for 30 days
+### Try it: the 10% test
 
-Write down **every** spending, even small ones: bread, airtime, transport, snacks. Use a notebook, your phone notes or a free sheet. Small leaks add up.
+Take your last month's income. Work out 10%.
 
-> **Example:** 1,000 a day on snacks and drinks is 30,000 a month.
+| If you earn | 10% is |
+|---|---|
+| 50,000 | 5,000 |
+| 120,000 | 12,000 |
+| 300,000 | 30,000 |
 
-::: check Why track small spending?
-+ Small daily costs add up to a lot each month
-- Small spending never matters
-- Tracking is only for rich people
-= 1,000 a day is 30,000 a month.
+Now ask: **could I live on the other 90%?** If it feels impossible, that is information. It shows how tightly your spending has grown around your income.
+
+::: check What is 10% of 120,000?
+- 1,200
++ 12,000
+- 120
+= 120,000 divided by 10 is 12,000.
 :::
 
-### Group your spending
+=== TEXT: 🏠 Assets and liabilities: the Rich Dad idea | 540 | preview
+## 🏠 Assets and liabilities: the Rich Dad idea
 
-Sort into categories: **Housing, Food, Transport, Data and airtime, Family, Health, Fun, Savings, Other**. The categories show you where to cut or adjust.
+### The core idea
 
-=== QUIZ: 🧠 Quick check: know your money | 240
-? What is a surplus?
-+ Income minus expenses, when it is positive
-- A kind of loan
-- Money you owe
-= Surplus is what is left over.
-? Income 80,000, expenses 95,000. What is happening?
-+ You are spending more than you earn
-- You are saving well
-- Nothing
-= A negative number means a gap.
-? Why track every expense for 30 days?
-+ To see where the money really goes
-- To look busy
-- To impress friends
-= Awareness is step one.
-? 500 naira a day on a small treat is about how much a month?
-+ 15,000
-- 500
-- 5,000
-= 500 x 30 = 15,000.
-? True or false: this course gives guaranteed financial returns.
+In **Rich Dad Poor Dad**, Robert Kiyosaki argues that the difference between the financially secure and the financially stressed often comes down to knowing the difference between **assets** and **liabilities**.
+
+In plain words:
+
+- An **asset** is something that **puts money into your pocket** (for example savings that earn interest, shares that pay dividends, a rented-out property, a business that pays you).
+- A **liability** is something that **takes money out of your pocket** (for example loan repayments, a car that costs more to run than it earns, subscriptions, a lifestyle you cannot afford).
+
+> 📌 **Remember:** it is not what something is called that matters, but **which way the money flows**.
+
+::: check In this idea, what makes something an asset?
++ It puts money into your pocket
+- It looks expensive
+- Everyone owns one
+= Direction of cash flow decides it.
+:::
+
+### An example with numbers
+
+**Ada buys a motorbike for 300,000 and uses it only for herself.**
+- Each month: fuel and repairs cost her **20,000**.
+- It earns her **0**. That is a **liability** (money flows out).
+
+**Tunde buys the same motorbike and uses it for deliveries.**
+- Each month: it costs him **20,000**, but earns **90,000**.
+- Net: **+70,000** a month. For Tunde it works as an **asset**.
+
+The same object behaved differently, because of **how it was used**.
+
+::: check A motorbike costs 20,000 a month to run and earns 90,000 as a delivery bike. What is the net monthly cash flow?
+- 20,000
++ 70,000
+- 90,000
+= 90,000 minus 20,000 is 70,000.
+:::
+
+### Think critically
+
+Kiyosaki's books are popular and also **debated**. Some critics question parts of his stories and point out that his examples lean on property, which carries real risks. That is healthy to know. **Take the useful question** ("is the money flowing in or out?") **and check it against your own numbers.**
+
+::: check What is a healthy way to use a famous money book?
++ Take the useful ideas and test them against your own numbers
+- Do exactly what it says without thinking
+- Ignore every idea
+= Good learners test ideas.
+:::
+
+=== QUIZ: 🧠 Quick check: the money mindset | 300
+? What is the main habit from Arkad's first lesson?
++ Keep a part of every earning for yourself first
+- Spend everything, then save what is left
+- Borrow to invest
+= The saving is taken first.
+? What fraction does Clason's moneylender suggest keeping, at least?
++ One tenth
+- One half
+- One hundredth
+= It is a small, doable rule.
+? In the Rich Dad idea, what makes something an asset?
++ It puts money into your pocket
+- It costs a lot
+- It is popular
+= Look at the direction of cash flow.
+? A car costs 40,000 a month to run and earns nothing. In this idea it is mostly...
++ A liability
+- An asset
+- Neither
+= Money flows out.
+? True or false: this course gives you personal financial advice.
 - True
 + False
-= It teaches habits, not guarantees.
-# MODULE: Budgeting That Works
-=== TEXT: 🧾 Build a simple budget | 540
-## 🧾 Build a simple budget
+= It is education only.
+# MODULE: The Seven Cures for a Lean Purse
+=== TEXT: 🪙 Cure 1: Start thy purse to fattening | 540
+## 🪙 Cure 1: Start thy purse to fattening
 
-A **budget** is a plan for your money **before** the month starts.
-
-### The 50/30/20 starting point
-
-- **50% Needs:** rent, food, transport, bills, minimum debt payments.
-- **30% Wants:** fun, eating out, clothes, extras.
-- **20% Savings and debt payoff.**
-
-If your needs are above 50%, adjust the shares, because it is a **guide**, not a law.
-
-> 📌 **Remember:** pay yourself first. Move savings out **as soon as money comes in**, before you spend.
-
-::: check What does "pay yourself first" mean?
-+ Set aside savings as soon as income arrives
-- Spend on yourself before anything else
-- Never pay bills
-= Savings should not depend on what is left.
-:::
-
-### Example: 100,000 monthly income
-
-| Group | Share | Amount |
-|---|---|---|
-| Needs | 50% | 50,000 |
-| Wants | 30% | 30,000 |
-| Savings | 20% | 20,000 |
-
-::: check With 200,000 income, how much is 20% for savings?
-- 20,000
-+ 40,000
-- 4,000
-= 200,000 x 0.20 = 40,000.
-:::
-
-### Steps to build yours
-
-1. Write your **monthly income** (use the lowest realistic number).
-2. List **fixed costs** first (rent, school fees, subscriptions).
-3. Add **variable costs** (food, transport, data) from your 30-day tracker.
-4. Set **savings** as a bill you pay to yourself.
-5. Check that the total **does not exceed income**.
-
-=== TEXT: 🎯 Needs, wants and smart spending | 480
-## 🎯 Needs, wants and smart spending
-
-### Needs vs wants
-
-- **Needs:** you cannot live or work without them (shelter, food, basic transport, health).
-- **Wants:** nice to have (new phone every year, takeaways, trends).
-
-A **want** is not bad. The question is whether it **fits your budget** and your goals.
-
-> 📌 **Remember:** wants are fine in the budget. They are a problem when they replace needs and savings.
-
-::: check Which is a want?
-- Rent
-+ A new phone when your current one works fine
-- Basic food
-= Needs keep you safe and working. Wants are optional.
-:::
-
-### Hidden costs to cut
-
-- **Subscriptions** you forgot (apps, TV, music).
-- **Bank and transfer charges** you could avoid.
-- **Data waste:** buy bundles instead of pay-as-you-go.
-- **Impulse buys:** use the **24-hour rule**: wait a day before buying anything non-essential.
-
-### Smart habits
-
-1. **Make a list** before you shop, and stick to it.
-2. **Compare prices** for big purchases.
-3. **Buy quality** for things you use daily, when you can afford it.
-4. **Do not shop when upset or bored.**
-
-::: check What does the 24-hour rule mean?
-+ Wait a day before buying something you do not need
-- Spend within 24 hours
-- Buy at midnight
-= Time cools down impulse buying.
-:::
-
-=== TEXT: 🐖 Saving and goals | 480
-## 🐖 Saving and goals
-
-### Why save?
-
-Savings protect you from emergencies and let you reach goals **without debt**.
-
-### The first goal: an emergency fund
-
-Aim first for **one month of essential costs**, then work towards **three to six months**. This protects you from job loss, illness or sudden repairs.
-
-> 📌 **Remember:** an emergency fund keeps one problem from becoming a debt crisis.
-
-::: check What is an emergency fund for?
-+ Unexpected needs like illness or job loss
-- Shopping sprees
-- Holidays
-= It is money you hope never to use.
-:::
-
-### Make goals clear: SMART
-
-- **S**pecific: "Save 120,000 for a laptop"
-- **M**easurable: a number
-- **A**chievable: fits your income
-- **R**ealistic and **T**imed: "in 6 months"
-
-> **Example:** 120,000 in 6 months is **20,000 a month**.
-
-::: check How much per month saves 150,000 in 5 months?
-- 15,000
-+ 30,000
-- 50,000
-= 150,000 divided by 5 is 30,000.
-:::
+In Clason's book, Arkad lists **seven cures for a lean purse**. Each is a simple habit. The first is to **start your purse fattening**: save a portion of every earning.
 
 ### Make it automatic
 
-- Move savings on **payday**, not at month end.
-- Keep savings **separate** from your spending account.
-- Raise the amount a little each time your income rises.
+1. **Pick a percentage** (start with 10% if you can, or 5% and grow).
+2. **Move it on payday**, before spending.
+3. **Keep it separate** from your spending account.
+4. **Do not touch it** for daily wants. It is for emergencies and building.
 
-=== QUIZ: 🧠 Budget and saving checkpoint | 360
-? What is a good starting rule for splitting income?
-+ 50% needs, 30% wants, 20% savings
-- 90% wants
-- 100% savings
-= It is a guide you can adjust.
-? What does "pay yourself first" mean?
-+ Save as soon as income arrives
-- Skip bills
-- Spend first
-= Savings should not be what is left.
-? Which is a need?
-+ Basic food
-- A new phone every year
-- A trend jacket
-= Needs support life and work.
-? How big should your first emergency fund be?
-+ About one month of essentials, then build to three to six
-- Zero
-- One year of fun
-= Start small, then grow.
-? How much do you save per month to reach 90,000 in 6 months?
-+ 15,000
-- 9,000
-- 30,000
-= 90,000 divided by 6 is 15,000.
-? True or false: a 24-hour wait helps with impulse buying.
-+ True
-- False
-= It gives you time to think.
-=== ASSIGNMENT: 🧾 Assignment 1: Your 30-day tracker and budget | 2400
-## 🧾 Assignment 1: Your 30-day tracker and budget
+> **Example:** income 100,000. Move 10,000 on payday. Live on 90,000. In a year that is 120,000, even before any growth.
 
-Use **your own numbers** (rounded estimates are fine, and you do not need to share exact private details). Write your answers in the box below.
+> 📌 **Remember:** a small amount saved every time beats a big amount saved "someday".
 
-### Part 1: Your spending
-
-1. Write your **monthly income** (the lowest realistic number).
-2. List your **spending in 6 to 8 categories** with amounts (use real or estimated numbers).
-3. Work out your **surplus or gap** (income minus spending).
-
-### Part 2: Your budget
-
-4. Create a **budget for next month** using the 50/30/20 guide (adjust if your needs are above 50%). Show amounts for needs, wants and savings.
-5. Name **three small costs you can reduce** and how much you could save a month.
-
-### Part 3: A goal
-
-6. Write one **SMART goal** (specific, measurable, achievable, realistic, timed) and the **monthly amount** you need to save for it.
-
-### How to submit
-
-Write your answers, numbered 1 to 6. Your instructor reviews them and sends feedback.
-
-# MODULE: Real-Life Money Habits
-=== TEXT: 📅 Handling irregular income | 480
-## 📅 Handling irregular income
-
-Many people earn **unevenly**: traders, freelancers, drivers, artisans, business owners. Budgeting still works, with a few changes.
-
-### Use your base number
-
-1. Look at the **last 6 months** of income.
-2. Find your **lowest normal month**. That is your **base income**.
-3. **Budget with the base number.**
-4. When you earn more, **top up savings and goals first**.
-
-> 📌 **Remember:** budget on your worst normal month, and treat extra income as a bonus for savings.
-
-::: check Which number should an irregular earner budget with?
-- The best month ever
-+ The lowest normal month
-- A guess
-= It keeps you safe when income dips.
+::: check Income is 200,000. How much do you move first at 10%?
+- 2,000
++ 20,000
+- 200,000
+= 200,000 divided by 10.
 :::
 
-### Build a buffer
+### The emergency fund comes first
 
-Keep **one to three months** of expenses in a separate account. In a good month, put money in. In a bad month, take only what you need from it.
+Before anything else, build a buffer of **one month of essential costs**, then work towards **three to six months**. It keeps one emergency from becoming a debt.
 
-### Pay yourself a salary
+### Practical exercise
 
-Move all income into one place, then **pay yourself a fixed amount on set dates**. The rest stays as the buffer.
+Write down: **your income, your 10% amount, the account you will use,** and **the date each month you will move it**.
 
-::: check How can an irregular earner create steady pay?
-+ Pay yourself a fixed amount from a buffer account
-- Spend everything the day it arrives
-- Avoid saving
-= A buffer smooths up and down months.
+::: check Why keep savings in a separate account?
++ So it is not spent by accident
+- It is required by banks
+- It earns no interest
+= Separation protects the habit.
 :::
 
-=== TEXT: 🧠 Money mindset and avoiding traps | 480
-## 🧠 Money mindset and avoiding traps
+=== TEXT: ✂️ Cure 2: Control thy expenditures | 540
+## ✂️ Cure 2: Control thy expenditures
 
-### Common traps
+### Spending grows to fill income
 
-- **Comparison spending:** buying things to keep up with others.
-- **"I will save what is left":** there is never anything left.
-- **Lending beyond your means:** be kind, but only lend what you can afford to lose.
-- **Get-rich-quick offers:** no honest scheme guarantees fast, high returns.
+Clason noticed that what people call their **necessary expenses** tends to **grow until it matches their income**, unless they pay attention. Most of us have seen this: a raise arrives, and somehow the money still runs out.
 
-> 📌 **Remember:** if it sounds too good to be true, it usually is. Real wealth is built slowly.
+The fix is simple but not easy: **write down what you spend**, and **separate needs from desires**.
 
-::: check What is true about get-rich-quick schemes?
-- They are safe if friends join
-+ No honest offer can guarantee fast, high returns
-- They always pay on time
-= Many are scams. We study them later in the finance courses.
+### Needs and desires
+
+- **Needs:** shelter, food, basic transport, health, school, work tools.
+- **Desires:** upgrades, eating out, trends, extras.
+
+Desires are not evil. They just need a **budget**, not an unlimited share of your pay.
+
+### Track for 30 days
+
+Write down **every** expense, even small ones. Then group them: **Housing, Food, Transport, Data, Family, Health, Fun, Savings, Other**.
+
+> **Example:** 1,000 a day on snacks and drinks is **30,000 a month**, which is 360,000 a year.
+
+### The 24-hour rule
+
+Before buying anything that is not a need, **wait 24 hours**. If you still want it and it fits the budget, buy it.
+
+> 📌 **Remember:** you cannot control what you do not measure.
+
+::: check 1,500 a day on small treats is about how much a month?
+- 15,000
++ 45,000
+- 4,500
+= 1,500 x 30 = 45,000.
 :::
 
-### Talk about money
+### Practical exercise
 
-Speak openly with your partner or family about goals and limits. Money secrets cause stress and mistakes.
+Start a **30-day expense log** today (notebook, notes app, or a free sheet). You will use it for your final exam.
 
-### Celebrate progress
-
-Track small wins: your first full month under budget, your first 50,000 saved. Habits last when progress feels good.
-
-::: check Why track small wins?
-+ Progress motivates you to keep the habit
-- It is not important
-- It makes you spend more
-= Motivation helps consistency.
+::: check What is the first step to controlling spending?
++ Write down what you actually spend
+- Stop buying everything
+- Ask a friend
+= Measure first.
 :::
 
-=== TEXT: 🛡️ Protect your money | 420
-## 🛡️ Protect your money
+=== TEXT: 🌱 Cure 3: Make thy gold multiply | 540
+## 🌱 Cure 3: Make thy gold multiply
 
-- **Never share** your PIN, password, OTP or card details, even with someone claiming to be from your bank.
-- Use **strong passwords** and **two-step verification** on your bank and money apps.
-- Keep **transfer receipts** and confirm account names before sending.
-- Be careful on **public Wi-Fi** when doing banking.
-- **Check** any investment or loan company before you pay.
+Once your purse starts to fatten, Clason says, the money should **go to work** rather than sit idle. In the Rich Dad idea this is the same direction: **build your asset column** so money flows in.
 
-> ⚠️ **Watch out:** a real bank will never ask for your PIN or OTP.
+### How money can grow (general ideas)
 
-::: check Who may ask for your PIN or OTP?
-- Your bank on the phone
-+ Nobody, never share it
+- **Interest:** savings or lending that pays you.
+- **Ownership:** a business or shares that may pay profit or grow in value.
+- **Rent:** property that others pay to use.
+- **Skills:** the ability to earn more (see Cure 7).
+
+All growth carries **risk**. Higher possible rewards usually come with a higher chance of loss.
+
+> ⚠️ **Important:** this is **education, not advice**. We are not telling you to buy any product. See **Investing Basics for Beginners** for a careful introduction.
+
+### The power of time: compounding
+
+If you earn interest on interest, growth speeds up.
+
+> **Example:** 100,000 at 10% a year, compounded: Year 1: 110,000. Year 2: 121,000. Year 3: 133,100.
+
+Time does a lot of the work. **Starting early matters more than starting big.**
+
+::: check 100,000 grows at 10% a year compounded. What is it after 2 years?
+- 120,000
++ 121,000
+- 110,000
+= 110,000 x 1.10 = 121,000.
+:::
+
+### Before you put money to work
+
+Check: **Do I have an emergency fund? Do I understand it? Can I afford to lose it? Am I borrowing to do this?** If any answer is wrong, wait.
+
+::: check Which comes before putting money to work?
++ An emergency fund and understanding what you are doing
+- Borrowing more
+- A tip from a stranger
+= Safety and understanding first.
+:::
+
+=== TEXT: 🛡️ Cure 4: Guard thy treasures from loss | 540
+## 🛡️ Cure 4: Guard thy treasures from loss
+
+Clason's fourth cure is about **protecting what you have saved**. In his stories, people who chase big promises from friends often lose their money. This is as true today as in ancient Babylon.
+
+### The rules of protection
+
+1. **Understand** what you put money into. If you cannot explain it, do not do it.
+2. **Beware of guaranteed returns.** No honest offer guarantees fast, high profit.
+3. **Check who you are dealing with.** Is the company registered? Is it regulated?
+4. **Never rush.** Pressure is a warning sign.
+5. **Spread risk** instead of putting everything in one place.
+
+> 📌 **Remember:** protecting money is as important as earning it.
+
+::: check What is a classic warning sign of a money scam?
++ Guaranteed high returns and pressure to hurry
+- Clear written terms
+- A registered operator
+= Be very cautious.
+:::
+
+### Everyday protection
+
+- **Never share** your PIN, password or OTP, even with someone claiming to be your bank.
+- Use **strong passwords** and **two-step verification**.
+- Confirm **account names** before sending money.
+- Keep **receipts and records**.
+
+### Practical exercise
+
+Write **five rules** you will follow to protect your money. Include at least one about scams and one about passwords.
+
+::: check Who should ever know your OTP?
++ Nobody but you
+- Bank staff on the phone
 - A friend
 = Anyone asking is likely a scammer.
 :::
 
-### Insurance in one line
+=== TEXT: 🏡 Cure 5: Make of thy dwelling a profitable investment | 480
+## 🏡 Cure 5: Make of thy dwelling a profitable investment
 
-Insurance moves a big risk (illness, accident, loss) to a company for a small regular fee. Read what is covered before you buy.
+Clason's fifth cure is about **housing**, usually a person's biggest expense. His idea in general terms: **do not let where you live drain your finances**. Think about it as a money decision.
+
+### Housing as a money subject
+
+- **Rent:** flexible, but the money does not build ownership.
+- **Owning:** can build ownership, but needs a large sum, carries costs (repairs, taxes, legal checks) and risk. It is not automatically an asset, as the Rich Dad idea reminds us: **check the cash flow**.
+- **Sharing or choosing a cheaper area** can free up money for saving.
+
+> 📌 **Remember:** a home can be a basic need, and housing should not eat so much that you cannot save.
+
+### Check your own number
+
+**Housing cost / income = housing share.**
+
+> **Example:** rent 40,000 on income 100,000 is **40%**. That is high. 30,000 would be 30%, leaving more room to save.
+
+::: check Rent is 25,000 and income is 100,000. What share of income is that?
++ 25%
+- 2.5%
+- 75%
+= 25,000 / 100,000 = 25%.
+:::
+
+### Practical exercise
+
+Work out **your housing share**. If it is above 40%, write **two ideas** to reduce it, or to **raise income**, over the next year.
+
+> ⚠️ **Not advice:** decisions about renting or buying property depend on your situation. Check legal ownership with a lawyer and official records before paying for land or a house.
+
+::: check What should you do before paying for land or a house?
++ Verify ownership with a lawyer and official records
+- Pay quickly to secure it
+- Trust a friend's word
+= Property fraud is common.
+:::
+
+=== TEXT: 🛟 Cure 6: Insure a future income | 480
+## 🛟 Cure 6: Insure a future income
+
+Clason's sixth cure is about **the future**. Everyone grows older, and some years we cannot work. A wise person plans for **income later**, and protects against **big, unexpected losses**.
+
+### Two tools, explained simply
+
+1. **Insurance:** you pay a small amount regularly, and a company pays for a large loss (illness, accident, damage). Read **what is covered** before buying.
+2. **Long-term saving:** money set aside for later life (pensions and similar schemes). Compounding means **starting early** helps a lot.
+
+### Why plan early
+
+> **Example:** saving 10,000 a month for 20 years is **2,400,000** before any growth. Saving the same amount for 10 years is only **1,200,000**.
+
+Time doubles the result without any extra effort.
+
+> 📌 **Remember:** future you also needs an income. The earlier you start, the easier it is.
+
+::: check Saving 5,000 a month for 10 years (no growth) gives how much?
+- 50,000
++ 600,000
+- 60,000
+= 5,000 x 120 months = 600,000.
+:::
+
+### Practical exercise
+
+Write down: **what future costs worry you** (health, old age, family), **one protection you will research**, and **a monthly amount for the long term**. Mark it as a plan to research, not a purchase.
 
 ::: check What does insurance do?
-+ Protects you from a large loss for a small regular fee
++ Moves a big risk to a company for a small regular fee
 - Guarantees profit
 - Is the same as savings
 = It transfers risk.
 :::
 
-=== QUIZ: 🧠 Real-life money checkpoint | 360
-? What should an irregular earner budget with?
+=== TEXT: 🎓 Cure 7: Increase thy ability to earn | 540
+## 🎓 Cure 7: Increase thy ability to earn
+
+The seventh cure may be the most powerful: **grow your skills, and your income can grow with them**. Clason says a person who learns and improves earns more over time.
+
+### Rich Dad's version: financial literacy and the types of income
+
+Kiyosaki separates income into three kinds:
+
+| Kind | What it is | Example |
+|---|---|---|
+| **Earned** | Money for your time | A salary, or a day's work |
+| **Portfolio** | Money from investments | Interest, dividends, capital growth |
+| **Passive** | Money that flows without daily work | Rent, royalties, a business you do not run daily |
+
+For most people, **earned income is where we start**. Building skills increases it, and surplus is what you can later put into assets.
+
+> 📌 **Remember:** skills raise earned income. Savings and assets build the other two.
+
+::: check Which income type pays you for your time?
++ Earned income
+- Passive income
+- Portfolio income
+= A salary is earned income.
+:::
+
+### Financial literacy is a skill too
+
+Kiyosaki stresses learning to **read basic money statements**, understand **how investing works**, and know **the rules**. This course gives you the start.
+
+### Build your earning power
+
+- Take a skill course: **Excel and Google Sheets**, **Virtual Assistant**, **Canva**, **JavaScript**, **Freelancing 101** and more on Career Forge.
+- Build a **portfolio**, ask for **feedback**, and **raise your rates** as you improve.
+- Keep a **side income** plan for slow months.
+
+### Practical exercise
+
+List **three skills** that would raise your income in 12 months, and **one action this week** for the first.
+
+::: check Which action best raises your earning power?
++ Learning an in-demand skill and building proof
+- Hoping for a raise
+- Spending more
+= Skills increase what you can earn.
+:::
+
+=== QUIZ: 🧠 The seven cures checkpoint | 420
+? What does Cure 1 tell you to do?
++ Save a portion of every earning
+- Spend first
+- Borrow to invest
+= Start the purse fattening.
+? According to Cure 2, what tends to happen to spending?
++ It grows to match income unless you watch it
+- It always shrinks
+- It stays the same
+= Track and control it.
+? 100,000 at 10% compounded for 2 years becomes about...
++ 121,000
+- 120,000
+- 110,000
+= Interest earns interest.
+? What is a warning sign in Cure 4?
++ Guaranteed returns and pressure
+- Written terms
+- A registered firm
+= Guard your treasures.
+? Saving 10,000 a month for 10 years (no growth) is...
++ 1,200,000
+- 100,000
+- 12,000
+= 10,000 x 120.
+? Which income is money for your time?
++ Earned income
+- Passive income
+- Portfolio income
+= Salary and wages.
+? What is Cure 7 about?
++ Increasing your ability to earn
+- Spending more
+- Buying luxuries
+= Skills raise income.
+# MODULE: Build Your Money System
+=== TEXT: 🧾 Your income statement and balance sheet | 600
+## 🧾 Your income statement and balance sheet
+
+Kiyosaki urges readers to learn **financial statements**. You do not need an accounting degree. You need two simple pages.
+
+### 1. Income statement (monthly)
+
+Shows money **in** and **out**.
+
+| Income | Amount |
+|---|---|
+| Salary or business income | 120,000 |
+| Side income | 15,000 |
+| **Total income** | **135,000** |
+
+| Expenses | Amount |
+|---|---|
+| Housing | 40,000 |
+| Food | 25,000 |
+| Transport and data | 15,000 |
+| Family and other | 20,000 |
+| Fun | 10,000 |
+| Savings (pay yourself first) | 13,500 |
+| **Total** | **123,500** |
+
+**Surplus = 135,000 - 123,500 = 11,500** (money left to put towards goals or assets).
+
+### 2. Balance sheet (a snapshot)
+
+Lists what you **own (assets)** and what you **owe (liabilities)**.
+
+| Assets (money flows in) | Value |
+|---|---|
+| Savings | 150,000 |
+| Business equipment that earns | 200,000 |
+| **Total** | **350,000** |
+
+| Liabilities (money flows out) | Amount |
+|---|---|
+| Loan balance | 120,000 |
+| Credit owed | 30,000 |
+| **Total** | **150,000** |
+
+**Net worth = assets - liabilities = 350,000 - 150,000 = 200,000.**
+
+> 📌 **Remember:** the income statement shows the flow, the balance sheet shows the pile. Look at both.
+
+::: check Assets 500,000 and liabilities 200,000. What is net worth?
+- 700,000
++ 300,000
+- 200,000
+= 500,000 minus 200,000.
+:::
+
+::: check Which statement shows money in and out over a month?
++ The income statement
+- The balance sheet
+- A receipt
+= It tracks flow.
+:::
+
+=== TEXT: 💳 Debt: friend or enemy? | 480
+## 💳 Debt: friend or enemy?
+
+### The two kinds of debt (general idea)
+
+- **Productive debt:** money borrowed to buy something that **earns more than the debt costs**, for example tools for a business that brings reliable income.
+- **Consumption debt:** money borrowed for things that **lose value or bring no income**, especially at high interest.
+
+> 📌 **Remember:** debt is a tool. It can build or break you. Know the **total cost** and whether the **repayment fits your cash flow**.
+
+::: check Which is closer to productive debt?
++ Equipment that earns more than the loan costs
+- Borrowing for a party
+- Borrowing to impress people
+= It pays for itself.
+:::
+
+### Know the true cost
+
+> **Example:** you borrow 100,000 and repay 130,000 in 6 months. **Interest paid: 30,000.** Monthly payment: about 21,667.
+
+Questions before borrowing:
+
+1. What is the **total I will repay**?
+2. Can I afford the **monthly payment** in my **worst** month?
+3. What happens if I **cannot pay**?
+4. Is there a **cheaper way**?
+
+### Dangers
+
+- **Instant loan apps** with very high costs and harsh collection.
+- **Borrowing to pay other debts** in a spiral.
+- **Co-signing** for others without understanding the risk.
+
+### Paying down debt
+
+List all debts, **pay the minimum on each**, and put extra money on the **highest-interest** one first (or the smallest first for motivation). Stop adding new debt.
+
+::: check A loan of 100,000 is repaid with 125,000. What is the interest paid?
+- 100,000
++ 25,000
+- 125,000
+= 125,000 minus 100,000.
+:::
+
+=== TEXT: 📅 Irregular income and emergencies | 420
+## 📅 Irregular income and emergencies
+
+### If your income is uneven
+
+Traders, freelancers, drivers and artisans earn **unevenly**.
+
+1. Look at the **last 6 months**.
+2. Find your **lowest normal month**: your **base income**.
+3. **Budget with the base income.**
+4. In better months, **pay savings and the buffer first**.
+
+> 📌 **Remember:** budget on your worst normal month, and treat extra as a bonus for savings.
+
+::: check Which number should an irregular earner budget with?
 + The lowest normal month
 - The best month
-- A random number
-= It protects against low months.
-? What is a buffer account for?
-+ Smoothing income between good and bad months
-- Buying luxuries
-- Paying friends
-= It keeps your pay steady.
-? Which is a money trap?
-+ Spending to keep up with others
-- Making a budget
-- Saving first
-= Comparison spending drains money.
-? Who should know your OTP?
-+ Nobody but you
-- Bank staff on the phone
-- A friend
-= Never share it.
-? Can anyone honestly guarantee fast, high returns?
-+ No
-- Yes, if they are registered
-- Yes, if friends join
-= Be cautious of guarantees.
-? True or false: you should confirm the account name before sending a transfer.
-+ True
-- False
-= It prevents mistakes and fraud.
-=== ASSIGNMENT: 📅 Assignment 2: Your 3-month plan | 3000
-## 📅 Assignment 2: Your 3-month plan
+- A guess
+= It keeps you safe.
+:::
 
-Write a simple, realistic **3-month money plan** using what you learned.
+### Pay yourself a salary
 
-1. **Month 1:** goal, savings amount, and **two spending changes** you will make.
-2. **Month 2:** goal, savings amount, and one **new habit** (for example weekly money check).
-3. **Month 3:** goal, savings amount, and your **target total savings** after three months.
-4. If your income is irregular, describe your **base income** and how you will use a **buffer**.
-5. List **three protection habits** (for example never sharing OTP) you will follow.
-6. Write **3 to 4 sentences** on the **biggest money leak** you found and how you will fix it.
+Keep income in a **buffer account** and **pay yourself a fixed amount** on set dates. The buffer smooths good and bad months.
+
+### Emergencies
+
+An emergency fund of **one month, building to three to six months** of essentials means a surprise cost is a **problem**, not a **crisis**.
+
+::: check What is the purpose of an emergency fund?
++ To cover unexpected needs without borrowing
+- To buy luxuries
+- To lend to friends
+= It protects your progress.
+:::
+
+=== ASSIGNMENT: 🧾 Assignment 1: Your financial statements | 3000
+## 🧾 Assignment 1: Your financial statements
+
+Use **your own real or realistic numbers** (rounded estimates are fine). You do not need to share private details you are not comfortable sharing, so you may use example numbers that match your situation. Write your answers in the box below.
+
+### Part 1: Income statement
+
+1. List your **monthly income** by source, and the **total**.
+2. List your **monthly expenses** in 6 to 8 categories, with a **savings line** (pay yourself first), and the **total**.
+3. Work out your **surplus or gap**, and write one sentence about what it tells you.
+
+### Part 2: Balance sheet
+
+4. List your **assets** (savings, money owed to you, anything that earns) with values.
+5. List your **liabilities** (loans, credit, money you owe) with amounts.
+6. Work out your **net worth** (assets minus liabilities).
+
+### Part 3: Assets and liabilities
+
+7. Name **three items** you own or pay for. For each, decide **asset or liability** using the cash-flow test, and explain with numbers (what it costs and what it earns, per month).
+
+### Part 4: The 10% test
+
+8. Work out **10% of your income**. State whether you can pay it to yourself first, and what you would change to make it possible.
 
 ### How to submit
 
-Write your answers, numbered 1 to 6. Your instructor reviews them and sends feedback.
+Write your answers, numbered 1 to 8. Your instructor reviews them and sends feedback.
 
-# MODULE: Final Exam: Your Money Plan
-=== TEXT: 🧰 Money basics cheat sheet | 300
-## 🧰 Money basics cheat sheet
+=== ASSIGNMENT: 📅 Assignment 2: Fix the leaks and plan 90 days | 3000
+## 📅 Assignment 2: Fix the leaks and plan 90 days
 
-- **Surplus** = income - expenses.
-- **50/30/20:** needs, wants, savings. Adjust to your life.
-- **Pay yourself first.**
-- **Emergency fund:** one month, then three to six.
-- **24-hour rule** for non-essential buys.
+Use **the same numbers** as Assignment 1. Write your answers in the box.
 
-> 📌 **Remember:** track, plan, save first, and protect your money.
+### Part 1: Spending audit
 
-### Safety
+1. From your 30-day expense log (or your best estimate), list your **top 5 spending items** and the amounts.
+2. Mark each as **need or desire**.
+3. Name **three spending changes**, with the **monthly saving** from each, and the **yearly total**.
 
-- Never share PIN, password or OTP.
-- Be careful with guaranteed-returns offers.
-- This course is education, not financial advice.
+### Part 2: Cure check
 
-=== ASSIGNMENT: 🏁 FINAL EXAM: Your complete money plan | 5400
-## 🏁 FINAL EXAM: Your complete money plan
+4. For each of the **seven cures**, write **one sentence** on how you are doing now (strong, weak, not started) and **one action** for the next 90 days.
 
-Create your full personal money plan. Use **your own real or realistic numbers**. There is **no timer**.
+### Part 3: 90-day plan
 
-### Part 1: Where you are
+5. Write a **90-day plan** with **monthly goals** for month 1, 2 and 3 (savings amount, spending changes, one skill or income action).
+6. State your **emergency fund target** (amount and date).
+7. Write **five rules** to protect your money from scams and mistakes.
 
-1. Your monthly **income** and a **list of expenses** by category.
-2. Your **surplus or gap**, and one sentence about what it tells you.
+### How to submit
 
-### Part 2: Your budget
+Write your answers, numbered 1 to 7. Your instructor reviews them and sends feedback.
 
-3. A **monthly budget** with fixed costs, variable costs and savings (show amounts).
-4. Three **spending changes** and the **amount saved** by each.
+# MODULE: Final Exam: Build Your Money System
+=== TEXT: 🧰 Money wisdom cheat sheet | 300
+## 🧰 Money wisdom cheat sheet
 
-### Part 3: Your savings
+- **Pay yourself first.** At least a tenth, every time you are paid (Clason).
+- **Control expenses.** Needs versus desires. Measure what you spend.
+- **Make money work.** Compounding rewards time. All growth carries risk.
+- **Guard your money.** Beware guarantees and pressure, and protect your passwords.
+- **Housing** should not drain you. **Insure** big risks. **Plan for later.**
+- **Grow your skills.** Earned income comes first (Clason, and Kiyosaki's income types).
+- **Assets put money in, liabilities take money out.** Check the cash flow (Kiyosaki).
+- **Statements:** income statement (flow) and balance sheet (pile).
 
-5. Your **emergency fund target** (amount and date) and your **monthly saving amount**.
-6. Two **SMART goals**, each with a monthly amount.
+> 📌 **Remember:** ideas are only useful when you test them with your own numbers.
 
-### Part 4: Irregular income and risk
+### Education only
 
-7. Explain how you will handle **a month with lower income**.
-8. List **four ways** you will protect your money from scams and mistakes.
+This course is **education, not financial advice**.
+
+=== ASSIGNMENT: 🏁 FINAL EXAM: Build your personal money system | 5400
+## 🏁 FINAL EXAM: Build your personal money system
+
+This is a **practical** exam: you will build a working money system with **your own numbers** (real or realistic), in a **spreadsheet** (Google Sheets or Excel) or on paper. There is **no timer**.
+
+### Part 1: Your statements (practical)
+
+1. An **income statement** for one month (income by source, expenses by category, a savings line, surplus or gap).
+2. A **balance sheet** (assets, liabilities, net worth).
+3. A **cash-flow check** for **three items** you own or pay for: monthly cost, monthly income they bring, net, and whether each behaves as an **asset or liability**.
+
+### Part 2: Your system
+
+4. A **monthly budget** that **pays you first** (at least 10% or your chosen percentage), with fixed and variable costs.
+5. A **12-month savings projection**: amount per month, total by month 12, and the date you reach your emergency fund target.
+6. A **debt plan** (if you have debt): list, total cost, and your repayment order. If you have none, write your **rule for taking on debt**.
+
+### Part 3: The seven cures in action
+
+7. A **one-page action plan**, one line per cure: **what you will do, how much, and by when**.
+8. Your **protection rules** (five or more) for scams, passwords and big decisions.
+
+### Part 4: Growth
+
+9. A **skill plan**: three skills, one action each this month, and the **income** you hope the first one adds (as a goal, not a promise).
 
 ### Part 5: Reflection
 
-9. Write **5 to 6 sentences** on the habits you will keep, and how you will review your plan each month.
+10. Write **5 to 6 sentences**: one idea from Clason, one idea from Kiyosaki, one thing you disagree with or want to check further, and the first habit you will start.
 
 ### How to submit
 
-Write your answers, numbered 1 to 9. Your instructor reviews them and sends feedback, and you can improve and resubmit.
+1. If you used a spreadsheet, share it as **"Anyone with the link can view"** and paste the **link** in the box below. Also paste the **key numbers** (so your instructor can read them quickly).
+2. Write your **answers to items 6 to 10** in the box.
+
+Your instructor reviews it and sends feedback, and you can improve and resubmit.
 
 > 🏆 Finish this and every other lesson to earn your **Career Forge certificate**, with a public link for your CV.
 
 === TEXT: 🎓 You did it! Certificate and what is next | 240
 ## 🎓 You did it! Certificate and what is next
 
-You can now track your money, budget, save and protect what you earn. Those are the foundations of every financial goal.
+You have learned money as a subject: how to keep some of what you earn, control spending, protect it, put it to work, tell assets from liabilities, and read your own money statements. You also built a real system to use.
 
 ### Your certificate 🏅
 
-When you have finished **every lesson**, including your money plan, your **certificate** is issued automatically with a public link for your CV and LinkedIn.
+When you have finished **every lesson**, including your money system, your **certificate** is issued automatically with a public link for your CV and LinkedIn.
 
-> 📌 **Remember:** consistent small habits beat big, rare efforts.
+> 📌 **Remember:** wealth is built by habits repeated for years. Start small, start now.
 
-### Next steps
+### Keep learning
 
-1. Review your budget **every week** for 10 minutes.
-2. Learn **Investing Basics for Beginners** and **Business Finance for Small Business Owners** on Career Forge.
-3. Build your income with **Freelancing 101** or **Virtual Assistant Starter Kit**.
-4. Keep this plan visible, and update it every month.
+1. Read the two books yourself: **The Richest Man in Babylon** (George S. Clason) and **Rich Dad Poor Dad** (Robert Kiyosaki). Think critically about both.
+2. Take **Investing Basics for Beginners** and **Business Finance for Small Business Owners** on Career Forge.
+3. Grow your earning power with **Freelancing 101**, **Excel and Google Sheets**, or **Virtual Assistant Starter Kit**.
+4. Review your statements every month.
 
-Thank you for learning with me. This course is education, not financial advice. Keep going!
+This course is education, not financial advice. Thank you for learning with us.
 
 The Career Forge team

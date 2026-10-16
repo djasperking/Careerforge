@@ -101,9 +101,16 @@ export async function seedCourse(spec: CourseSpec, opts: { replace?: boolean } =
     },
   });
 
+  const lessons = await createModules(course.id, spec);
+  console.log(`✅ ${spec.key}: ${spec.title} — ${spec.modules.length} modules, ${lessons} lessons → /courses/${course.slug}`);
+  return course;
+}
+
+
+async function createModules(courseId: string, spec: CourseSpec): Promise<number> {
   let lessons = 0;
   for (const [mi, mod] of spec.modules.entries()) {
-    const module = await db.courseModule.create({ data: { courseId: course.id, title: mod.title, position: mi + 1 } });
+    const module = await db.courseModule.create({ data: { courseId: courseId, title: mod.title, position: mi + 1 } });
     for (const [li, l] of mod.lessons.entries()) {
       const lesson = await db.lesson.create({
         data: {
@@ -140,8 +147,33 @@ export async function seedCourse(spec: CourseSpec, opts: { replace?: boolean } =
       }
     }
   }
-  console.log(`✅ ${spec.key}: ${spec.title} — ${spec.modules.length} modules, ${lessons} lessons → /courses/${course.slug}`);
-  return course;
+  return lessons;
+}
+
+/**
+ * Replaces a course's modules, lessons and quizzes with the spec, keeping the course, its link
+ * and its enrolments. Learners' lesson progress is reset, because the lessons are new.
+ */
+export async function rebuildCourse(spec: CourseSpec) {
+  const course = await db.course.findFirst({ where: { title: spec.title } });
+  if (!course) throw new Error(`${spec.key} not seeded yet.`);
+  await db.courseModule.deleteMany({ where: { courseId: course.id } });
+  await db.course.update({
+    where: { id: course.id },
+    data: {
+      description: spec.description,
+      priceCents: Math.round((spec.priceNaira ?? 0) * 100),
+      requirements: spec.requirements,
+      objectives: spec.objectives,
+      durationMinutes: Math.round(spec.modules.flatMap((m) => m.lessons).reduce((n, l) => n + l.seconds, 0) / 60),
+    },
+  });
+  const lessons = await createModules(course.id, spec);
+  await db.enrollment.updateMany({
+    where: { courseId: course.id },
+    data: { progressPercent: 0, status: "ACTIVE", completedAt: null },
+  });
+  console.log(`♻️  ${spec.key}: rebuilt with ${spec.modules.length} modules, ${lessons} lessons`);
 }
 
 /** Updates lesson content/quizzes in place for an existing course (keeps enrolments and progress). */

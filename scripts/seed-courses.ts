@@ -6,6 +6,7 @@
  *
  *   (no flag)  create courses that do not exist yet; existing ones are skipped
  *   --refresh  update lesson text on existing courses (keeps enrolments and progress)
+ *   --rebuild  replace a course's lessons in place, keeping the course link and enrolments (progress resets)
  *   --replace  delete and rebuild a course (only when nobody is enrolled)
  *   --check    parse the files and print a summary; touches nothing
  */
@@ -13,7 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { db } from "@/lib/db";
 import { parseCourseMarkdown } from "./lib/course-md";
-import { refreshCourseContent, seedCourse, thumbnailSvg } from "./lib/course-seed";
+import { rebuildCourse, refreshCourseContent, seedCourse, thumbnailSvg } from "./lib/course-seed";
 
 const DIR = path.join(process.cwd(), "scripts", "courses");
 const THUMBS = path.join(process.cwd(), "public", "course-thumbs");
@@ -37,7 +38,8 @@ async function main() {
     fs.mkdirSync(THUMBS, { recursive: true });
     fs.writeFileSync(path.join(THUMBS, `${spec.key}.svg`), thumbnailSvg(spec.thumb, !spec.priceNaira));
 
-    if (args.includes("--refresh")) await refreshCourseContent(spec);
+    if (args.includes("--rebuild")) await rebuildCourse(spec);
+    else if (args.includes("--refresh")) await refreshCourseContent(spec);
     else await seedCourse(spec, { replace: args.includes("--replace") });
   }
 }

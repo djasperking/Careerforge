@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="MONEY BASICS. Budget, save and take control">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="MONEY. Wisdom from Babylon to today">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14532d"/><stop offset="0.5" stop-color="#15803d"/><stop offset="1" stop-color="#eab308"/></linearGradient>
     <pattern id="dots" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.4" fill="#fff" opacity="0.14"/></pattern>
@@ -9,10 +9,10 @@
   <g font-family="'Arial Black', Impact, 'Segoe UI', Arial, sans-serif" font-weight="900">
     <text x="64" y="132" font-size="38" fill="#fde68a" letter-spacing="6">LEARN</text>
     <g transform="rotate(-2 270 300)" filter="url(#pop)"><rect x="52" y="160" width="700" height="190" rx="26" fill="#fde047"/>
-      <text x="82" y="290" font-size="104" fill="#3b0764">MONEY BASICS</text></g>
+      <text x="82" y="290" font-size="104" fill="#3b0764">MONEY</text></g>
   </g>
   <g font-family="'Segoe UI', Arial, sans-serif" fill="#fff">
-    <text x="64" y="470" font-size="40" font-weight="700">Budget, save and take control</text>
+    <text x="64" y="470" font-size="40" font-weight="700">Wisdom from Babylon to today</text>
   </g>
   <g font-family="'Segoe UI', Arial, sans-serif" font-weight="800" font-size="28" text-anchor="middle">
     <rect x="64" y="560" width="230" height="60" rx="30" fill="#fff"/><text x="179" y="600" fill="#15803d">BEGINNER</text>
