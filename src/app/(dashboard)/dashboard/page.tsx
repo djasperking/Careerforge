@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { ResendVerification } from "@/components/auth/resend-verification";
 import { matchedJobsForUser } from "@/lib/jobs/matching";
+import { formatCurrency } from "@/lib/utils";
 
 export default async function DashboardHome() {
   const user = await requireUser();
@@ -32,6 +33,13 @@ export default async function DashboardHome() {
     db.profile.findUnique({ where: { userId: user.id } }),
     matchedJobsForUser(user.id),
   ]);
+
+  const joinedIds = (await db.enrollment.findMany({ where: { userId: user.id }, select: { courseId: true } })).map((e) => e.courseId);
+  const suggested = await db.course.findMany({
+    where: { status: "PUBLISHED", ...(joinedIds.length ? { id: { notIn: joinedIds } } : {}) },
+    orderBy: [{ priceCents: "asc" }, { publishedAt: "desc" }],
+    take: 3,
+  });
 
   const activeCourses = enrollments.filter((e) => e.status === "ACTIVE").length;
 
@@ -119,6 +127,34 @@ export default async function DashboardHome() {
           </CardContent>
         </Card>
       </div>
+
+      {suggested.length > 0 ? (
+        <Card className="mt-6">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Courses you can enrol in</CardTitle>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/courses">
+                See all courses <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {suggested.map((c) => (
+                <Link key={c.id} href={`/courses/${c.slug}`} className="group overflow-hidden rounded-lg border transition hover:border-primary/50 hover:shadow-sm">
+                  <CourseThumb src={c.thumbnailUrl} alt={c.title} className="rounded-none border-0 border-b" />
+                  <div className="p-3">
+                    <p className="line-clamp-2 text-sm font-semibold group-hover:text-primary">{c.title}</p>
+                    <p className="mt-1 text-xs font-medium text-muted-foreground">
+                      {c.priceCents === 0 ? "Free" : formatCurrency(c.priceCents, c.currency)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {matchedJobs.length > 0 ? (
         <Card className="mt-6">

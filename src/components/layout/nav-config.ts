@@ -34,6 +34,7 @@ export const customerNav: NavItem[] = [
     label: "Learning", href: "#learning", icon: GraduationCap,
     children: [
       { label: "My courses", href: "/dashboard/courses", icon: GraduationCap },
+      { label: "Browse all courses", href: "/courses", icon: BookOpen },
       { label: "Exams & certificates", href: "/dashboard/exams", icon: ClipboardCheck, matchPrefixes: ["/dashboard/certificates"] },
     ],
   },
