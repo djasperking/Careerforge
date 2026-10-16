@@ -53,7 +53,9 @@ export function CertificatePdfDocument({
   highlights?: string[];
 }) {
   const dateStr = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "long", year: "numeric" }).format(completionDate);
-  const instructor = signatureName || issuerName;
+  // For official courses the instructor and the issuer are both Career Forge, so name the left signature the course team.
+  const instructor = !signatureName || signatureName === issuerName ? "Career Forge Team" : signatureName;
+  const instructorRole = instructor === "Career Forge Team" ? "Course Team" : "Instructor";
 
   return (
     <Document title={`Certificate — ${studentName}`}>
@@ -129,7 +131,7 @@ export function CertificatePdfDocument({
             <Text style={styles.sigMark}>{instructor}</Text>
             <View style={styles.sigLine} />
             <Text style={styles.sigName}>{instructor}</Text>
-            <Text style={styles.sigRole}>Instructor</Text>
+            <Text style={styles.sigRole}>{instructorRole}</Text>
           </View>
           <View style={styles.sigBlock}>
             <Text style={styles.sigMark}>Career Forge</Text>

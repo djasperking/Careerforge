@@ -56,14 +56,14 @@ Or install Python from **python.org** if you prefer.
 
 ```python
 print("Hello, world!")
-print("My name is Daniel")
+print("My name is Ada")
 ```
 
 **Output:**
 
 ```text
 Hello, world!
-My name is Daniel
+My name is Ada
 ```
 
 > 📌 **Remember:** text goes in quotes. print() shows it.
@@ -869,4 +869,4 @@ When you have finished **every lesson**, including your final program, your **ce
 
 Thank you for learning with me. Keep building!
 
-Daniel
+The Career Forge team

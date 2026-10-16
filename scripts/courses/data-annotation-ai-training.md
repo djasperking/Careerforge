@@ -13,7 +13,7 @@ thumb: START | DATA ANNOTATION | Train AI and work remotely | BEGINNER | NO DEGR
 === TEXT: 👋 Welcome: your path into AI work | 300 | preview
 ## 👋 Welcome: your path into AI work
 
-Hi, I am Daniel. Behind every AI tool you use (chatbots, voice assistants, photo apps) are **people** who taught it. That teaching is called **data annotation** or **AI training**, and much of it can be done remotely, by beginners, with just a computer and good attention.
+Hi, welcome to Career Forge. Behind every AI tool you use (chatbots, voice assistants, photo apps) are **people** who taught it. That teaching is called **data annotation** or **AI training**, and much of it can be done remotely, by beginners, with just a computer and good attention.
 
 ### What you will learn
 
@@ -650,4 +650,4 @@ When you have finished **every lesson**, including the readiness test, your **ce
 
 Thank you for learning with me. Stay careful and stay safe. You can do this!
 
-Daniel
+The Career Forge team

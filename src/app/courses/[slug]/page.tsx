@@ -16,6 +16,7 @@ import { courseRatingSummary, listCourseReviews } from "@/lib/review/service";
 import { Stars } from "@/components/ui/star-rating";
 import { EnrollButton } from "./enroll-button";
 import { ShareCourse } from "@/components/course/share-course";
+import { InstructorTag } from "@/components/course/instructor-tag";
 import { appUrl } from "@/lib/email";
 import { CohortList } from "./cohort-list";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
@@ -105,7 +106,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             ) : null}
             <span className="flex items-center gap-1"><BarChart3 className="size-4" /> {course.level}</span>
             <span className="flex items-center gap-1"><Clock className="size-4" /> {course.durationMinutes} min · {lessonCount} lessons</span>
-            <span>By {course.instructor?.name ?? "Career Forge"}</span>
+            <span>By <InstructorTag name={course.instructor?.name} /></span>
           </div>
 
           {course.objectives.length ? (

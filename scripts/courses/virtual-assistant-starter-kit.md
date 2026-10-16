@@ -620,4 +620,4 @@ When you have finished **every lesson**, including the final starter pack, your 
 
 Thank you for learning with me. Stay reliable and keep going!
 
-Daniel
+The Career Forge team

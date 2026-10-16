@@ -617,4 +617,4 @@ When you have finished **every lesson**, including the sales report, your **cert
 
 Thank you for learning with me. Keep practising!
 
-Daniel
+The Career Forge team

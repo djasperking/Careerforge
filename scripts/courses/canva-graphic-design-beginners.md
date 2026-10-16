@@ -538,4 +538,4 @@ When you have finished **every lesson**, including the brand pack, your **certif
 
 Thank you for learning with me. Keep designing!
 
-Daniel
+The Career Forge team

@@ -551,4 +551,4 @@ When you have finished **every lesson**, including the application pack, your **
 
 Thank you for learning with me. You are ready. Go get that interview!
 
-Daniel
+The Career Forge team

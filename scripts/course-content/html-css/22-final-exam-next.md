@@ -23,4 +23,4 @@ When you've finished **every lesson** (including the final website), you earn yo
 
 Thank you for learning with me. I'm proud of you for finishing. Now go build something amazing!
 
-— Daniel
+— The Career Forge team

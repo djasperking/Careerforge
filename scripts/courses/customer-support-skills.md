@@ -560,4 +560,4 @@ When you have finished **every lesson**, including the readiness test, your **ce
 
 Thank you for learning with me. Go help someone today!
 
-Daniel
+The Career Forge team

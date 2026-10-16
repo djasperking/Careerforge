@@ -511,4 +511,4 @@ When you have finished **every lesson**, including the launch plan, your **certi
 
 Thank you for learning with me. Go land that first client!
 
-Daniel
+The Career Forge team

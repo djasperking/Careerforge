@@ -13,7 +13,7 @@ thumb: LEARN | JAVASCRIPT | Make your websites come alive | BEGINNER | LIVE CODE
 === TEXT: 👋 Welcome to JavaScript | 300 | preview
 ## 👋 Welcome to JavaScript
 
-Hi, I am Daniel. If HTML is the **skeleton** of a website and CSS is its **style**, then **JavaScript is the brain**. It makes things *happen*: buttons that respond, forms that check themselves, games, menus, calculators.
+Hi, welcome to Career Forge. If HTML is the **skeleton** of a website and CSS is its **style**, then **JavaScript is the brain**. It makes things *happen*: buttons that respond, forms that check themselves, games, menus, calculators.
 
 ### What you will build
 
@@ -36,7 +36,7 @@ The box below is a real JavaScript editor. Press **▶ Run** and watch the outpu
 
 ```playground-js Challenge: change the name, then press Run
 console.log("Hello, world!");
-console.log("My name is Daniel");
+console.log("My name is Ada");
 ```
 
 `console.log()` prints a message to the output. Programmers use it all the time to see what their code is doing.
@@ -1106,4 +1106,4 @@ When you have finished **every lesson**, including the final website, your **cer
 
 Thank you for learning with me. I am proud of you. Now go build something amazing!
 
-Daniel
+The Career Forge team

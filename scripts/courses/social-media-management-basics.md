@@ -545,4 +545,4 @@ When you have finished **every lesson**, including the 30-day plan, your **certi
 
 Thank you for learning with me. Keep posting with purpose!
 
-Daniel
+The Career Forge team

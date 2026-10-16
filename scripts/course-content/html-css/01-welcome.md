@@ -1,6 +1,6 @@
 ## 👋 Welcome, future web developer!
 
-Hi, I'm Daniel — your instructor. In this course you're going to build **real websites from scratch**, even if you've never written a line of code in your life.
+Hi, welcome to Career Forge! In this course you're going to build **real websites from scratch**, even if you've never written a line of code in your life.
 
 No jargon walls. No boring theory dumps. Every idea comes with a **live code box** you can edit, break, fix and play with.
 

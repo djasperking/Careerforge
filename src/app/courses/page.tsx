@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CourseThumb } from "@/components/ui/course-thumb";
 import { Stars } from "@/components/ui/star-rating";
+import { InstructorTag } from "@/components/course/instructor-tag";
 import { ratingSummaries } from "@/lib/review/service";
 import { cn, formatCurrency } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/session";
@@ -161,7 +162,7 @@ export default async function PublicCoursesPage({ searchParams }: { searchParams
                     {featured.durationMinutes ? (
                       <span className="inline-flex items-center gap-1"><Clock className="size-4" /> {hours(featured.durationMinutes)}</span>
                     ) : null}
-                    <span>by {featured.instructor?.name ?? "Career Forge"}</span>
+                    <span>by <InstructorTag name={featured.instructor?.name} /></span>
                   </div>
                   <span className="mt-1 inline-flex w-fit items-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition group-hover:opacity-90">
                     {featured.priceCents === 0 ? "Start learning free" : `View course · ${formatCurrency(featured.priceCents, featured.currency)}`}
@@ -209,7 +210,7 @@ export default async function PublicCoursesPage({ searchParams }: { searchParams
                             <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {hours(c.durationMinutes)}</span>
                           ) : null}
                         </div>
-                        <p className="text-xs text-muted-foreground">by {c.instructor?.name ?? "Career Forge"}</p>
+                        <p className="text-xs text-muted-foreground">by <InstructorTag name={c.instructor?.name} /></p>
                       </div>
                     </Link>
                   );
