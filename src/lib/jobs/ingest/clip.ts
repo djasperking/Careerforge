@@ -7,6 +7,7 @@ import type { JobImportOutput } from "@/lib/ai/types";
 import type { JobLocationType, JobType } from "@prisma/client";
 import { htmlToText, inferJobType, inferLocationType } from "./text";
 import { isGenericTitle, looksLikeSingleJob } from "./clip-guard";
+import { firstContentLine, isChromeWord, stripPageChrome, structureJobDescription } from "./clean";
 
 export interface ClipInput {
   url: string;
@@ -117,12 +118,17 @@ export async function ingestClip(input: ClipInput): Promise<ClipResult> {
   if (!looksLikeSingleJob({ url: applyUrl, text: input.text ?? "", hasStructuredData: !!ld })) {
     throw new Error("That doesn't look like a single job page. Open one specific job and try again.");
   }
-  const parsed = ld ? fromJsonLd(ld) : await parseText(input.text ?? "");
+  const parsed = ld ? fromJsonLd(ld) : await parseText(stripPageChrome(input.text ?? ""));
 
   const host = new URL(applyUrl).hostname.replace(/^(www|work|jobs|careers)\./, "");
   const via = (input.via ?? "").trim().slice(0, 60) || host;
-  const title = (str(parsed.title) || str(input.title)).slice(0, 160);
-  const company = (str(parsed.company) || via).slice(0, 160);
+  // Menu words ("Employers", "Jobseekers") are never a role or a company.
+  let rawTitle = str(parsed.title) || str(input.title);
+  if (isChromeWord(rawTitle)) rawTitle = firstContentLine(input.text ?? "") || str(input.title);
+  const title = rawTitle.slice(0, 160);
+  let rawCompany = str(parsed.company);
+  if (!rawCompany || isChromeWord(rawCompany)) rawCompany = via;
+  const company = rawCompany.slice(0, 160);
   if (title.length < 3) throw new Error("Couldn't find a job title on that page.");
   if (isGenericTitle(title)) throw new Error("That page is a heading or landing page, not a job. Open one specific job and try again.");
 
@@ -133,7 +139,12 @@ export async function ingestClip(input: ClipInput): Promise<ClipResult> {
   });
   if (dupe2) return { status: "duplicate", id: dupe2.id, title: dupe2.title };
 
-  let body = str(parsed.description);
+  let body = structureJobDescription(str(parsed.description), {
+    title,
+    company,
+    location: str(parsed.location),
+    salaryText: str(parsed.salaryText),
+  });
   if (body.length > MAX_DESCRIPTION) body = body.slice(0, MAX_DESCRIPTION).replace(/\s+\S*$/, "") + "…";
   const description = `${body || `${title} at ${company}.`}\n\nThis is an excerpt. See the full role and apply on ${via}.`;
 

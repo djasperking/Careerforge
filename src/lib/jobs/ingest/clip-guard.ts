@@ -1,3 +1,5 @@
+import { isChromeWord } from "./clean";
+
 /**
  * Pure checks that keep the browser extension from filing junk: job lists,
  * careers landing pages and marketing pages are not jobs.
@@ -31,5 +33,5 @@ export function looksLikeSingleJob(opts: { url: string; text: string; hasStructu
 }
 
 export function isGenericTitle(title: string): boolean {
-  return GENERIC_TITLE.test(title.trim());
+  return GENERIC_TITLE.test(title.trim()) || isChromeWord(title);
 }

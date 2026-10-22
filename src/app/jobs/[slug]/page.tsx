@@ -129,7 +129,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
         <section className="mt-6 rounded-xl border bg-card p-5 sm:p-6">
           <h2 className="font-display text-lg font-semibold">About the role</h2>
           <div
-            className="prose prose-sm mt-3 max-w-none text-foreground dark:prose-invert prose-headings:font-display prose-headings:text-foreground"
+            className="cf-prose mt-4"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(job.description) }}
           />
         </section>
