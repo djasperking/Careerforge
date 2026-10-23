@@ -14,6 +14,7 @@ import { isNewJob, postedAgo } from "@/lib/jobs/format";
 import { JOB_TYPE_LABELS, JOB_LOCATION_LABELS, listSimilarJobs } from "@/lib/jobs/service";
 import { checkMaintenance } from "@/components/maintenance/section-notice";
 import { renderMarkdown } from "@/lib/markdown";
+import { salaryToSchema } from "@/lib/jobs/salary";
 import { appUrl } from "@/lib/email";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +65,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
     employmentType: { FULL_TIME: "FULL_TIME", PART_TIME: "PART_TIME", CONTRACT: "CONTRACTOR", FREELANCE: "CONTRACTOR", INTERNSHIP: "INTERN" }[job.type],
     url: appUrl(`/jobs/${job.slug}`),
     directApply: false,
+    ...(salaryToSchema(job.salaryText) ? { baseSalary: salaryToSchema(job.salaryText) } : {}),
     ...(job.expiresAt ? { validThrough: job.expiresAt.toISOString() } : {}),
     ...(remote
       ? { jobLocationType: "TELECOMMUTE", applicantLocationRequirements: { "@type": "Country", name: job.location || "Worldwide" } }
